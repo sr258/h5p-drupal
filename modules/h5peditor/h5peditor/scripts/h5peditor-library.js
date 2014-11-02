@@ -63,7 +63,7 @@ ns.Library.prototype.appendTo = function ($wrapper) {
     var options = ns.createOption('-', '-');
     for (var i = 0; i < data.length; i++) {
       var library = data[i];
-      if (library.title !== undefined) {
+      if (library.title !== undefined && (library.restricted === undefined || !library.restricted)) {
         options += ns.createOption(library.uberName, library.title, library.uberName === that.params.library);
       }
     }
@@ -108,10 +108,11 @@ ns.Library.prototype.loadLibrary = function (libraryName, preserveParams) {
   if (libraryName === '-') {
     delete this.params.library;
     delete this.params.params;
+    this.$libraryWrapper.attr('class', 'libwrap');
     return;
   }
 
-  this.$libraryWrapper.html(ns.t('core', 'loading', {':type': 'semantics'}));
+  this.$libraryWrapper.html(ns.t('core', 'loading', {':type': 'semantics'})).addClass(libraryName.split(' ')[0].toLowerCase().replace('.', '-') + '-editor');
 
   ns.loadLibrary(libraryName, function (semantics) {
     that.currentLibrary = libraryName;
@@ -121,7 +122,7 @@ ns.Library.prototype.loadLibrary = function (libraryName, preserveParams) {
       // Reset params
       that.params.params = {};
     }
-    
+
     ns.processSemanticsChunk(semantics, that.params.params, that.$libraryWrapper.html(''), that);
 
     if (that.libraries !== undefined) {
