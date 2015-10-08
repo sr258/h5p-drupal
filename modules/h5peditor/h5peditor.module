@@ -154,6 +154,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
       'copyrightSemantics' => H5PContentValidator::getCopyrightSemantics(),
       'assets' => $assets,
+      'relativeUrl' => '../../../h5peditor'
     ),
   );
 
@@ -328,7 +329,8 @@ function h5peditor_get_instance() {
       new H5peditorDrupalStorage(),
       base_path(),
       _h5p_get_h5p_path(),
-      file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath() . DIRECTORY_SEPARATOR . 'h5peditor'
+      file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath() . DIRECTORY_SEPARATOR . 'h5peditor',
+      '/^(\.\.\/){1,3}(\d+|h5peditor)\/(.+)$/'
     );
   }
 
