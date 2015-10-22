@@ -56,6 +56,9 @@ H5PEditor.List = (function ($) {
       var i;
       if (parameters !== undefined && parameters.length) {
         for (i = 0; i < parameters.length; i++) {
+          if (parameters[i] === null) {
+            parameters[i] = undefined;
+          }
           addItem(i);
         }
       }
@@ -78,7 +81,7 @@ H5PEditor.List = (function ($) {
      * @param {number} index
      * @param {*} value
      */
-    var setParameters = function (index, value) {
+    var setParameters = function (index, value) {
       if (parameters === undefined) {
         // Create new parameters for list
         parameters = [];
@@ -224,8 +227,10 @@ H5PEditor.List = (function ($) {
       children.splice(newIndex, 0, child[0]);
 
       // Update parameters
-      var params = parameters.splice(currentIndex, 1);
-      parameters.splice(newIndex, 0, params[0]);
+      if (parameters) {
+        var params = parameters.splice(currentIndex, 1);
+        parameters.splice(newIndex, 0, params[0]);
+      }
     };
 
     /**
