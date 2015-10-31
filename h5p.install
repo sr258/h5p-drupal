@@ -7,6 +7,13 @@
  */
 
 /**
+ * Implements hook_disable
+ */
+function h5p_disable() {
+  drupal_set_message("The H5P Community is working hard every day to improve H5P. Would you like to drop them a one-liner about how they may improve H5P or why you disabled the module? <a href=\"https://h5p.org/drupal-module-disabled\">https://h5p.org/drupal-module-disabled</a>");
+}
+
+/**
  * Implements hook_uninstall().
  */
 function h5p_uninstall() {
