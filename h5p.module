@@ -47,7 +47,7 @@ function h5p_menu() {
     'title' => 'H5P Library Details',
     'title callback' => '_h5p_library_details_title',
     'title arguments' => array(4),
-    'description' => 'Get detailed info on a library',
+    'description' => 'Get detailed info on a library',
     'page callback' => 'h5p_library_details',
     'page arguments' => array(4),
     'access arguments' => array('administer site configuration'),
