@@ -622,6 +622,10 @@ function h5p_access_set_finished() {
  * @return {boolean}
  */
 function h5p_content_access($id, $op = 'view') {
+  if ($id === '0') {
+    // No content. Check if access to H5P content type.
+    return node_access($op, 'h5p_content');
+  }
   if (variable_get('h5p_revisioning', 1)) {
     // We got vid, but we need nid. Let's ask DB
     $id = (int) db_query('SELECT nid FROM {node_revision} WHERE vid = :vid', array(':vid' => $id))->fetchField();
