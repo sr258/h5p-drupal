@@ -53,6 +53,10 @@ a {
       padding: 8px;
     }
   }
+  .h5peditor-single > .field.library {
+    border: 0;
+    padding: 0;
+  }
 
   .errors p,
   .h5p-errors {
@@ -75,8 +79,21 @@ a {
     width: 100%;
     box-sizing: border-box;
   }
+  /* Placeholders - need to be on separate lines. If not, the browsers will invlaidate them */
+  ::-webkit-input-placeholder {
+    color: #bbb;
+  }
+  :-moz-placeholder {
+    color: #bbb;
+  }
+  ::-moz-placeholder {
+    color: #bbb;
+  }
+  :-ms-input-placeholder {
+    color: #bbb;
+  }
   .h5peditor-ckeditor-placeholder {
-    color: #888;
+    color: #bbb;
   }
   select {
     padding: 2px;

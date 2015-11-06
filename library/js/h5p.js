@@ -544,7 +544,7 @@ H5P.fullScreen = function ($element, instance, exitCallback, body) {
         metaTags[i].content = lastViewport;
       }
       else {
-        head.removeChild(metaTag);
+        head.removeChild(metaTags);
       }
       $disable.remove();
       $body.unbind('keyup', keyup);
@@ -575,7 +575,7 @@ H5P.fullScreen = function ($element, instance, exitCallback, body) {
     metaTags[i].content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
     if (!lastViewport) {
       var head = document.getElementsByTagName('head')[0];
-      head.appendChild(metaTag);
+      head.appendChild(metaTags);
     }
 
     entered();
@@ -1794,7 +1794,8 @@ H5P.createTitle = function (rawTitle, maxLength) {
       subContentId = 0; // Default
     }
 
-    var content = H5PIntegration.contents['cid-' + contentId];
+    H5PIntegration.contents = H5PIntegration.contents || {};
+    var content = H5PIntegration.contents['cid-' + contentId] || {};
     var preloadedData = content.contentUserData;
     if (preloadedData && preloadedData[subContentId] && preloadedData[subContentId][dataId]) {
       if (preloadedData[subContentId][dataId] === 'RESET') {
@@ -1882,6 +1883,9 @@ H5P.createTitle = function (rawTitle, maxLength) {
     }
 
     var content = H5PIntegration.contents['cid-' + contentId];
+    if (content === undefined) {
+      content = H5PIntegration.contents['cid-' + contentId] = {};
+    }
     if (!content.contentUserData) {
       content.contentUserData = {};
     }
