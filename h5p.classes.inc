@@ -126,7 +126,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements getLibraryId
    */
-  public function getLibraryId($machineName, $majorVersion, $minorVersion) {
+  public function getLibraryId($machineName, $majorVersion = NULL, $minorVersion = NULL) {
     $library_id = db_query(
       "SELECT library_id
       FROM {h5p_libraries}
