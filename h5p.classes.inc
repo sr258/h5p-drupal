@@ -126,7 +126,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements getLibraryId
    */
-  public function getLibraryId($machineName, $majorVersion, $minorVersion) {
+  public function getLibraryId($machineName, $majorVersion = NULL, $minorVersion = NULL) {
     $library_id = db_query(
       "SELECT library_id
       FROM {h5p_libraries}
@@ -195,6 +195,35 @@ class H5PDrupal implements H5PFrameworkInterface {
     $usage['libraries'] = intval(db_query("SELECT COUNT(*) FROM {h5p_libraries_libraries} WHERE required_library_id = :id", array(':id' => $libraryId))->fetchField());
 
     return $usage;
+  }
+
+  /**
+   * Implements getLibraryContentCount
+   *
+   * Get a key value list of library version and count of content created
+   * using that library.
+   *
+   * @return array
+   *  Array containing library, major and minor version - content count
+   *  e.g. "H5P.CoursePresentation 1.6" => "14"
+   */
+  public function getLibraryContentCount() {
+    $contentCount = array();
+
+    // Count content with same machine name, major and minor version
+    $res = db_query(
+        'SELECT machine_name, major_version, minor_version, count(*) as count
+        FROM {h5p_nodes}, {h5p_libraries}
+        WHERE main_library_id = library_id
+        GROUP BY machine_name, major_version, minor_version'
+    );
+
+    // Extract results
+    forEach($res as $lib) {
+      $contentCount[$lib->machine_name.' '.$lib->major_version.'.'.$lib->minor_version] = $lib->count;
+    }
+
+    return $contentCount;
   }
 
   /**
