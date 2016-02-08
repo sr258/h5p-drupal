@@ -227,6 +227,33 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   /**
+   * Implements getLibraryStats
+   */
+  public function getLibraryStats($type, $sub_type = "") {
+    $count = array();
+
+    $results = db_query("
+        SELECT library_name AS name,
+               library_version AS version,
+               COUNT(*) AS num
+          FROM {h5p_events}
+         WHERE type = :type
+           AND sub_type = :sub_type
+      GROUP BY library_name, library_version
+        ", array(
+      ':type' => $type,
+      ':sub_type' => $sub_type
+    ))->fetchAll();
+
+    // Extract results
+    foreach($results as $library) {
+      $count[$library->name . ' ' . $library->version] = $library->num;
+    }
+
+    return $count;
+  }
+
+  /**
    * Implements saveLibraryData
    */
   public function saveLibraryData(&$libraryData, $new = TRUE) {
@@ -293,6 +320,14 @@ class H5PDrupal implements H5PFrameworkInterface {
       ->execute();
       $this->deleteLibraryDependencies($libraryData['libraryId']);
     }
+
+    // Log library installed or updated
+    new H5P_Event('library', ($new ? 'create' : 'update'),
+      NULL, NULL,
+      $libraryData['machineName'],
+      $libraryData['majorVersion'] . '.' . $libraryData['minorVersion']
+    );
+
     db_delete('h5p_libraries_languages')
     ->condition('library_id', $libraryData['libraryId'])
     ->execute();
@@ -398,7 +433,26 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements updateContent
    */
   public function updateContent($content, $contentMainId = NULL) {
-    $content_id = db_query("SELECT content_id FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
+    $content_id = db_query("SELECT * FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
+
+    // Derive library data from string
+    if (isset($content['h5p_library'])) {
+      $libraryData = explode(' ', $content['h5p_library']);
+      if (!isset($content['library']['machineName'])) {
+        $content['library']['machineName'] = $libraryData[0];
+      }
+      $content['machineName'] = $libraryData[0];
+      $libraryVersions = explode('.', $libraryData[1]);
+
+      if (!isset($content['library']['majorVersion'])) {
+        $content['library']['majorVersion'] = $libraryVersions[0];
+      }
+
+      if (!isset($content['library']['minorVersion'])) {
+        $content['library']['minorVersion'] = $libraryVersions[1];
+      }
+    }
+
     if ($content_id === FALSE) {
       // This can happen in Drupal when module is reinstalled. (since the ID is predetermined)
       $this->insertContent($content, $contentMainId);
@@ -416,6 +470,19 @@ class H5PDrupal implements H5PFrameworkInterface {
       ))
       ->condition('content_id', $content_id)
       ->execute();
+
+    $event_type = 'update';
+    if (isset($_SESSION['h5p_upload'])) {
+      $event_type .= ' upload';
+    }
+
+    // Log update event
+    new H5P_Event('content', $event_type,
+      $content['id'],
+      $content['title'],
+      $content['library']['machineName'],
+      $content['library']['majorVersion'] . '.' . $content['library']['minorVersion']
+    );
   }
 
   /**
@@ -435,6 +502,19 @@ class H5PDrupal implements H5PFrameworkInterface {
         'slug' => ''
       ))
       ->execute();
+
+
+    // Log update event
+    $event_type = 'create';
+    if (isset($_SESSION['h5p_upload'])) {
+      $event_type .= ' upload';
+    }
+    new H5P_Event('content', $event_type,
+      $content['id'],
+      $content['title'],
+      $content['library']['machineName'],
+      $content['library']['majorVersion'] . '.' . $content['library']['minorVersion']
+    );
 
     return $content['id'];
   }

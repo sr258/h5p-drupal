@@ -127,13 +127,27 @@ function h5p_menu() {
  */
 function h5p_cron() {
   h5p_fetch_libraries_metadata();
+  //remove_old_log_events();
+}
+
+/**
+ * Remove any log messages older than the set limit.
+ */
+function remove_old_log_events() {
+  require_once(drupal_get_path('module', 'h5p') . '/library/h5p-event-base.class.php');
+
+  $older_than = (time() - H5PEventBase::$log_time);
+
+  db_delete('h5p_events')
+    ->condition('created_at', $older_than, '<')
+    ->execute();
 }
 
 function h5p_fetch_libraries_metadata($fetchingDisabled = FALSE) {
   // If fetching of libraries from h5p.org is enabled and
   // It has not been run the last 24 hours, let's do it
   // Intentionally not doing === TRUE on h5p_allow_communication_with_h5p_org test
-  if ($fetchingDisabled || (variable_get('h5p_allow_communication_with_h5p_org', TRUE) &&
+  if (TRUE || $fetchingDisabled || (variable_get('h5p_allow_communication_with_h5p_org', TRUE) &&
      (intval(variable_get('h5p_fetched_library_metadata_on', 0)) < (time() - 86400)))) {
     // Fetch the library-metadata:
     $core = _h5p_get_instance('core');
@@ -393,18 +407,26 @@ function h5p_validate($node, &$form) {
 function h5p_insert($node) {
   if (isset($_SESSION['h5p_upload'])) {
     $h5p_core = _h5p_get_instance('storage');
-    $h5p_core->savePackage(h5p_get_content_id($node), $node->nid , FALSE, array('disable' => $node->disable));
+    $h5p_core->savePackage(h5p_get_content_id($node), $node->nid , FALSE, array(
+      'disable' => $node->disable,
+      'title' => $node->title
+    ));
   }
   else {
     $core = _h5p_get_instance('core');
     $core->saveContent(array(
       'id' => h5p_get_content_id($node),
+      'title' => $node->title,
       'params' => $node->json_content,
       'embed_type' => $node->embed_type,
       'disable' => $node->disable,
       'library' => array(
-        'libraryId' => $node->main_library_id
-      )
+        'libraryId' => $node->main_library_id,
+        'machineName' => $node->main_library['name'],
+        'majorVersion' => $node->main_library['majorVersion'],
+        'minorVersion' => $node->main_library['minorVersion']
+      ),
+      'h5p_library' => $node->h5p_library
     ), $node->nid);
   }
 }
@@ -431,7 +453,10 @@ function h5p_update($node) {
     if (isset($_SESSION['h5p_upload'])) {
       // Replace old package
       $h5p_storage = _h5p_get_instance('storage');
-      $h5p_storage->updatePackage(h5p_get_content_id($node), $node->nid, array('disable' => $node->disable));
+      $h5p_storage->updatePackage(h5p_get_content_id($node), $node->nid, array(
+        'disable' => $node->disable,
+        'title' => $node->title
+      ));
     }
     else {
       h5p_insert($node);

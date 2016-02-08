@@ -465,6 +465,66 @@ function h5p_schema() {
     'primary key' => array('user_id', 'content_main_id', 'sub_content_id', 'data_id'),
   );
 
+  $schema['h5p_events'] = array(
+    'description' => 'Stores H5P user events',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The unique event identifier',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'user_id' => array(
+        'description' => 'User id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'created_at' => array(
+        'description' => 'Time of the event',
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'type' => array(
+        'description' => 'Type of event',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'sub_type' => array(
+        'description' => 'Sub type of event',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'content_id' => array(
+        'description' => 'Content id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'content_title' => array(
+        'description' => 'Content title',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'library_name' => array(
+        'description' => 'Library name',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE
+      ),
+      'library_version' => array(
+        'description' => 'Version of library',
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => TRUE
+      )
+    ),
+    'primary key' => array('id')
+  );
+
   return $schema;
 }
 
@@ -910,6 +970,70 @@ function h5p_update_7109() {
   }
 }
 
+/**
+ * Adds the H5P user events table.
+ */
+function h5p_update_7110() {
+  db_create_table('h5p_events', array(
+    'description' => 'Stores H5P user events',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The unique event identifier',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'user_id' => array(
+        'description' => 'User id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'created_at' => array(
+        'description' => 'Time of the event',
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'type' => array(
+        'description' => 'Type of event',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'sub_type' => array(
+        'description' => 'Sub type of event',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'content_id' => array(
+        'description' => 'Content id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'content_title' => array(
+        'description' => 'Content title',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'library_name' => array(
+        'description' => 'Library name',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE
+      ),
+      'library_version' => array(
+        'description' => 'Version of library',
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => TRUE
+      )
+    ),
+    'primary key' => array('id')
+  ));
+}
 
 /**
  * Check if any library installed is unsupported by core

@@ -5,6 +5,7 @@ name = H5P
 description = "Upload interactive HTML5 Packages to your Druapl site."
 core = 7.x
 
+files[] = h5p.event.inc
 files[] = library/h5p.classes.php
 files[] = library/h5p-development.class.php
 files[] = h5p.classes.inc
