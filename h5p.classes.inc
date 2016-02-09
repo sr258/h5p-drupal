@@ -254,6 +254,21 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   /**
+   * Implements getNumAuthors
+   */
+  public function getNumAuthors() {
+    $numAuthors = db_query("
+      SELECT COUNT(DISTINCT uid)
+      FROM {node}
+      WHERE type = :type
+    ", array(
+      ':type' => 'h5p_content'
+    ))->fetchField();
+
+    return $numAuthors;
+  }
+
+  /**
    * Implements saveLibraryData
    */
   public function saveLibraryData(&$libraryData, $new = TRUE) {
@@ -438,19 +453,11 @@ class H5PDrupal implements H5PFrameworkInterface {
     // Derive library data from string
     if (isset($content['h5p_library'])) {
       $libraryData = explode(' ', $content['h5p_library']);
-      if (!isset($content['library']['machineName'])) {
-        $content['library']['machineName'] = $libraryData[0];
-      }
+      $content['library']['machineName'] = $libraryData[0];
       $content['machineName'] = $libraryData[0];
       $libraryVersions = explode('.', $libraryData[1]);
-
-      if (!isset($content['library']['majorVersion'])) {
-        $content['library']['majorVersion'] = $libraryVersions[0];
-      }
-
-      if (!isset($content['library']['minorVersion'])) {
-        $content['library']['minorVersion'] = $libraryVersions[1];
-      }
+      $content['library']['majorVersion'] = $libraryVersions[0];
+      $content['library']['minorVersion'] = $libraryVersions[1];
     }
 
     if ($content_id === FALSE) {
@@ -511,7 +518,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
     new H5P_Event('content', $event_type,
       $content['id'],
-      $content['title'],
+      (isset($content['title']) ? $content['title'] : ''),
       $content['library']['machineName'],
       $content['library']['majorVersion'] . '.' . $content['library']['minorVersion']
     );

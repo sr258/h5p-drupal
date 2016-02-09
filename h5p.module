@@ -127,7 +127,7 @@ function h5p_menu() {
  */
 function h5p_cron() {
   h5p_fetch_libraries_metadata();
-  //remove_old_log_events();
+  remove_old_log_events();
 }
 
 /**
@@ -422,9 +422,9 @@ function h5p_insert($node) {
       'disable' => $node->disable,
       'library' => array(
         'libraryId' => $node->main_library_id,
-        'machineName' => $node->main_library['name'],
-        'majorVersion' => $node->main_library['majorVersion'],
-        'minorVersion' => $node->main_library['minorVersion']
+        'machineName' => (isset($node->main_library['name']) ? $node->main_library['name'] : ''),
+        'majorVersion' => (isset($node->main_library['majorVersion']) ? $node->main_library['majorVersion'] : ''),
+        'minorVersion' => (isset($node->main_library['minorVersion']) ? $node->main_library['minorVersion'] : '')
       ),
       'h5p_library' => $node->h5p_library
     ), $node->nid);
@@ -486,6 +486,14 @@ function h5p_delete($node) {
       ->condition('content_main_id', $content['id'])
       ->execute();
   }
+
+  // Log content delete
+  new H5P_Event('content', 'delete',
+    $node->nid,
+    $node->title,
+    $node->main_library['name'],
+    $node->main_library['majorVersion'] . '.' . $node->main_library['minorVersion']
+  );
 }
 
 /**

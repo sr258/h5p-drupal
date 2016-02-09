@@ -618,12 +618,13 @@ function h5p_content_upgrade_progress($library_id) {
       // Log content upgrade successful
       $title = db_query("SELECT title FROM {node} WHERE nid = :id", array(':id' => $id))->fetchField();
       new H5P_Event('content', 'upgrade',
+        $id,
         $title,
         $to_library->name,
         $to_library->major_version . ' ' . $to_library->minor_version);
 
       // Clear content cache
-      $interface->updateContentFields($content['id'], array(
+      $interface->updateContentFields($id, array(
         'filtered' => ''
       ));
     }
