@@ -466,7 +466,7 @@ function h5p_schema() {
   );
 
   $schema['h5p_events'] = array(
-    'description' => 'Stores H5P user events',
+    'description' => 'Keeps track of what happens in the H5P system',
     'fields' => array(
       'id' => array(
         'description' => 'The unique event identifier',
@@ -971,11 +971,11 @@ function h5p_update_7109() {
 }
 
 /**
- * Adds the H5P user events table.
+ * Adds the H5P events table.
  */
 function h5p_update_7110() {
   db_create_table('h5p_events', array(
-    'description' => 'Stores H5P user events',
+    'description' => 'Keeps track of what happens in the H5P system',
     'fields' => array(
       'id' => array(
         'description' => 'The unique event identifier',

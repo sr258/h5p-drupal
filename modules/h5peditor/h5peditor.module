@@ -281,9 +281,9 @@ function h5peditor_library_callback($machine_name, $major_version, $minor_versio
   print $editor->getLibraryData($machine_name, $major_version, $minor_version, $language->language, '', _h5p_get_h5p_path());
 
   // Log library loaded
-  new H5P_Event('library', NULL, NULL, NULL,
+  new H5PEvent('library', NULL, NULL, NULL,
     $machine_name,
-    $major_nersion . '.' . $minor_version
+    $major_version . '.' . $minor_version
   );
 }
 

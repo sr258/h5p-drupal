@@ -337,7 +337,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
 
     // Log library installed or updated
-    new H5P_Event('library', ($new ? 'create' : 'update'),
+    new H5PEvent('library', ($new ? 'create' : 'update'),
       NULL, NULL,
       $libraryData['machineName'],
       $libraryData['majorVersion'] . '.' . $libraryData['minorVersion']
@@ -484,7 +484,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
 
     // Log update event
-    new H5P_Event('content', $event_type,
+    new H5PEvent('content', $event_type,
       $content['id'],
       $content['title'],
       $content['library']['machineName'],
@@ -516,7 +516,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     if (isset($_SESSION['h5p_upload'])) {
       $event_type .= ' upload';
     }
-    new H5P_Event('content', $event_type,
+    new H5PEvent('content', $event_type,
       $content['id'],
       (isset($content['title']) ? $content['title'] : ''),
       $content['library']['machineName'],

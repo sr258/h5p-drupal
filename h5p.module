@@ -134,8 +134,6 @@ function h5p_cron() {
  * Remove any log messages older than the set limit.
  */
 function remove_old_log_events() {
-  require_once(drupal_get_path('module', 'h5p') . '/library/h5p-event-base.class.php');
-
   $older_than = (time() - H5PEventBase::$log_time);
 
   db_delete('h5p_events')
@@ -488,7 +486,7 @@ function h5p_delete($node) {
   }
 
   // Log content delete
-  new H5P_Event('content', 'delete',
+  new H5PEvent('content', 'delete',
     $node->nid,
     $node->title,
     $node->main_library['name'],
