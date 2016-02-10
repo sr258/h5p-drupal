@@ -525,6 +525,37 @@ function h5p_schema() {
     'primary key' => array('id')
   );
 
+  $schema['h5p_counters'] = array(
+    'description' => 'Global counters for the H5P system',
+    'fields' => array(
+      'type' => array(
+        'description' => 'Type of counter',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'library_name' => array(
+        'description' => 'Library',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE
+      ),
+      'library_version' => array(
+        'description' => 'Version of library',
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => TRUE
+      ),
+      'num' => array(
+        'description' => 'Number value of counter',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+    ),
+    'primary key' => array('type', 'library_name', 'library_version')
+  );
+
   return $schema;
 }
 
@@ -971,7 +1002,7 @@ function h5p_update_7109() {
 }
 
 /**
- * Adds the H5P events table.
+ * Adds the H5P events and counters tables.
  */
 function h5p_update_7110() {
   db_create_table('h5p_events', array(
@@ -1032,6 +1063,37 @@ function h5p_update_7110() {
       )
     ),
     'primary key' => array('id')
+  ));
+
+  db_create_table('h5p_counters', array(
+    'description' => 'Global counters for the H5P system',
+    'fields' => array(
+      'type' => array(
+        'description' => 'Type of counter',
+        'type' => 'varchar',
+        'length' => 63,
+        'not null' => TRUE
+      ),
+      'library_name' => array(
+        'description' => 'Library',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE
+      ),
+      'library_version' => array(
+        'description' => 'Version of library',
+        'type' => 'varchar',
+        'length' => 31,
+        'not null' => TRUE
+      ),
+      'num' => array(
+        'description' => 'Number value of counter',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+    ),
+    'primary key' => array('type', 'library_name', 'library_version')
   ));
 }
 

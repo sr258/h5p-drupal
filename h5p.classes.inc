@@ -235,14 +235,11 @@ class H5PDrupal implements H5PFrameworkInterface {
     $results = db_query("
         SELECT library_name AS name,
                library_version AS version,
-               COUNT(*) AS num
-          FROM {h5p_events}
+               num
+          FROM {h5p_counters}
          WHERE type = :type
-           AND sub_type = :sub_type
-      GROUP BY library_name, library_version
         ", array(
-      ':type' => $type,
-      ':sub_type' => $sub_type
+      ':type' => $type
     ))->fetchAll();
 
     // Extract results

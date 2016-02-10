@@ -32,4 +32,49 @@ class H5PEvent extends H5PEventBase {
 
     return $this->id;
   }
+
+  /**
+   * Count number of events.
+   */
+  protected function count() {
+    $type = $this->type . ' ' . $this->sub_type;
+
+    $current_num = db_query(
+        "SELECT num
+           FROM {h5p_counters}
+          WHERE type = :type
+            AND library_name = :library_name
+            AND library_version = :library_version
+        ", array(
+          ':type' => $type,
+          ':library_name' => $this->library_name,
+          ':library_version' => $this->library_version
+        ))->fetchField();
+
+    if ($current_num === FALSE) {
+      // Insert
+      db_insert('h5p_counters')
+          ->fields(array(
+            'type' => $type,
+            'library_name' => $this->library_name,
+            'library_version' => $this->library_version,
+            'num' => 1
+          ))
+          ->execute();
+    }
+    else {
+     // Update num+1
+     db_query(
+         "UPDATE {h5p_counters}
+             SET num = num + 1
+           WHERE type = :type
+             AND library_name = :library_name
+             AND library_version = :library_version
+         ", array(
+           ':type' => $type,
+           ':library_name' => $this->library_name,
+           ':library_version' => $this->library_version
+         ));
+    }
+  }
 }
