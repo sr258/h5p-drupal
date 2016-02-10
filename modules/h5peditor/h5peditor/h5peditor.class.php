@@ -383,12 +383,6 @@ class H5peditor {
       }
     }
 
-    // Log library loaded
-    new H5P_Event('library', NULL, NULL, NULL,
-      $machineName,
-      $majorVersion . '.' . $minorVersion
-    );
-
     return json_encode($libraryData);
   }
 
