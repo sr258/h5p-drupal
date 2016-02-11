@@ -238,7 +238,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements getLibraryStats
    */
-  public function getLibraryStats($type, $sub_type = "") {
+  public function getLibraryStats($type) {
     $count = array();
 
     $results = db_query("
