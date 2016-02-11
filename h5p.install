@@ -18,8 +18,20 @@ function h5p_disable() {
  * Implements hook_uninstall().
  */
 function h5p_uninstall() {
+  global $language;
+
   // Clean out file dirs.
   $h5p_path = file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath() . '/' . variable_get('h5p_default_path', 'h5p');
+
+  // Load core
+  require_once('library/h5p.classes.php');
+  require_once('library/h5p-development.class.php');
+  require_once('h5p.classes.inc');
+  $interface = new H5PDrupal();
+  $core = new H5PCore($interface, $h5p_path, base_path(), $language->language, (variable_get('h5p_export', '1') ? TRUE : FALSE), H5PDevelopment::MODE_NONE);
+
+  // Notify about uninstall
+  $core->fetchLibrariesMetadata();
 
   // Remove these regardless of their content.
   foreach (array('temp', 'libraries', 'content', 'exports') as $directory) {
