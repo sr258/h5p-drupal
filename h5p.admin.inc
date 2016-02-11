@@ -4,6 +4,13 @@
  */
 function h5p_admin_settings($form, &$form_state) {
 
+  $form['h5p_allow_communication_with_h5p_org'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I wish to aid in the development of H5P by contributing anonymous usage data'),
+    '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
+    '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates.'),
+  );
+
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Options'),
@@ -74,13 +81,6 @@ function h5p_admin_settings($form, &$form_state) {
     '#title' => t('Enable H5P development mode'),
     '#default_value' => variable_get('h5p_dev_mode', '0'),
     '#description' => t('Always update uploaded H5P libraries regardless of patch version. Read library data from file (semantics.json).')
-  );
-
-  $form['h5p_allow_communication_with_h5p_org'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Get updates from h5p.org'),
-    '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
-    '#description' => t('Currently only tutorials are being updated, but in the future notification about code updates and more will be fetched from H5P.org'),
   );
 
 //  $form['h5p_content_dev_mode'] = array(
