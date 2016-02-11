@@ -20,8 +20,17 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements fetchExternalData
    */
-  public function fetchExternalData($url) {
-    $response = drupal_http_request($url);
+  public function fetchExternalData($url, $data = NULL) {
+    $options = array();
+    if (!empty($data)) {
+      $options['method'] = 'POST';
+      $options['headers'] = array(
+        'Content-Type' => 'application/x-www-form-urlencoded'
+      );
+      $options['data'] = drupal_http_build_query($data);
+    }
+
+    $response = drupal_http_request($url, $options);
     return isset($response->error) ? NULL : $response->data;
   }
 
