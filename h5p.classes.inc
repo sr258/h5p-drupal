@@ -454,7 +454,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements updateContent
    */
   public function updateContent($content, $contentMainId = NULL) {
-    $content_id = db_query("SELECT * FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
+    $content_id = db_query("SELECT content_id FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
 
     // Derive library data from string
     if (isset($content['h5p_library'])) {
