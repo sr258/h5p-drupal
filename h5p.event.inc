@@ -11,16 +11,15 @@ require_once(drupal_get_path('module', 'h5p') . '/library/h5p-event-base.class.p
 class H5PEvent extends H5PEventBase {
 
   /**
-   * Store the event.
+   * Overrides H5PEventBase::save().
+   *
+   * Stores the event data in the database.
    */
   protected function save() {
     global $user;
 
     // Get data in array format without NULL values
-    $data = $this->toArray()[0];
-
-    // Get data in array format
-    list($data) = $this->toArray();
+    $data = $this->getDataArray();
 
     // Add user
     $data['user_id'] = $user->uid;
@@ -34,11 +33,14 @@ class H5PEvent extends H5PEventBase {
   }
 
   /**
-   * Count number of events.
+   * Overrides H5PEventBase::saveStats().
+   *
+   * Add current event data to statistics counter.
    */
-  protected function count() {
+  protected function saveStats() {
     $type = $this->type . ' ' . $this->sub_type;
 
+    // Verify if counter exists
     $current_num = db_query(
         "SELECT num
            FROM {h5p_counters}
@@ -52,7 +54,7 @@ class H5PEvent extends H5PEventBase {
         ))->fetchField();
 
     if ($current_num === FALSE) {
-      // Insert
+      // Insert new counter
       db_insert('h5p_counters')
           ->fields(array(
             'type' => $type,
@@ -63,7 +65,7 @@ class H5PEvent extends H5PEventBase {
           ->execute();
     }
     else {
-     // Update num+1
+     // Update counter with num+1
      db_query(
          "UPDATE {h5p_counters}
              SET num = num + 1
