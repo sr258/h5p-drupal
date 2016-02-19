@@ -455,17 +455,6 @@ class H5PDrupal implements H5PFrameworkInterface {
    */
   public function updateContent($content, $contentMainId = NULL) {
     $content_id = db_query("SELECT content_id FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
-
-    // Derive library data from string
-    if (isset($content['h5p_library'])) {
-      $libraryData = explode(' ', $content['h5p_library']);
-      $content['library']['machineName'] = $libraryData[0];
-      $content['machineName'] = $libraryData[0];
-      $libraryVersions = explode('.', $libraryData[1]);
-      $content['library']['majorVersion'] = $libraryVersions[0];
-      $content['library']['minorVersion'] = $libraryVersions[1];
-    }
-
     if ($content_id === FALSE) {
       // This can happen in Drupal when module is reinstalled. (since the ID is predetermined)
       $this->insertContent($content, $contentMainId);
@@ -484,6 +473,17 @@ class H5PDrupal implements H5PFrameworkInterface {
       ->condition('content_id', $content_id)
       ->execute();
 
+    // Derive library data from string
+    if (isset($content['h5p_library'])) {
+      $libraryData = explode(' ', $content['h5p_library']);
+      $content['library']['machineName'] = $libraryData[0];
+      $content['machineName'] = $libraryData[0];
+      $libraryVersions = explode('.', $libraryData[1]);
+      $content['library']['majorVersion'] = $libraryVersions[0];
+      $content['library']['minorVersion'] = $libraryVersions[1];
+    }
+
+    // Determine event type
     $event_type = 'update';
     if (isset($_SESSION['h5p_upload'])) {
       $event_type .= ' upload';
@@ -515,7 +515,6 @@ class H5PDrupal implements H5PFrameworkInterface {
         'slug' => ''
       ))
       ->execute();
-
 
     // Log update event
     $event_type = 'create';
