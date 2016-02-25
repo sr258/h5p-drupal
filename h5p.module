@@ -682,7 +682,10 @@ function h5p_set_started($content_id) {
  */
 function h5p_set_finished() {
   global $user;
-  $result = array('success' => FALSE);
+
+  if (!H5PCore::validToken('result', filter_input(INPUT_POST, 'token'))) {
+    return H5PCore::ajaxError(t('Invalid security token.'));
+  }
 
   if ($user->uid && $_POST['contentId'] !== NULL && $_POST['score'] !== NULL && $_POST['maxScore'] !== NULL) {
     db_update('h5p_points')
@@ -694,10 +697,10 @@ function h5p_set_finished() {
       ->condition('content_id', $_POST['contentId'])
       ->condition('uid', $user->uid)
       ->execute();
-    $result['success'] = TRUE;
+    return H5PCore::ajaxSuccess();
   }
 
-  echo json_encode($result);
+  H5PCore::ajaxError();
 }
 
 /**
@@ -744,6 +747,10 @@ function h5p_get_core_settings() {
     'ajax' => array(
       'setFinished' => url('h5p-ajax/set-finished.json'),
       'contentUserData' => str_replace('%3A', ':', url('h5p-ajax/content-user-data/:contentId/:dataType/:subContentId'))
+    ),
+    'tokens' => array(
+      'result' => H5PCore::createToken('result'),
+      'contentUserData' => H5PCore::createToken('contentuserdata')
     ),
     'saveFreq' => variable_get('h5p_save_content_state', 0) ? variable_get('h5p_save_content_frequency', 30) : FALSE,
     'l10n' => array(
@@ -1267,6 +1274,10 @@ function h5p_content_user_data($content_id, $data_id, $sub_content_id) {
   $preload = filter_input(INPUT_POST, 'preload');
   $invalidate = filter_input(INPUT_POST, 'invalidate');
   if ($data !== NULL && $preload !== NULL && $invalidate !== NULL) {
+    if (!H5PCore::validToken('contentuserdata', filter_input(INPUT_POST, 'token'))) {
+      return H5PCore::ajaxError(t('Invalid security token.'));
+    }
+
     if ($data === '0') {
       // Remove data
       db_delete('h5p_content_user_data')
@@ -1326,6 +1337,8 @@ function h5p_content_user_data($content_id, $data_id, $sub_content_id) {
           ->execute();
       }
     }
+
+    return H5PCore::ajaxSuccess();
   }
   else {
     // Fetch data
