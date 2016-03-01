@@ -130,18 +130,19 @@ interface H5PFrameworkInterface {
   public function getAdminUrl();
 
   /**
-   * Get id to an existing library
+   * Get id to an existing library.
+   * If version number is not specified, the newest version will be returned.
    *
    * @param string $machineName
    *   The librarys machine name
    * @param int $majorVersion
-   *   The librarys major version
+   *   Optional major version number for library
    * @param int $minorVersion
-   *   The librarys minor version
+   *   Optional minor version number for library
    * @return int
    *   The id of the specified library or FALSE
    */
-  public function getLibraryId($machineName, $majorVersion, $minorVersion);
+  public function getLibraryId($machineName, $majorVersion = NULL, $minorVersion = NULL);
 
   /**
    * Get file extension whitelist
@@ -332,6 +333,16 @@ interface H5PFrameworkInterface {
    *   - libraries: Number of libraries depending on the library
    */
   public function getLibraryUsage($libraryId);
+
+  /**
+   * Get a key value list of library version and count of content created
+   * using that library.
+   *
+   * @return array
+   *  Array containing library, major and minor version - content count
+   *  e.g. "H5P.CoursePresentation 1.6" => "14"
+   */
+  public function getLibraryContentCount();
 
   /**
    * Loads a library
@@ -798,12 +809,12 @@ class H5PValidator {
     }
     if ($valid) {
       if ($upgradeOnly) {
-        // When upgrading, we opnly add allready installed libraries,
-        // and new dependent libraries
+        // When upgrading, we only add the already installed libraries, and
+        // the new dependent libraries
         $upgrades = array();
         foreach ($libraries as $libString => &$library) {
           // Is this library already installed?
-          if ($this->h5pC->getLibraryId($library, $libString) !== FALSE) {
+          if ($this->h5pF->getLibraryId($library['machineName']) !== FALSE) {
             $upgrades[$libString] = $library;
           }
         }
@@ -1653,7 +1664,7 @@ class H5PCore {
     'js/h5p-utils.js',
   );
 
-  public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff otf webm mp4 ogg mp3 txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile';
+  public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm mp4 ogg mp3 txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile';
   public static $defaultLibraryWhitelistExtras = 'js css';
 
   public $librariesJsonData, $contentJsonData, $mainJsonData, $h5pF, $path, $development_mode, $h5pD, $disableFileCheck;
@@ -1699,6 +1710,8 @@ class H5PCore {
     if ($development_mode & H5PDevelopment::MODE_LIBRARY) {
       $this->h5pD = new H5PDevelopment($this->h5pF, $path . '/', $language);
     }
+
+    $this->detectSiteType();
   }
 
   /**
@@ -2370,6 +2383,51 @@ class H5PCore {
   }
 
   /**
+   * Detects if the site was accessed from localhost,
+   * through a local network or from the internet.
+   */
+  public function detectSiteType() {
+    $type = $this->h5pF->getOption('site_type', 'local');
+
+    // Determine remote/visitor origin
+    $localhostPattern = '/^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*\:)*?:?0*1$/i';
+
+    // localhost
+    if ($type !== 'internet' && !preg_match($localhostPattern, $_SERVER['REMOTE_ADDR'])) {
+      if (filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
+        // Internet
+        $this->h5pF->setOption('site_type', 'internet');
+      }
+      elseif ($type === 'local') {
+        // Local network
+        $this->h5pF->setOption('site_type', 'network');
+      }
+    }
+  }
+
+  /**
+   * Get a list of installed libraries, different minor versions will
+   * return separate entries.
+   *
+   * @return array
+   *  A distinct array of installed libraries
+   */
+  public function getLibrariesInstalled() {
+    $librariesInstalled = [];
+
+    $libs = $this->h5pF->loadLibraries();
+
+    foreach($libs as $library) {
+      foreach($library as $libVersion) {
+
+        $librariesInstalled[] = $libVersion->name.' '.$libVersion->major_version.'.'.$libVersion->minor_version.'.'.$libVersion->patch_version;
+      }
+    }
+
+    return $librariesInstalled;
+  }
+
+  /**
    * Fetch a list of libraries' metadata from h5p.org.
    * Save URL tutorial to database. Each platform implementation
    * is responsible for invoking this, eg using cron
@@ -2378,6 +2436,10 @@ class H5PCore {
     $platformInfo = $this->h5pF->getPlatformInfo();
     $platformInfo['autoFetchingDisabled'] = $fetchingDisabled;
     $platformInfo['uuid'] = $this->h5pF->getOption('site_uuid', '');
+    $platformInfo['siteType'] = $this->h5pF->getOption('site_type', 'local');
+    $platformInfo['libraryContentCount'] = $this->h5pF->getLibraryContentCount();
+    $platformInfo['librariesInstalled'] = $this->getLibrariesInstalled();
+
     // Adding random string to GET to be sure nothing is cached
     $random = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
     $json = $this->h5pF->fetchExternalData('http://h5p.org/libraries-metadata.json?api=1&platform=' . urlencode(json_encode($platformInfo)) . '&x=' . urlencode($random));
