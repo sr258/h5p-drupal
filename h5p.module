@@ -1466,3 +1466,21 @@ function _h5p_dependencies_to_library_list($dependencies) {
   }
   return $library_list;
 }
+
+/**
+ * Implements
+ */
+function h5p_views_pre_view($view, $display_id, $args) {
+  if ($view->name === 'node_results' && $display_id === 'page' && $view->base_field === 'nid') {
+    $node = node_load($view->args[0]);
+    if ($node) {
+      // Log view of results page
+      new H5PEvent('results', 'content',
+        $node->nid,
+        $node->title,
+        $node->main_library['name'],
+        $node->main_library['majorVersion'] . '.' . $node->main_library['minorVersion']
+      );
+    }
+  }
+}
