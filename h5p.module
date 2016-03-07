@@ -411,6 +411,31 @@ function h5p_insert($node) {
     ));
   }
   else {
+    if (!isset($node->main_library['name'])) {
+      $lib = db_query(
+          "SELECT machine_name,
+                  major_version,
+                  minor_version
+             FROM {h5p_libraries}
+            WHERE library_id = :id",
+          array(
+            ':id' => $node->main_library_id
+          ))->fetchObject();
+      $lib = array(
+        'libraryId' => $node->main_library_id,
+        'machineName' => $lib->machine_name,
+        'majorVersion' => $lib->major_version,
+        'minorVersion' => $lib->minor_version
+      );
+    }
+    else {
+      $lib = array(
+        'libraryId' => $node->main_library_id,
+        'machineName' => (isset($node->main_library['name']) ? $node->main_library['name'] : ''),
+        'majorVersion' => (isset($node->main_library['majorVersion']) ? $node->main_library['majorVersion'] : ''),
+        'minorVersion' => (isset($node->main_library['minorVersion']) ? $node->main_library['minorVersion'] : '')
+      );
+    }
     $core = _h5p_get_instance('core');
     $core->saveContent(array(
       'id' => h5p_get_content_id($node),
@@ -418,12 +443,7 @@ function h5p_insert($node) {
       'params' => $node->json_content,
       'embed_type' => $node->embed_type,
       'disable' => $node->disable,
-      'library' => array(
-        'libraryId' => $node->main_library_id,
-        'machineName' => (isset($node->main_library['name']) ? $node->main_library['name'] : ''),
-        'majorVersion' => (isset($node->main_library['majorVersion']) ? $node->main_library['majorVersion'] : ''),
-        'minorVersion' => (isset($node->main_library['minorVersion']) ? $node->main_library['minorVersion'] : '')
-      ),
+      'library' => $lib,
       'h5p_library' => $node->h5p_library
     ), $node->nid);
   }
