@@ -1114,6 +1114,8 @@ function h5p_update_7110() {
     ),
     'primary key' => array('type', 'library_name', 'library_version')
   ));
+
+  _h5p_inform_h5p_org_communication();
 }
 
 /**
