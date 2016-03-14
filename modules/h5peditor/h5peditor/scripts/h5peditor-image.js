@@ -59,7 +59,7 @@ ns.widgets.image.prototype.appendTo = function ($wrapper) {
   var htmlString = label + '<div class="file"></div>' +
     '<div class="h5p-editor-image-buttons">' +
       '<button class="h5p-editing-image-button">' + ns.t('core', 'editImage') + '</button>' +
-      '<a class="h5p-copyright-button" href="#">' + ns.t('core', 'editCopyright') + '</a>' +
+      '<button class="h5p-copyright-button">' + ns.t('core', 'editCopyright') + '</button>' +
     '</div>' +
     '<div class="h5p-editor-dialog">' +
       '<a href="#" class="h5p-close" title="' + ns.t('core', 'close') + '"></a>' +
@@ -116,14 +116,21 @@ ns.widgets.image.prototype.appendTo = function ($wrapper) {
     self.isEditing = false;
   });
 
-  $container.find('.h5p-editing-image-button').click(function () {
+  editImagePopup.on('initialized', function () {
+    // Remove throbber from image
+    self.$editImage.removeClass('loading');
+  });
 
+  $container.find('.h5p-editing-image-button').click(function () {
     if (self.params && self.params.path) {
       var imageSrc;
       if (!self.isEditing) {
         imageSrc = H5P.getPath(self.params.path, H5PEditor.contentId);
         self.isEditing = true;
       }
+      self.$editImage.toggleClass('loading');
+
+      // Add throbber to image
       editImagePopup.show(ns.$(this).offset(), imageSrc);
     }
   });
