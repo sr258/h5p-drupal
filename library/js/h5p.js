@@ -1610,13 +1610,15 @@ H5P.setFinished = function (contentId, score, maxScore, time) {
     };
 
     // Post the results
-    H5P.jQuery.post(H5PIntegration.ajax.setFinished, {
+    // TODO: Should we use a variable with the complete path?
+    H5P.jQuery.post(H5PIntegration.ajaxPath + 'setFinished', {
       contentId: contentId,
       score: score,
       maxScore: maxScore,
       opened: toUnix(H5P.opened[contentId]),
       finished: toUnix(new Date()),
-      time: time
+      time: time,
+      token: H5PIntegration.tokens.result
     });
   }
 };
@@ -1760,7 +1762,8 @@ H5P.createTitle = function (rawTitle, maxLength) {
       options.data = {
         data: (data === null ? 0 : data),
         preload: (preload ? 1 : 0),
-        invalidate: (invalidate ? 1 : 0)
+        invalidate: (invalidate ? 1 : 0),
+        token: H5PIntegration.tokens.contentUserData
       };
     }
     else {
@@ -1772,7 +1775,7 @@ H5P.createTitle = function (rawTitle, maxLength) {
       };
       options.success = function (response) {
         if (!response.success) {
-          done(response.error);
+          done(response.message);
           return;
         }
 
