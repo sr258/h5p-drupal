@@ -780,4 +780,16 @@ class H5PDrupal implements H5PFrameworkInterface {
   public function isContentSlugAvailable($slug) {
     return !db_query('SELECT slug FROM {h5p_nodes} WHERE slug = :slug', array(':slug' => $slug))->fetchField();
   }
+
+  /**
+   * Implements saveCachedAssets
+   */
+  public function saveCachedAssets($key, $libraries) {
+  }
+
+  /**
+   * Implements deleteCachedAssets
+   */
+  public function deleteCachedAssets($library_id) {
+  }
 }
