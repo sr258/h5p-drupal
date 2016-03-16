@@ -11,7 +11,7 @@
  */
 function h5p_disable() {
   // Show link to h5p.org form
-  drupal_set_message('<iframe src="http://h5p.org/uninstall-form" width="100%" height="600px" style="background:white;"></iframe>');
+  drupal_set_message('H5P has now been disabled. Answer the short survey below and get a chance to win a US$500 Amazon Gift Card.</br><iframe src="http://h5p.org/uninstall-form" width="100%" height="360px"></iframe>');
 
   // Alternative text for drush uninstalls
   drupal_set_message("Leaving because the H5P plugin isn’t working for you? Please share your feedback so we can improve. <a href=\"https://h5p.org/drupal-module-disabled\">https://h5p.org/drupal-module-disabled</a>");
