@@ -7,7 +7,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('I wish to aid in the development of H5P by contributing anonymous usage data'),
     '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
-    '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates.'),
+    '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates. Read more about <a href="@url">which data is collected</a> on h5p.org.', array('@url' => 'https://h5p.org/tracking-the-usage-of-h5p')),
   );
 
   $path = drupal_get_path('module', 'h5p');
