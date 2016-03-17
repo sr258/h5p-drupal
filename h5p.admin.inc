@@ -3,7 +3,7 @@
  * Menu callback - Form builder function for settings.
  */
 function h5p_admin_settings($form, &$form_state) {
-
+  $path = drupal_get_path('module', 'h5p');
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Options'),
@@ -11,7 +11,10 @@ function h5p_admin_settings($form, &$form_state) {
       'class' => array('h5p-action-bar-settings')
     ),
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'h5p') . '/library/js/disable.js')
+      'js' => array(
+        $path . '/library/js/jquery.js',
+        $path . '/library/js/disable.js'
+      )
     )
   );
 
