@@ -3,7 +3,6 @@
  * Menu callback - Form builder function for settings.
  */
 function h5p_admin_settings($form, &$form_state) {
-
   $form['h5p_allow_communication_with_h5p_org'] = array(
     '#type' => 'checkbox',
     '#title' => t('I wish to aid in the development of H5P by contributing anonymous usage data'),
@@ -11,6 +10,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates.'),
   );
 
+  $path = drupal_get_path('module', 'h5p');
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Options'),
@@ -18,7 +18,10 @@ function h5p_admin_settings($form, &$form_state) {
       'class' => array('h5p-action-bar-settings')
     ),
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'h5p') . '/library/js/disable.js')
+      'js' => array(
+        $path . '/library/js/jquery.js',
+        $path . '/library/js/disable.js'
+      )
     )
   );
 
@@ -179,7 +182,7 @@ function h5p_library_list() {
         $restricted = ($library->restricted === '1' ? TRUE : FALSE);
         $restricted_url = url('admin/content/h5p/libraries/' . $library->id . '/restrict', array(
           'query' => array(
-            'token' => h5p_get_token('library_' . $i),
+            'token' => H5PCore::createToken('library_' . $i),
             'token_id' => $i,
             'restrict' => ($library->restricted === '1' ? 0 : 1)
           )
@@ -481,27 +484,6 @@ function h5p_rebuild_cache() {
 }
 
 /**
- * Get a new H5P security token.
- *
- * @param string $key
- * @return string
- */
-function h5p_get_token($key) {
-  return $_SESSION['h5p_' . $key] = uniqid('h5p-');
-}
-
-/**
- * Verifiy a given H5P security token.
- *
- * @param string $key
- * @param string $token
- * @return string
- */
-function h5p_verify_token($key, $token) {
-  return $_SESSION['h5p_' . $key] === $token;
-}
-
-/**
  * Callback for the library content upgrade page.
  *
  * @param int $library_id
@@ -559,7 +541,7 @@ function h5p_content_upgrade($library_id) {
       'buttonLabel' => t('Upgrade'),
       'infoUrl' => url('admin/content/h5p/libraries/' . $library_id . '/upgrade'),
       'total' => $contents,
-      'token' => h5p_get_token('content_upgrade'), // Use token to avoid unauthorized updating
+      'token' => H5PCore::createToken('contentupgrade'), // Use token to avoid unauthorized updating
     )
   );
 
@@ -580,7 +562,7 @@ function h5p_content_upgrade($library_id) {
  */
 function h5p_content_upgrade_progress($library_id) {
   // Verify security token
-  if (!h5p_verify_token('content_upgrade', filter_input(INPUT_POST, 'token'))) {
+  if (!H5PCore::validToken('contentupgrade', filter_input(INPUT_POST, 'token'))) {
     print t('Error: Invalid security token!');
     return;
   }
@@ -595,7 +577,7 @@ function h5p_content_upgrade_progress($library_id) {
   // Prepare response
   $out = new stdClass();
   $out->params = array();
-  $out->token = h5p_get_token('content_upgrade');
+  $out->token = H5PCore::createToken('contentupgrade');
 
   // Prepare our interface
   $interface = _h5p_get_instance('interface');
@@ -687,7 +669,7 @@ function h5p_restrict_library_callback($library_id) {
   $restrict = ($restricted === '1');
 
   $token_id = filter_input(INPUT_GET, 'token_id');
-  if (!h5p_verify_token('library_' . $token_id, filter_input(INPUT_GET, 'token')) || (!$restrict && $restricted !== '0')) {
+  if (!H5PCore::validToken('library_' . $token_id, filter_input(INPUT_GET, 'token')) || (!$restrict && $restricted !== '0')) {
     return MENU_ACCESS_DENIED;
   }
 
@@ -701,7 +683,7 @@ function h5p_restrict_library_callback($library_id) {
   print json_encode(array(
     'url' => url('admin/content/h5p/libraries/' . $library_id . '/restrict', array(
       'query' => array(
-        'token' => h5p_get_token('library_' . $token_id),
+        'token' => H5PCore::createToken('library_' . $token_id),
         'token_id' => $token_id,
         'restrict' => ($restrict ? 0 : 1),
       )

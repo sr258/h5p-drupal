@@ -449,6 +449,7 @@ function h5p_schema() {
         'description' => 'The data type identifier',
         'type' => 'varchar',
         'length' => 127,
+        'not null' => TRUE,
       ),
       'timestamp' => array(
         'description' => 'What the time is',

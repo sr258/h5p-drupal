@@ -155,6 +155,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
       'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
       'assets' => $assets,
+      'uploadToken' => H5PCore::createToken('editorupload')
     ),
   );
 
@@ -291,6 +292,10 @@ function h5peditor_library_callback($machine_name, $major_version, $minor_versio
  * Callback for file uploads.
  */
 function h5peditor_files_callback() {
+  if (!H5PCore::validToken('editorupload', filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING))) {
+    return H5PCore::ajaxError(t('Invalid security token. Please reload the editor.'));
+  }
+
   $files_directory = file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath();
   if (isset($_POST['contentId']) && $_POST['contentId']) {
     $files_directory .= '/' . variable_get('h5p_default_path', 'h5p') . '/content/' . $_POST['contentId'];
