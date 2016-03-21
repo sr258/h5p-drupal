@@ -3,6 +3,13 @@
  * Menu callback - Form builder function for settings.
  */
 function h5p_admin_settings($form, &$form_state) {
+  $form['h5p_allow_communication_with_h5p_org'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I wish to aid in the development of H5P by contributing anonymous usage data'),
+    '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
+    '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates. Read more about <a href="@url">which data is collected</a> on h5p.org.', array('@url' => 'https://h5p.org/tracking-the-usage-of-h5p')),
+  );
+
   $path = drupal_get_path('module', 'h5p');
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
@@ -77,13 +84,6 @@ function h5p_admin_settings($form, &$form_state) {
     '#title' => t('Enable H5P development mode'),
     '#default_value' => variable_get('h5p_dev_mode', '0'),
     '#description' => t('Always update uploaded H5P libraries regardless of patch version. Read library data from file (semantics.json).')
-  );
-
-  $form['h5p_allow_communication_with_h5p_org'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Get updates from h5p.org'),
-    '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
-    '#description' => t('Currently only tutorials are being updated, but in the future notification about code updates and more will be fetched from H5P.org'),
   );
 
 //  $form['h5p_content_dev_mode'] = array(
@@ -597,8 +597,16 @@ function h5p_content_upgrade_progress($library_id) {
         ->condition('content_id', $id)
         ->execute();
 
+      // Log content upgrade successful
+      $title = db_query("SELECT title FROM {node} WHERE nid = :id", array(':id' => $id))->fetchField();
+      new H5PEvent('content', 'upgrade',
+        $id,
+        $title,
+        $to_library->name,
+        $to_library->major_version . '.' . $to_library->minor_version);
+
       // Clear content cache
-      $interface->updateContentFields($content['id'], array(
+      $interface->updateContentFields($id, array(
         'filtered' => ''
       ));
     }

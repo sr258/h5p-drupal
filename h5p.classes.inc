@@ -13,15 +13,24 @@ class H5PDrupal implements H5PFrameworkInterface {
     return array(
       'name' => 'drupal',
       'version' => VERSION,
-      'h5pVersion' => isset($h5p_info->version) ? $h5p_info->version : NULL,
+      'h5pVersion' => isset($h5p_info['version']) ? $h5p_info['version'] : NULL,
     );
   }
 
   /**
    * Implements fetchExternalData
    */
-  public function fetchExternalData($url) {
-    $response = drupal_http_request($url);
+  public function fetchExternalData($url, $data = NULL) {
+    $options = array();
+    if (!empty($data)) {
+      $options['method'] = 'POST';
+      $options['headers'] = array(
+        'Content-Type' => 'application/x-www-form-urlencoded'
+      );
+      $options['data'] = drupal_http_build_query($data);
+    }
+
+    $response = drupal_http_request($url, $options);
     return isset($response->error) ? NULL : $response->data;
   }
 
@@ -227,6 +236,45 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   /**
+   * Implements getLibraryStats
+   */
+  public function getLibraryStats($type) {
+    $count = array();
+
+    $results = db_query("
+        SELECT library_name AS name,
+               library_version AS version,
+               num
+          FROM {h5p_counters}
+         WHERE type = :type
+        ", array(
+      ':type' => $type
+    ))->fetchAll();
+
+    // Extract results
+    foreach($results as $library) {
+      $count[$library->name . ' ' . $library->version] = $library->num;
+    }
+
+    return $count;
+  }
+
+  /**
+   * Implements getNumAuthors
+   */
+  public function getNumAuthors() {
+    $numAuthors = db_query("
+      SELECT COUNT(DISTINCT uid)
+      FROM {node}
+      WHERE type = :type
+    ", array(
+      ':type' => 'h5p_content'
+    ))->fetchField();
+
+    return $numAuthors;
+  }
+
+  /**
    * Implements saveLibraryData
    */
   public function saveLibraryData(&$libraryData, $new = TRUE) {
@@ -293,6 +341,14 @@ class H5PDrupal implements H5PFrameworkInterface {
       ->execute();
       $this->deleteLibraryDependencies($libraryData['libraryId']);
     }
+
+    // Log library installed or updated
+    new H5PEvent('library', ($new ? 'create' : 'update'),
+      NULL, NULL,
+      $libraryData['machineName'],
+      $libraryData['majorVersion'] . '.' . $libraryData['minorVersion']
+    );
+
     db_delete('h5p_libraries_languages')
     ->condition('library_id', $libraryData['libraryId'])
     ->execute();
@@ -416,6 +472,30 @@ class H5PDrupal implements H5PFrameworkInterface {
       ))
       ->condition('content_id', $content_id)
       ->execute();
+
+    // Derive library data from string
+    if (isset($content['h5p_library'])) {
+      $libraryData = explode(' ', $content['h5p_library']);
+      $content['library']['machineName'] = $libraryData[0];
+      $content['machineName'] = $libraryData[0];
+      $libraryVersions = explode('.', $libraryData[1]);
+      $content['library']['majorVersion'] = $libraryVersions[0];
+      $content['library']['minorVersion'] = $libraryVersions[1];
+    }
+
+    // Determine event type
+    $event_type = 'update';
+    if (isset($_SESSION['h5p_upload'])) {
+      $event_type .= ' upload';
+    }
+
+    // Log update event
+    new H5PEvent('content', $event_type,
+      $content['id'],
+      $content['title'],
+      $content['library']['machineName'],
+      $content['library']['majorVersion'] . '.' . $content['library']['minorVersion']
+    );
   }
 
   /**
@@ -435,6 +515,18 @@ class H5PDrupal implements H5PFrameworkInterface {
         'slug' => ''
       ))
       ->execute();
+
+    // Log update event
+    $event_type = 'create';
+    if (isset($_SESSION['h5p_upload'])) {
+      $event_type .= ' upload';
+    }
+    new H5PEvent('content', $event_type,
+      $content['id'],
+      (isset($content['title']) ? $content['title'] : ''),
+      $content['library']['machineName'],
+      $content['library']['majorVersion'] . '.' . $content['library']['minorVersion']
+    );
 
     return $content['id'];
   }
