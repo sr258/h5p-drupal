@@ -29,7 +29,10 @@ function h5p_uninstall() {
   // Load core
   require_once('library/h5p.classes.php');
   require_once('library/h5p-development.class.php');
+  require_once('library/h5p-file-storage.interface.php');
+  require_once('library/h5p-default-storage.class.php');
   require_once('h5p.classes.inc');
+
   $interface = new H5PDrupal();
   $core = new H5PCore($interface, $h5p_path, base_path(), $language->language, (variable_get('h5p_export', '1') ? TRUE : FALSE), H5PDevelopment::MODE_NONE);
 
