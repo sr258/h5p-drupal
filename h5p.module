@@ -833,7 +833,11 @@ function h5p_get_core_settings() {
         'by' => t('by'),
         'showMore' => t('Show more'),
         'showLess' => t('Show less'),
-        'subLevel' => t('Sublevel')
+        'subLevel' => t('Sublevel'),
+        'confirmDialogHeader' => t('Confirm action'),
+        'confirmDialogBody' => t('Please confirm that you wish to proceed. This action is not reversible.'),
+        'cancelLabel' => t('Cancel'),
+        'confirmLabel' => t('Confirm')
       )
     )
   );
