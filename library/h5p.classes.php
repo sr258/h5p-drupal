@@ -1660,7 +1660,7 @@ class H5PCore {
 
   public static $coreApi = array(
     'majorVersion' => 1,
-    'minorVersion' => 6
+    'minorVersion' => 7
   );
   public static $styles = array(
     'styles/h5p.css',
@@ -2821,6 +2821,12 @@ class H5PContentValidator {
         if (isset($semantics->font->background) && $semantics->font->background) {
           $stylePatterns[] = '/^background-color: *(#[a-f0-9]{3}[a-f0-9]{3}?|rgba?\([0-9, ]+\)) *;?$/i';
         }
+        if (isset($semantics->font->spacing) && $semantics->font->spacing) {
+          $stylePatterns[] = '/^letter-spacing: *[0-9.]+(em|px|%) *;?$/i';
+        }
+        if (isset($semantics->font->height) && $semantics->font->height) {
+          $stylePatterns[] = '/^line-height: *[0-9.]+(em|px|%|) *;?$/i';
+        }
       }
 
       // Aligment is allowed for all wysiwyg texts
@@ -3079,7 +3085,7 @@ class H5PContentValidator {
    * Validate given image data
    */
   public function validateImage(&$image, $semantics) {
-    $this->_validateFilelike($image, $semantics, array('width', 'height'));
+    $this->_validateFilelike($image, $semantics, array('width', 'height', 'originalImage'));
   }
 
   /**
@@ -3620,31 +3626,31 @@ class H5PContentValidator {
               ),
               (object) array(
                 'value' => 'CC BY',
-                'label' => $this->h5pF->t('Attribution')
+                'label' => $this->h5pF->t('Attribution 4.0')
               ),
               (object) array(
                 'value' => 'CC BY-SA',
-                'label' => $this->h5pF->t('Attribution-ShareAlike')
+                'label' => $this->h5pF->t('Attribution-ShareAlike 4.0')
               ),
               (object) array(
                 'value' => 'CC BY-ND',
-                'label' => $this->h5pF->t('Attribution-NoDerivs')
+                'label' => $this->h5pF->t('Attribution-NoDerivs 4.0')
               ),
               (object) array(
                 'value' => 'CC BY-NC',
-                'label' => $this->h5pF->t('Attribution-NonCommercial')
+                'label' => $this->h5pF->t('Attribution-NonCommercial 4.0')
               ),
               (object) array(
                 'value' => 'CC BY-NC-SA',
-                'label' => $this->h5pF->t('Attribution-NonCommercial-ShareAlike')
+                'label' => $this->h5pF->t('Attribution-NonCommercial-ShareAlike 4.0')
               ),
               (object) array(
                 'value' => 'CC BY-NC-ND',
-                'label' => $this->h5pF->t('Attribution-NonCommercial-NoDerivs')
+                'label' => $this->h5pF->t('Attribution-NonCommercial-NoDerivs 4.0')
               ),
               (object) array(
                 'value' => 'GNU GPL',
-                'label' => $this->h5pF->t('General Public License')
+                'label' => $this->h5pF->t('General Public License v3')
               ),
               (object) array(
                 'value' => 'PD',

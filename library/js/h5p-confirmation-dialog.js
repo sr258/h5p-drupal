@@ -110,6 +110,9 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
       return this;
     };
 
+    /**
+     * Fit popup to container. Makes sure it doesn't overflow.
+     */
     var fitToContainer = function () {
       var popupOffset = parseInt(popup.style.top, 10) + popup.offsetHeight;
 

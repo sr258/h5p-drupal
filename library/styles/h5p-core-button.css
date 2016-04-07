@@ -23,8 +23,6 @@
   color: #fff;
   text-decoration: none;
   -webkit-transition: initial;
-  -moz-transition: initial;
-  -o-transition: initial;
   transition: initial;
 }
 .h5p-core-button:active {
