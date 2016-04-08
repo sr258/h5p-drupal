@@ -385,6 +385,26 @@ ns.Html.prototype.appendTo = function ($wrapper) {
           var urlField = targetTab.get('linkTargetType');
           urlField['default'] = '_blank';
         }
+
+        // Override show event handler
+        var onShow = dialogDefinition.onShow;
+        dialogDefinition.onShow = function () {
+          onShow.apply(this, arguments);
+
+          // Grab current item
+          var $item = ns.Html.current.$item;
+
+          // Position dialog above text field
+          var itemPos = $item.offset();
+          var itemWidth = $item.width();
+          var itemHeight = $item.height();
+          var dialogSize = this.getSize();
+
+          var x = itemPos.left + (itemWidth / 2) - (dialogSize.width / 2);
+          var y = itemPos.top + (itemHeight / 2) - (dialogSize.height / 2);
+
+          this.move(x, y, true);
+        };
       });
       ns.Html.first = false;
     }
