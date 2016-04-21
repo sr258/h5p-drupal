@@ -352,7 +352,7 @@ function h5peditor_get_instance() {
  */
 function h5peditor_get_library_property($library, $property = 'all') {
   $matches = array();
-  preg_match_all('/(.+)\s(\d)+\.(\d)$/', $library, $matches);
+  preg_match_all('/(.+)\s(\d+)\.(\d+)$/', $library, $matches);
   if (count($matches) == 4) {
     $library_data = array(
       'machineName' => $matches[1][0],
