@@ -11,7 +11,7 @@
   -webkit-transition: opacity 0.1s, linear 0s, visibility 0s linear 0s;
   transition: opacity 0.1s linear 0s, visibility 0s linear 0s;
 
-  z-index: 101;
+  z-index: 201;
 }
 
 .h5p-confirmation-dialog-background.hidden {
@@ -81,12 +81,9 @@
   float: right;
 }
 
-.h5p-confirmation-dialog-exit:focus,
-.h5p-confirmation-dialog-exit:hover {
-  color: #555;
-}
-
-.h5p-confirmation-dialog-exit {
+a.h5p-confirmation-dialog-exit:visited,
+a.h5p-confirmation-dialog-exit:link,
+a.h5p-confirmation-dialog-exit {
   position: absolute;
   background: none;
   border: none;
@@ -96,6 +93,11 @@
   color: #777;
   cursor: pointer;
   text-decoration: none;
+}
+
+a.h5p-confirmation-dialog-exit:focus,
+a.h5p-confirmation-dialog-exit:hover {
+  color: #555;
 }
 
 .h5p-confirmation-dialog-exit:before {

@@ -480,9 +480,9 @@ function h5p_update($node) {
       $h5p_storage = _h5p_get_instance('storage');
       $h5p_storage->savePackage(array(
           'id' => h5p_get_content_id($node),
-          'disable' => $node->disable,
-          'title' => $node->title
-      ), $node->nid);
+          'title' => $node->title,
+          'disable' => $node->disable
+      ), $node->nid, FALSE);
     }
     else {
       h5p_insert($node);
