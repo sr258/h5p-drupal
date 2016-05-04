@@ -44,6 +44,15 @@ function h5p_uninstall() {
     _h5p_recursive_unlink($h5p_path . '/' . $directory);
   }
 
+  // Delete remaining h5p entries in file_managed table
+  $h5p_uri = db_or()
+    ->condition('uri', '%' . db_like('//h5p/') . '%', 'LIKE')
+    ->condition('uri', '%' . db_like('//h5peditor/') . '%', 'LIKE');
+
+  db_delete('file_managed')
+    ->condition($h5p_uri)
+    ->execute();
+
   // Only remove development dir if it's empty.
   $dir = $h5p_path . '/development';
   if (is_dir($dir) && count(scandir($dir)) === 2) {
@@ -97,7 +106,22 @@ function _h5p_recursive_unlink($file) {
     rmdir($file);
   }
   elseif (file_exists($file)) {
-    unlink($file); // TODO: Remove from file_managed!!
+
+    // Get file from file_managed if it exists
+    $file_uri = file_build_uri(substr($file, strpos($file, 'h5p/'), strlen($file)));
+    $fid = db_query("SELECT fid FROM {file_managed} WHERE uri = :path",
+      array(':path' => $file_uri))->fetchField();
+    if ($fid !== false) {
+
+      // If it was found delete file and database record
+      $file_object = file_load($fid);
+      file_delete($file_object);
+    }
+    else {
+
+      // Delete locally
+      drupal_unlink($file);
+    }
   }
 }
 
