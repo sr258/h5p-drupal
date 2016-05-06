@@ -4,6 +4,7 @@
 name = H5P
 description = "Upload interactive HTML5 Packages to your Drupal site."
 core = 7.x
+configure = admin/config/system/h5p
 
 files[] = library/h5p-event-base.class.php
 files[] = library/h5p.classes.php
