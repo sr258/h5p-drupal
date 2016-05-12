@@ -499,7 +499,7 @@ function h5p_delete($node) {
 
   $res = db_query("SELECT content_id AS id, slug FROM {h5p_nodes} WHERE nid = :nid", array(':nid' => $node->nid));
   while($content = $res->fetchAssoc()) {
-    $h5p_core->deletePackage($content['id']);
+    $h5p_core->deletePackage($content);
     $h5p_export->deleteExport($content);
 
     // Remove content points
