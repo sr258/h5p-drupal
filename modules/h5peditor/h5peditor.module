@@ -13,26 +13,27 @@
 function h5peditor_menu() {
   $items = array();
 
-  $items['h5peditor/%/libraries'] = array(
+  $items['h5peditor/%/%/libraries'] = array(
     'title' => 'H5peditor Libraries',
     'page callback' => 'h5peditor_libraries_callback',
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/libraries/%/%/%'] = array(
+  $items['h5peditor/%/%/libraries/%/%/%'] = array(
     'title' => 'H5peditor Library',
     'page callback' => 'h5peditor_library_callback',
-    'page arguments' => array(3, 4, 5),
+    'page arguments' => array(4, 5, 6),
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/files'] = array(
+  $items['h5peditor/%/%/files'] = array(
     'title' => 'H5peditor Files',
     'page callback' => 'h5peditor_files_callback',
+    'page arguments' => array(1),
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
 
@@ -150,12 +151,11 @@ function h5peditor_h5p_content_node_form_after_build($form) {
         'width' => 50,
         'height' => 50,
       ),
-      'ajaxPath' => url('h5peditor/' . (isset($node->nid) ? $node->nid : 0) . '/'),
+      'ajaxPath' => url('h5peditor/' . H5PCore::createToken('editorajax') . '/' . (isset($node->nid) ? $node->nid : 0) . '/'),
       'modulePath' => $h5peditor_module_path,
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
       'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
-      'assets' => $assets,
-      'uploadToken' => H5PCore::createToken('editorupload')
+      'assets' => $assets
     ),
   );
 
@@ -291,8 +291,8 @@ function h5peditor_library_callback($machine_name, $major_version, $minor_versio
 /**
  * Callback for file uploads.
  */
-function h5peditor_files_callback() {
-  if (!H5PCore::validToken('editorupload', filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING))) {
+function h5peditor_files_callback($token) {
+  if (!H5PCore::validToken('editorajax', $token)) {
     return H5PCore::ajaxError(t('Invalid security token. Please reload the editor.'));
   }
 
