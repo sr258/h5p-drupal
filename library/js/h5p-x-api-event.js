@@ -263,6 +263,38 @@ H5P.XAPIEvent.prototype.getVerifiedStatementValue = function(keys) {
 };
 
 /**
+ * Set a statements value and make sure all "parent" elements exists-
+ *
+ * @since 1.7
+ *
+ * @param {string[]} keys
+ *   List describing the property we're going to set. For instance
+ *   ['result', 'score', 'raw'] for result.score.raw
+ * @param {mixed} newValue
+ *   The value we want to set
+ * @returns {*}
+ *   The value of the property if it is set, null otherwise.
+ */
+H5P.XAPIEvent.prototype.setVerifiedStatementValue = function(keys, newValue) {
+  var val = this.data.statement;
+  for (var i = 0; i < keys.length; i++) {
+    if (i === keys.length - 1) {
+      // We're at the end
+      val[keys[i]] = newValue
+    }
+    else if (val[keys[i]] === undefined) {
+      if (typeof keys[i+1] === 'string') {
+        val[keys[i]] = {};
+      }
+      else {
+        val[keys[i]] = [];
+      }
+    }
+    val = val[keys[i]];
+  }
+};
+
+/**
  * List of verbs defined at {@link http://adlnet.gov/expapi/verbs/|ADL xAPI Vocabulary}
  *
  * @type Array
