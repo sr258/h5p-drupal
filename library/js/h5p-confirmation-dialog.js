@@ -44,6 +44,16 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
       e.preventDefault();
     }
 
+    /**
+     * Flow focus to element
+     * @param {HTMLElement} element Next element to be focused
+     * @param {Event} e Original tab event
+     */
+    function flowTo(element, e) {
+      element.focus();
+      e.preventDefault();
+    }
+
     // Offset of exit button
     var exitButtonOffset = 2 * 16;
     var shadowOffset = 8;
@@ -59,7 +69,14 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
     // Create outer popup
     var popup = document.createElement('div');
     popup.classList.add('h5p-confirmation-dialog-popup', 'hidden');
+    popup.setAttribute('role', 'dialog');
     popupBackground.appendChild(popup);
+    popup.onkeydown = function (e) {
+      if (e.which === 27) {// Esc key
+        // Exit dialog
+        dialogCanceled(e);
+      }
+    };
 
     // Popup header
     var header = document.createElement('div');
@@ -80,6 +97,7 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
     // Popup text
     var text = document.createElement('div');
     text.classList.add('h5p-confirmation-dialog-text');
+    text.setAttribute('role', 'alert');
     text.innerHTML = options.dialogText;
     body.appendChild(text);
 
@@ -92,19 +110,31 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
     var cancelButton = document.createElement('button');
     cancelButton.classList.add('h5p-core-cancel-button');
     cancelButton.textContent = options.cancelText;
-    cancelButton.onclick = dialogCanceled;
-    cancelButton.onkeydown = function (e) {
-      if (e.which === 32) { // Space
-        dialogCanceled(e);
-      }
-    };
-    buttons.appendChild(cancelButton);
 
     // Confirm button
     var confirmButton = document.createElement('button');
     confirmButton.classList.add('h5p-core-button',
       'h5p-confirmation-dialog-confirm-button');
     confirmButton.textContent = options.confirmText;
+
+    // Exit button
+    var exitButton = document.createElement('button');
+    exitButton.classList.add('h5p-confirmation-dialog-exit');
+    exitButton.title = options.cancelText;
+
+    // Cancel handler
+    cancelButton.onclick = dialogCanceled;
+    cancelButton.onkeydown = function (e) {
+      if (e.which === 32) { // Space
+        dialogCanceled(e);
+      }
+      else if (e.which === 9 && e.shiftKey) { // Shift-tab
+        flowTo(exitButton, e);
+      }
+    };
+    buttons.appendChild(cancelButton);
+
+    // Confirm handler
     confirmButton.onclick = dialogConfirmed;
     confirmButton.onkeydown = function (e) {
       if (e.which === 32) { // Space
@@ -113,19 +143,23 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
     };
     buttons.appendChild(confirmButton);
 
-    // Exit button
-    var exitButton = document.createElement('button');
-    exitButton.classList.add('h5p-confirmation-dialog-exit');
+    // Exit handler
     exitButton.onclick = dialogCanceled;
     exitButton.onkeydown = function (e) {
       if (e.which === 32) { // Space
         dialogCanceled(e);
+      }
+      else if (e.which === 9 && !e.shiftKey) { // Tab
+        flowTo(cancelButton, e);
       }
     };
     popup.appendChild(exitButton);
 
     // Wrapper element
     var wrapperElement;
+
+    // Focus capturing
+    var focusPredator;
 
     /**
      * Set parent of confirmation dialog
@@ -135,6 +169,32 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
     this.appendTo = function (wrapper) {
       wrapperElement = wrapper;
       return this;
+    };
+
+    /**
+     * Capture the focus element, send it to confirmation button
+     * @param {Event} e Original focus event
+     */
+    var captureFocus = function (e) {
+      if (!popupBackground.contains(e.target)) {
+        e.preventDefault();
+        confirmButton.focus();
+      }
+    };
+
+    /**
+     * Start capturing focus of parent and send it to dialog
+     */
+    var startCapturingFocus = function () {
+      focusPredator = wrapperElement.parentNode || wrapperElement;
+      focusPredator.addEventListener('focus', captureFocus, true);
+    };
+
+    /**
+     * Clean up event listener for capturing focus
+     */
+    var stopCapturingFocus = function () {
+      focusPredator.removeEventListener('focus', captureFocus, true);
     };
 
     /**
@@ -168,6 +228,7 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
      */
     this.show = function (offsetTop) {
       wrapperElement.appendChild(popupBackground);
+      startCapturingFocus();
       popupBackground.classList.remove('hidden');
       fitToContainer(offsetTop);
       setTimeout(function () {
@@ -201,6 +262,7 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
       popup.classList.add('hidden');
       setTimeout(function () {
         popupBackground.classList.add('hidden');
+        stopCapturingFocus();
         wrapperElement.removeChild(popupBackground);
       }, 100);
 
