@@ -16,20 +16,17 @@
  * @license    MIT
  */
 class H5PDefaultStorage implements \H5PFileStorage {
-  private $path, $alteditorpath;
+  private $path;
 
   /**
    * The great Constructor!
    *
    * @param string $path
    *  The base location of H5P files
-   * @param string $alteditorpath
-   *  Optional. Use a different editor path
    */
-  function __construct($path, $alteditorpath = NULL) {
+  function __construct($path) {
     // Set H5P storage path
     $this->path = $path;
-    $this->alteditorpath = $alteditorpath;
   }
 
   /**
@@ -251,112 +248,6 @@ class H5PDefaultStorage implements \H5PFileStorage {
   }
 
   /**
-   * Read file content of given file and then return it.
-   *
-   * @param string $file_path
-   * @return string
-   */
-  public function getContent($file_path) {
-    return file_get_contents($this->path . $file_path);
-  }
-
-  /**
-   * Save files uploaded through the editor.
-   * The files must be marked as temporary until the content form is saved.
-   *
-   * @param \H5peditorFile $file
-   * @param int $contentid
-   */
-  public function saveFile($file, $contentId) {
-    // Prepare directory
-    if (empty($contentId)) {
-      // Should be in editor tmp folder
-      $path = ($this->alteditorpath !== NULL ? $this->alteditorpath : $path . '/editor');
-    }
-    else {
-      // Should be in content folder
-      $path = $this->path . '/content/' . $contentId;
-    }
-    $path .= '/' . $file->getType() . 's';
-    self::dirReady($path);
-
-    // Add filename to path
-    $path .= '/' . $file->getName();
-
-    $fileData = $file->getData();
-    if ($fileData) {
-      file_put_contents($path, $fileData);
-    }
-    else {
-      copy($_FILES['file']['tmp_name'], $path);
-    }
-  }
-
-  /**
-   * Copy a file from another content or editor tmp dir.
-   * Used when copy pasting content in H5P Editor.
-   *
-   * @param string $file path + name
-   * @param string|int $fromid Content ID or 'editor' string
-   * @param int $toid Target Content ID
-   */
-  public function cloneContentFile($file, $fromId, $toId) {
-    // Determine source path
-    if ($fromId === 'editor') {
-      $sourcepath = ($this->alteditorpath !== NULL ? $this->alteditorpath : "{$this->path}/editor");
-    }
-    else {
-      $sourcepath = "{$this->path}/content/{$fromId}";
-    }
-    $sourcepath .= '/' . $file;
-
-    // Determine target path
-    $filename = basename($file);
-    $filedir = str_replace($filename, '', $file);
-    $targetpath = "{$this->path}/content/{$toId}/{$filedir}";
-
-    // Make sure it's ready
-    self::dirReady($targetpath);
-
-    $targetpath .= $filename;
-
-    // Check to see if source exist and if target doesn't
-    if (!file_exists($sourcepath) || file_exists($targetpath)) {
-      return; // Nothing to copy from or target already exists
-    }
-
-    copy($sourcepath, $targetpath);
-  }
-
-  /**
-   * Checks to see if content has the given file.
-   * Used when saving content.
-   *
-   * @param string $file path + name
-   * @param int $contentId
-   * @return string File ID or NULL if not found
-   */
-  public function getContentFile($file, $contentId) {
-    $path = "{$this->path}/content/{$contentId}/{$file}";
-    return file_exists($path) ? $path : NULL;
-  }
-
-  /**
-   * Checks to see if content has the given file.
-   * Used when saving content.
-   *
-   * @param string $file path + name
-   * @param int $contentid
-   * @return string|int File ID or NULL if not found
-   */
-  public function removeContentFile($file, $contentId) {
-    $path = "{$this->path}/content/{$contentId}/{$file}";
-    if (file_exists($path)) {
-      unlink($path);
-    }
-  }
-
-  /**
    * Recursive function for copying directories.
    *
    * @param string $source
@@ -396,10 +287,13 @@ class H5PDefaultStorage implements \H5PFileStorage {
    * Recursive function that makes sure the specified directory exists and
    * is writable.
    *
+   * TODO: Will be made private when the editor file handling is done by this
+   * class!
+   *
    * @param string $path
    * @return bool
    */
-  private static function dirReady($path) {
+  public static function dirReady($path) {
     if (!file_exists($path)) {
       $parent = preg_replace("/\/[^\/]+\/?$/", '', $path);
       if (!self::dirReady($parent)) {

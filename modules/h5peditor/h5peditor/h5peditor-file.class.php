@@ -1,16 +1,12 @@
 <?php
 
-/**
- * Class
- */
 class H5peditorFile {
-  private $result, $field, $interface;
+
+  private $result, $field, $files_directory, $interface;
+
   public $type, $name, $path, $mime, $size;
 
-  /**
-   * Constructor. Process data for file uploaded through the editor.
-   */
-  function __construct($interface) {
+  function __construct($interface, $files_directory) {
     $field = filter_input(INPUT_POST, 'field', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 
     // Check for file upload.
@@ -22,6 +18,18 @@ class H5peditorFile {
 
     // Create a new result object.
     $this->result = new stdClass();
+
+    // Set directory.
+    $this->files_directory = $files_directory;
+
+    // Create the temporary directory if it doesn't exist.
+    $dirs = array ('', '/files', '/images', '/videos', '/audios');
+    foreach ($dirs as $dir) {
+      if (!H5PDefaultStorage::dirReady($this->files_directory . $dir)) {
+        $this->result->error = $this->interface->t('Unable to create directory.');
+        return;
+      }
+    }
 
     // Get the field.
     $this->field = json_decode($field);
@@ -64,7 +72,6 @@ class H5peditorFile {
   }
 
   /**
-   * Indicates if an uploaded file was found or not.
    *
    * @return boolean
    */
@@ -197,61 +204,43 @@ class H5peditorFile {
     return TRUE;
   }
 
-  /**
-   * Get the type of the current file.
-   *
-   * @return string
-   */
-  public function getType() {
-    return $this->field->type;
-  }
+  public function copy() {
+    $matches = array();
+    preg_match('/([a-z0-9]{1,})$/i', $_FILES['file']['name'], $matches);
 
-  /**
-   * Get the name of the current file.
-   *
-   * @return string
-   */
-  public function getName() {
-    static $name;
+    $this->name = uniqid($this->field->name . '-');
 
-    if (empty($name)) {
-      $name = uniqid($this->field->name . '-');
+    // Add extension to name
+    if (isset($this->data)) {
+      $this->name .= '.' . $this->extension;
+    }
+    else if (isset($matches[0])) {
+      $this->name .= '.' . $matches[0];
+    }
 
-      // Add extension to name
-      if (isset($this->data)) {
-        $name .= '.' . $this->extension;
+    $this->name = $this->field->type . 's/' . $this->name;
+    $this->path = $this->files_directory . '/' . $this->name;
+
+    // Save file to path
+    if (isset($this->data)) {
+      // Store base64 file to new path
+      if (file_put_contents($this->path, $this->data) == FALSE) {
+        $this->result->error = $this->interface->t('Could not save file.');
       }
-      else {
-        $matches = array();
-        preg_match('/([a-z0-9]{1,})$/i', $_FILES['file']['name'], $matches);
-        if (isset($matches[0])) {
-          $name .= '.' . $matches[0];
-        }
+    }
+    else {
+      // Copy tmp file to new path
+      if (!copy($_FILES['file']['tmp_name'], $this->path)) {
+        $this->result->error = $this->interface->t('Could not copy file.');
+        return FALSE;
       }
     }
 
-    return $name;
+    $this->result->path = $this->name;
+    return TRUE;
   }
 
-  /**
-   * Get file data if created from string.
-   *
-   * @return string|NULL
-   */
-  public function getData() {
-    return (empty($this->data) ? NULL : $this->data);
-  }
-
-  /**
-   * Print result from file processing.
-   */
-  public function printResult() {
-    $this->result->path = $this->getType() . 's/' . $this->getName();
-
-    // text/plain is used to support IE
-    header('Cache-Control: no-cache');
-    header('Content-type: text/plain; charset=utf-8');
-
-    print json_encode($this->result);
+  public function getResult() {
+    return json_encode($this->result);
   }
 }
