@@ -5,6 +5,9 @@
 @import "compass/css3/transition";
 @import "compass/css3/transform";
 
+@import "h5peditor-image-edit";
+@import "h5peditor-image-edit-popup";
+
 $i: 'H5P';
 
 html, body {
@@ -12,6 +15,7 @@ html, body {
   padding: 0;
   font-family: 'Open Sans', sans-serif;
   max-width: 960px;
+  position: relative;
 }
 a {
   text-decoration: none;
@@ -33,6 +37,7 @@ a {
     margin: 8px 0;
     font-size: 16px;
     padding: 0;
+    min-width: inherit;
     &:last-child {
       margin-bottom: 0;
     }
@@ -53,11 +58,15 @@ a {
       padding: 8px;
     }
   }
+  .h5peditor-single > .field.library {
+    border: 0;
+    padding: 0;
+  }
 
   .errors p,
   .h5p-errors {
     margin: 0 0 4px 0;
-    color: #f00;
+    color: #da0001;
   }
   textarea {
     resize: vertical;
@@ -70,13 +79,27 @@ a {
     outline: none;
     min-height: 20px;
     @include border-radius(3px);
+    word-wrap: break-word;
   }
   .h5peditor-text, textarea {
     width: 100%;
     box-sizing: border-box;
   }
+  /* Placeholders - need to be on separate lines. If not, the browsers will invlaidate them */
+  ::-webkit-input-placeholder {
+    color: #bbb;
+  }
+  :-moz-placeholder {
+    color: #bbb;
+  }
+  ::-moz-placeholder {
+    color: #bbb;
+  }
+  :-ms-input-placeholder {
+    color: #bbb;
+  }
   .h5peditor-ckeditor-placeholder {
-    color: #888;
+    color: #bbb;
   }
   select {
     padding: 2px;
@@ -474,6 +497,7 @@ a {
       @include text-shadow(rgba(black, 0.4) 0 0 4px, rgba(black, 0.4) 0 0 4px, rgba(black, 0.4) 0 0 4px);
     }
     img {
+      max-width: 100%;
       vertical-align: bottom;
     }
   }
@@ -583,18 +607,28 @@ a {
     padding: 0.875em 0 1em 3.25em;
     font-style: italic;
   }
-  .h5p-copyright-button {
+
+  a.h5p-copyright-button {
     background: linear-gradient(to bottom,#fff 0,#f2f2f2 100%);
     border: 1px solid #ccc;
     border-radius: 0.25em;
     font-size: 0.875em;
     color: #333;
     cursor: pointer;
+    line-height: 2em;
+
+    &:before {
+      padding-left: 0.25em;
+    }
+  }
+
+  .h5p-copyright-button {
     float: left;
     display: block;
     clear: both;
-    line-height: 2em;
     padding-right: 1em;
+    line-height: 1.5;
+    margin-bottom: 0.5em;
 
     &:before {
       font-family: $i;
@@ -603,8 +637,7 @@ a {
       padding-right: 0.25em;
       vertical-align: middle;
       font-size: 1.5em;
-      vertical-align: middle;
-      padding-left: 0.25em;
+      line-height: 0.9;
     }
     &:hover {
       text-decoration: none;
@@ -615,7 +648,6 @@ a {
   .h5p-editor-dialog {
     position: absolute;
     z-index: 1;
-    width: 90%;
     background: #fff;
     padding: 10px 10px 0;
     margin: 5.5em 0 1em;
@@ -745,4 +777,9 @@ a {
 }
 .h5p-editor-iframe {
   margin-bottom: 1em;
+}
+.h5peditor-required:after {
+  content: "*";
+  color: #da0001;
+  margin-left: 0.25em;
 }

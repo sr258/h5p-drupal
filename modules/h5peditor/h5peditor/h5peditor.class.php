@@ -3,7 +3,8 @@
 class H5peditor {
 
   public static $styles = array(
-    'styles/css/application.css',
+    'libs/darkroom.css',
+    'styles/css/application.css'
   );
   public static $scripts = array(
     'scripts/h5peditor.js',
@@ -15,7 +16,10 @@ class H5peditor {
     'scripts/h5peditor-html.js',
     'scripts/h5peditor-number.js',
     'scripts/h5peditor-textarea.js',
+    'scripts/h5peditor-file-uploader.js',
     'scripts/h5peditor-file.js',
+    'scripts/h5peditor-image.js',
+    'scripts/h5peditor-image-popup.js',
     'scripts/h5peditor-av.js',
     'scripts/h5peditor-group.js',
     'scripts/h5peditor-boolean.js',
@@ -29,23 +33,20 @@ class H5peditor {
     'scripts/h5peditor-none.js',
     'ckeditor/ckeditor.js',
   );
-  private $h5p, $storage, $files_directory, $basePath, $relativePathRegExp;
+  private $h5p, $storage, $relativePathRegExp;
 
   /**
    * Constructor for the core editor library.
    *
-   * @param \H5PCore $h5p Instance of core.
-   * @param mixed $storage Instance of h5peditor storage.
-   * @param string $basePath Url path to prefix assets with.
-   * @param string $filesDir H5P files directory.
-   * @param string $editorFilesDir Optional custom editor files directory outside h5p files directory.
+   * @param \H5PCore $h5p Instance of core
+   * @param \H5peditorStorage $storage Instance of h5peditor storage
+   * @param string $relativePathRegExp
+   * Optional custom regexp for detecting usage of files that's in another
+   * content folder or the editor's tmp directory
    */
-  function __construct($h5p, $storage, $basePath, $filesDir, $editorFilesDir = NULL, $relativePathRegExp = '/^(\.\.\/){1,2}(\d+|editor)\/(.+)$/') {
+  function __construct($h5p, $storage, $relativePathRegExp = '/^(\.\.\/){1,2}(\d+|editor)\/(.+)$/') {
     $this->h5p = $h5p;
     $this->storage = $storage;
-    $this->basePath = $basePath;
-    $this->contentFilesDir = $filesDir . DIRECTORY_SEPARATOR . 'content';
-    $this->editorFilesDir = ($editorFilesDir === NULL ? $filesDir . DIRECTORY_SEPARATOR . 'editor' : $editorFilesDir);
     $this->relativePathRegExp = $relativePathRegExp;
   }
 
@@ -60,7 +61,7 @@ class H5peditor {
       $libraries = array();
       foreach ($_POST['libraries'] as $libraryName) {
         $matches = array();
-        preg_match_all('/(.+)\s(\d)+\.(\d)$/', $libraryName, $matches);
+        preg_match_all('/(.+)\s(\d+)\.(\d+)$/', $libraryName, $matches);
         if ($matches) {
           $libraries[] = (object) array(
             'uberName' => $libraryName,
@@ -88,6 +89,9 @@ class H5peditor {
             'majorVersion' => $devLibs[$lid]['majorVersion'],
             'minorVersion' => $devLibs[$lid]['minorVersion'],
             'runnable' => $devLibs[$lid]['runnable'],
+            'restricted' => $libraries[$i]->restricted,
+            'tutorialUrl' => $libraries[$i]->tutorialUrl,
+            'isOld' => $libraries[$i]->isOld
           );
         }
       }
@@ -97,49 +101,19 @@ class H5peditor {
   }
 
   /**
-   * Keep track of temporary files.
-   *
-   * @param object file
-   */
-  public function addTmpFile($file) {
-    $this->storage->addTmpFile($file);
-  }
-
-  /**
-   * Create directories for uploaded content.
-   *
-   * @param int $id
-   * @return boolean
-   */
-  public function createDirectories($id) {
-    $this->content_directory = $this->contentFilesDir . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR;
-
-    if (!is_dir($this->contentFilesDir)) {
-      mkdir($this->contentFilesDir, 0777, true);
-    }
-
-    $sub_directories = array('', 'files', 'images', 'videos', 'audios');
-    foreach ($sub_directories AS $sub_directory) {
-      $sub_directory = $this->content_directory . $sub_directory;
-      if (!is_dir($sub_directory) && !mkdir($sub_directory)) {
-        return FALSE;
-      }
-    }
-
-    return TRUE;
-  }
-
-  /**
    * Move uploaded files, remove old files and update library usage.
    *
    * @param string $oldLibrary
    * @param string $oldParameters
-   * @param object $newLibrary
+   * @param array $newLibrary
    * @param string $newParameters
    */
   public function processParameters($contentId, $newLibrary, $newParameters, $oldLibrary = NULL, $oldParameters = NULL) {
     $newFiles = array();
     $oldFiles = array();
+
+    // Keep track of current content ID (used when processing files)
+    $this->contentId = $contentId;
 
     // Find new libraries/content dependencies and files.
     // Start by creating a fake library field to process. This way we get all the dependencies of the main library as well.
@@ -160,9 +134,8 @@ class H5peditor {
       for ($i = 0, $s = count($oldFiles); $i < $s; $i++) {
         if (!in_array($oldFiles[$i], $newFiles) &&
             preg_match('/^(\w+:\/\/|\.\.\/)/i', $oldFiles[$i]) === 0) {
-          $removeFile = $this->content_directory . $oldFiles[$i];
-          unlink($removeFile);
-          $this->storage->removeFile($removeFile);
+          $this->h5p->fs->removeContentFile($oldFiles[$i], $this->contentId);
+          // (optionally we could just have marked them as tmp files)
         }
       }
     }
@@ -201,6 +174,11 @@ class H5peditor {
       case 'image':
         if (isset($params->path)) {
           $this->processFile($params, $files);
+
+          // Process original image
+          if (isset($params->originalImage) && isset($params->originalImage->path)) {
+            $this->processFile($params->originalImage, $files);
+          }
         }
         break;
 
@@ -247,34 +225,29 @@ class H5peditor {
    * @param array $files
    */
   private function processFile(&$params, &$files) {
-    static $h5peditor_path;
-    if (!$h5peditor_path) {
-      $h5peditor_path = $this->editorFilesDir . DIRECTORY_SEPARATOR;
-    }
-
     // File could be copied from another content folder.
     $matches = array();
     if (preg_match($this->relativePathRegExp, $params->path, $matches)) {
-      // Create copy of file
-      $source = $this->content_directory . $params->path;
-      $destination = $this->content_directory . $matches[3];
-      if (file_exists($source) && !file_exists($destination)) {
-        copy($source, $destination);
-      }
+
+      // Create a copy of the file
+      $this->h5p->fs->cloneContentFile($matches[3], $matches[2], $this->contentId);
+
+      // Update Params with correct filename
       $params->path = $matches[3];
     }
     else {
-      // Check if tmp file
-      $oldPath = $h5peditor_path . $params->path;
-      $newPath = $this->content_directory . $params->path;
-      if (file_exists($newPath)) {
-        // Uploaded to content folder, make sure the cleanup script doesn't get it.
-        $this->storage->keepFile($newPath, $newPath);
+      // Check if file exists in content folder
+      $fileId = $this->h5p->fs->getContentFile($params->path, $this->contentId);
+      if ($fileId) {
+        // Mark the file as a keeper
+        $this->storage->keepFile($fileId);
       }
-      elseif (file_exists($oldPath)) {
-        // Move file from editor tmp folder
-        rename($oldPath, $newPath);
-        $this->storage->keepFile($oldPath, $newPath);
+      else {
+        // File is not in content folder, try to copy it from the editor tmp dir
+        // to content folder.
+        $this->h5p->fs->cloneContentFile($params->path, 'editor', $this->contentId);
+        // (not removed in case someone has copied it)
+        // (will automatically be removed after 24 hours)
       }
     }
 
@@ -315,6 +288,7 @@ class H5peditor {
       foreach ($dependencies as $dependency) {
         if ($dependency['weight'] === $i && $dependency['type'] === 'editor') {
           // Only load editor libraries.
+          $dependency['library']['id'] = $dependency['library']['libraryId'];
           $orderedDependencies[$dependency['library']['libraryId']] = $dependency['library'];
           break;
         }
@@ -327,23 +301,33 @@ class H5peditor {
   /**
    * Get all scripts, css and semantics data for a library
    *
-   * @param string $library_name
-   *  Name of the library we want to fetch data for
-   * @param string $prefix Optional. Files are relative to another dir.
+   * @param string $machineName Library name
+   * @param int $majorVersion
+   * @param int $minorVersion
+   * @param string $prefix Optional part to add between URL and asset path
    */
-  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $path = '', $prefix = '') {
+  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $prefix = '') {
     $libraryData = new stdClass();
 
     $libraries = $this->findEditorLibraries($machineName, $majorVersion, $minorVersion);
     $libraryData->semantics = $this->h5p->loadLibrarySemantics($machineName, $majorVersion, $minorVersion);
     $libraryData->language = $this->getLibraryLanguage($machineName, $majorVersion, $minorVersion, $languageCode);
 
-    $files = $this->h5p->getDependenciesFiles($libraries, $prefix);
+    // Temporarily disable asset aggregation
+    $aggregateAssets = $this->h5p->aggregateAssets;
+    $this->h5p->aggregateAssets = FALSE;
+    // This is done to prevent files being loaded multiple times due to how
+    // the editor works.
+
+    // Get list of JS and CSS files that belongs to the dependencies
+    $files = $this->h5p->getDependenciesFiles($libraries);
     $this->storage->alterLibraryFiles($files, $libraries);
 
-    if ($path) {
-      $path .= '/';
-    }
+    // Restore asset aggregation setting
+    $this->h5p->aggregateAssets = $aggregateAssets;
+
+    // Create base URL
+    $url = $this->h5p->url . $prefix;
 
     // Javascripts
     if (!empty($files['scripts'])) {
@@ -354,7 +338,7 @@ class H5peditor {
         }
         else {
           // Local file
-          $libraryData->javascript[$this->h5p->url . $script->path . $script->version] = "\n" . file_get_contents($path . $script->path);
+          $libraryData->javascript[$url . $script->path . $script->version] = "\n" . $this->h5p->fs->getContent($script->path);
         }
       }
     }
@@ -368,8 +352,8 @@ class H5peditor {
         }
         else {
           // Local file
-          H5peditor::buildCssPath(NULL, $this->h5p->url . dirname($css->path) . '/');
-          $libraryData->css[$this->h5p->url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', file_get_contents($path . $css->path));
+          H5peditor::buildCssPath(NULL, $url . dirname($css->path) . '/');
+          $libraryData->css[$url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', $this->h5p->fs->getContent($css->path));
         }
       }
     }

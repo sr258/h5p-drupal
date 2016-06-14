@@ -8,12 +8,15 @@ H5PEditor.language.core = {
   requiredProperty: '":property" er påkrevd og må ha en verdi.',
   onlyNumbers: '":property" kan bare innholde tall.',
   exceedsMax: '":property" overstiger maksverdien på :max.',
-  exceedsMin: '":property" er mindre enn minimumsverdien på :min.',
+  belowMin: '":property" er mindre enn minimumsverdien på :min.',
   outOfStep: '":property" kan bare endres i steg på :step.',
   addFile: 'Legg til fil',
   removeFile: 'Fjern fil',
   confirmRemoval: 'Er du sikker på at du ønsker å fjerne denne :type?',
+  removeImage: 'Remove image',
+  confirmImageRemoval: 'Er du sikker på at du ønsker å fjerne dette bildet?',
   changeFile: 'Bytt fil',
+  changeLibrary: 'Endre innholdstype',
   semanticsError: 'Semantikkfeil: :error',
   missingProperty: 'Feltet :index mangler :property attributten sin.',
   expandCollapse: 'Utvid/Slå sammen',
@@ -33,5 +36,10 @@ H5PEditor.language.core = {
   listLabel: 'Liste',
   uploadError: 'Filopplasting feilet',
   fileToLarge: 'Filen du prøver å laste opp kan være for stor.',
-  noSemantics: 'Feil, kunne ikke laste skjemaet for innholdstypen.'
+  noSemantics: 'Feil, kunne ikke laste skjemaet for innholdstypen.',
+  editImage: 'Rediger bilde',
+  saveLabel: 'Lagre',
+  cancelLabel: 'Avbryt',
+  resetToOriginalLabel: 'Tilbakestill bilde',
+  loadingImageEditor: 'Laster inn bilderedigering, vennligst vent...'
 };

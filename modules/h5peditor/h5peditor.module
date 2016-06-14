@@ -13,26 +13,27 @@
 function h5peditor_menu() {
   $items = array();
 
-  $items['h5peditor/%/libraries'] = array(
+  $items['h5peditor/%/%/libraries'] = array(
     'title' => 'H5peditor Libraries',
     'page callback' => 'h5peditor_libraries_callback',
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/libraries/%/%/%'] = array(
+  $items['h5peditor/%/%/libraries/%/%/%'] = array(
     'title' => 'H5peditor Library',
     'page callback' => 'h5peditor_library_callback',
-    'page arguments' => array(3, 4, 5),
+    'page arguments' => array(4, 5, 6),
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/files'] = array(
+  $items['h5peditor/%/%/files'] = array(
     'title' => 'H5peditor Files',
     'page callback' => 'h5peditor_files_callback',
+    'page arguments' => array(1),
     'access callback' => 'h5peditor_access',
-    'access arguments' => array(1),
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
 
@@ -140,6 +141,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
 
   // TODO: If we're going to preprocess the assets one day, remember to skip ckeditor.
 
+  $content_validator = _h5p_get_instance('contentvalidator');
   $file_path = file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath();
   $settings = array(
     'h5peditor' => array(
@@ -149,10 +151,10 @@ function h5peditor_h5p_content_node_form_after_build($form) {
         'width' => 50,
         'height' => 50,
       ),
-      'ajaxPath' => url('h5peditor/' . (isset($node->nid) ? $node->nid : 0) . '/'),
+      'ajaxPath' => url('h5peditor/' . H5PCore::createToken('editorajax') . '/' . (isset($node->nid) ? $node->nid : 0) . '/'),
       'modulePath' => $h5peditor_module_path,
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
-      'copyrightSemantics' => H5PContentValidator::getCopyrightSemantics(),
+      'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
       'assets' => $assets,
       'relativeUrl' => '../../../h5peditor'
     ),
@@ -279,12 +281,22 @@ function h5peditor_library_callback($machine_name, $major_version, $minor_versio
   drupal_add_http_header('Cache-Control', 'no-cache');
   drupal_add_http_header('Content-type', 'application/json');
   print $editor->getLibraryData($machine_name, $major_version, $minor_version, $language->language, '', _h5p_get_h5p_path());
+
+  // Log library loaded
+  new H5PEvent('library', NULL, NULL, NULL,
+    $machine_name,
+    $major_version . '.' . $minor_version
+  );
 }
 
 /**
  * Callback for file uploads.
  */
-function h5peditor_files_callback() {
+function h5peditor_files_callback($token) {
+  if (!H5PCore::validToken('editorajax', $token)) {
+    return H5PCore::ajaxError(t('Invalid security token. Please reload the editor.'));
+  }
+
   $files_directory = file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath();
   if (isset($_POST['contentId']) && $_POST['contentId']) {
     $files_directory .= '/' . variable_get('h5p_default_path', 'h5p') . '/content/' . $_POST['contentId'];
@@ -342,7 +354,7 @@ function h5peditor_get_instance() {
  */
 function h5peditor_get_library_property($library, $property = 'all') {
   $matches = array();
-  preg_match_all('/(.+)\s(\d)+\.(\d)$/', $library, $matches);
+  preg_match_all('/(.+)\s(\d+)\.(\d+)$/', $library, $matches);
   if (count($matches) == 4) {
     $library_data = array(
       'machineName' => $matches[1][0],

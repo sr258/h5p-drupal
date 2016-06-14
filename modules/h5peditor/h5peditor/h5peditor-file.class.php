@@ -1,12 +1,16 @@
 <?php
 
+/**
+ * Class
+ */
 class H5peditorFile {
-
-  private $result, $field, $files_directory, $interface;
-
+  private $result, $field, $interface;
   public $type, $name, $path, $mime, $size;
 
-  function __construct($interface, $files_directory) {
+  /**
+   * Constructor. Process data for file uploaded through the editor.
+   */
+  function __construct($interface) {
     $field = filter_input(INPUT_POST, 'field', FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
 
     // Check for file upload.
@@ -19,40 +23,48 @@ class H5peditorFile {
     // Create a new result object.
     $this->result = new stdClass();
 
-    // Set directory.
-    $this->files_directory = $files_directory;
-
-    // Create the temporary directory if it doesn't exist.
-    $dirs = array ('', '/files', '/images', '/videos', '/audios');
-    foreach ($dirs as $dir) {
-      if (!H5PCore::dirReady($this->files_directory . $dir)) {
-        $this->result->error = $this->interface->t('Unable to create directory.');
-        return;
-      }
-    }
-
     // Get the field.
     $this->field = json_decode($field);
 
-    if (function_exists('finfo_file')) {
-      $finfo = finfo_open(FILEINFO_MIME_TYPE);
-      $this->type = finfo_file($finfo, $_FILES['file']['tmp_name']);
-      finfo_close($finfo);
-    }
-    elseif (function_exists('mime_content_type')) {
-      // Deprecated, only when finfo isn't available.
-      $this->type = mime_content_type($_FILES['file']['tmp_name']);
+    // Check if uploaded base64 encoded file
+    if (isset($_POST) && isset($_POST['dataURI']) && $_POST['dataURI'] !== '') {
+      $data = $_POST['dataURI'];
+
+      // Extract data from string
+      list($type, $data) = explode(';', $data);
+      list(, $data)      = explode(',', $data);
+      $this->data = base64_decode($data);
+
+      // Extract file type and extension
+      list(, $type) = explode(':', $type);
+      list(, $extension) = explode('/', $type);
+      $this->type = $type;
+      $this->extension = $extension;
+      $this->size = strlen($this->data);
     }
     else {
-      $this->type = $_FILES['file']['type'];
+
+      // Handle temporarily uploaded form file
+      if (function_exists('finfo_file')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $this->type = finfo_file($finfo, $_FILES['file']['tmp_name']);
+        finfo_close($finfo);
+      }
+      elseif (function_exists('mime_content_type')) {
+        // Deprecated, only when finfo isn't available.
+        $this->type = mime_content_type($_FILES['file']['tmp_name']);
+      }
+      else {
+        $this->type = $_FILES['file']['type'];
+      }
+
+      $this->extension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+      $this->size = $_FILES['file']['size'];
     }
-
-    $this->extension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
-
-    $this->size = $_FILES['file']['size'];
   }
 
   /**
+   * Indicates if an uploaded file was found or not.
    *
    * @return boolean
    */
@@ -117,7 +129,22 @@ class H5peditorFile {
           return FALSE;
         }
 
-        $image = @getimagesize($_FILES['file']['tmp_name']);
+        // Get image size from base64 string
+        if (isset($this->data)) {
+
+          if (!function_exists('getimagesizefromstring')) {
+            $uri = 'data://application/octet-stream;base64,'  . base64_encode($this->data);
+            $image =  getimagesize($uri);
+          }
+          else {
+            $image = getimagesizefromstring($this->data);
+          }
+        }
+        else {
+          // Image size from temp file
+          $image = @getimagesize($_FILES['file']['tmp_name']);
+        }
+
         if (!$image) {
           $this->result->error = $this->interface->t('File is not an image.');
           return FALSE;
@@ -170,27 +197,61 @@ class H5peditorFile {
     return TRUE;
   }
 
- public function copy() {
-    $matches = array();
-    preg_match('/([a-z0-9]{1,})$/i', $_FILES['file']['name'], $matches);
-
-    $this->name = uniqid($this->field->name . '-');
-    if (isset($matches[0])) {
-      $this->name .= '.' . $matches[0];
-    }
-    $this->name = $this->field->type . 's/' . $this->name;
-
-    $this->path = $this->files_directory . '/' . $this->name;
-    if (!copy($_FILES['file']['tmp_name'], $this->path)) {
-      $this->result->error = $this->interface->t('Could not copy file.');
-      return FALSE;
-    }
-
-    $this->result->path = $this->name;
-    return TRUE;
+  /**
+   * Get the type of the current file.
+   *
+   * @return string
+   */
+  public function getType() {
+    return $this->field->type;
   }
 
-  public function getResult() {
-    return json_encode($this->result);
+  /**
+   * Get the name of the current file.
+   *
+   * @return string
+   */
+  public function getName() {
+    static $name;
+
+    if (empty($name)) {
+      $name = uniqid($this->field->name . '-');
+
+      // Add extension to name
+      if (isset($this->data)) {
+        $name .= '.' . $this->extension;
+      }
+      else {
+        $matches = array();
+        preg_match('/([a-z0-9]{1,})$/i', $_FILES['file']['name'], $matches);
+        if (isset($matches[0])) {
+          $name .= '.' . $matches[0];
+        }
+      }
+    }
+
+    return $name;
+  }
+
+  /**
+   * Get file data if created from string.
+   *
+   * @return string|NULL
+   */
+  public function getData() {
+    return (empty($this->data) ? NULL : $this->data);
+  }
+
+  /**
+   * Print result from file processing.
+   */
+  public function printResult() {
+    $this->result->path = $this->getType() . 's/' . $this->getName();
+
+    // text/plain is used to support IE
+    header('Cache-Control: no-cache');
+    header('Content-type: text/plain; charset=utf-8');
+
+    print json_encode($this->result);
   }
 }
