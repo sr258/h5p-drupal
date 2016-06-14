@@ -1162,7 +1162,8 @@ function _h5p_get_instance($type) {
       drupal_set_message($message, 'warning', FALSE);
     }
 
-    $core = new H5PCore($interface, _h5p_get_h5p_path(), base_path(), $language->language, (variable_get('h5p_export', '1') ? TRUE : FALSE), $development_mode);
+    $fs = new \H5PDefaultStorage(_h5p_get_h5p_path(), file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath() . DIRECTORY_SEPARATOR . 'h5peditor');
+    $core = new H5PCore($interface, $fs, base_path(), $language->language, (variable_get('h5p_export', '1') ? TRUE : FALSE), $development_mode);
   }
 
   switch ($type) {
