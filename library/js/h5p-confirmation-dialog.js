@@ -301,6 +301,7 @@ H5P.ConfirmationDialog = (function (EventDispatcher) {
       wrapperElement.appendChild(popupBackground);
       startCapturingFocus();
       disableUnderlay();
+
       popupBackground.classList.remove('hidden');
       fitToContainer(offsetTop);
       setTimeout(function () {
