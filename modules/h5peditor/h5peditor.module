@@ -156,7 +156,8 @@ function h5peditor_h5p_content_node_form_after_build($form) {
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
       'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
       'assets' => $assets,
-      'relativeUrl' => '../../../h5peditor'
+      'contentRelUrl' => '../h5p/content/',
+      'editorRelUrl' => '../../../h5peditor',
     ),
   );
 

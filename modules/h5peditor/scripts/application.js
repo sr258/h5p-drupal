@@ -18,6 +18,8 @@ var ns = H5PEditor;
     ns.ajaxPath = Drupal.settings.h5peditor.ajaxPath;
     ns.filesPath = Drupal.settings.h5peditor.filesPath;
     ns.relativeUrl = Drupal.settings.h5peditor.relativeUrl;
+    ns.contentRelUrl = Drupal.settings.h5peditor.contentRelUrl;
+    ns.editorRelUrl = Drupal.settings.h5peditor.editorRelUrl;
 
     // Semantics describing what copyright information can be stored for media.
     ns.copyrightSemantics = Drupal.settings.h5peditor.copyrightSemantics;
