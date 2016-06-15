@@ -390,7 +390,6 @@ ns.Html.prototype.appendTo = function ($wrapper) {
         var onShow = dialogDefinition.onShow;
         dialogDefinition.onShow = function () {
           if (onShow !== undefined) {
-            console.log("onshow apply!");
             onShow.apply(this, arguments);
           }
 
