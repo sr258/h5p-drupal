@@ -389,7 +389,10 @@ ns.Html.prototype.appendTo = function ($wrapper) {
         // Override show event handler
         var onShow = dialogDefinition.onShow;
         dialogDefinition.onShow = function () {
-          onShow.apply(this, arguments);
+          if (onShow !== undefined) {
+            console.log("onshow apply!");
+            onShow.apply(this, arguments);
+          }
 
           // Grab current item
           var $item = ns.Html.current.$item;
