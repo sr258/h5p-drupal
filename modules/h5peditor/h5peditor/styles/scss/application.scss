@@ -5,6 +5,9 @@
 @import "compass/css3/transition";
 @import "compass/css3/transform";
 
+@import "h5peditor-image-edit";
+@import "h5peditor-image-edit-popup";
+
 $i: 'H5P';
 
 html, body {
@@ -12,6 +15,7 @@ html, body {
   padding: 0;
   font-family: 'Open Sans', sans-serif;
   max-width: 960px;
+  position: relative;
 }
 a {
   text-decoration: none;
@@ -62,7 +66,7 @@ a {
   .errors p,
   .h5p-errors {
     margin: 0 0 4px 0;
-    color: #f00;
+    color: #da0001;
   }
   textarea {
     resize: vertical;
@@ -773,4 +777,9 @@ a {
 }
 .h5p-editor-iframe {
   margin-bottom: 1em;
+}
+.h5peditor-required:after {
+  content: "*";
+  color: #da0001;
+  margin-left: 0.25em;
 }
