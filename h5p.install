@@ -80,6 +80,10 @@ function h5p_uninstall() {
   variable_del('h5p_unsupported_libraries');
   variable_del('h5p_fetched_library_metadata_on');
   variable_del('h5p_first_runnable_saved');
+  variable_del('h5p_save_content_frequency');
+  variable_del('h5p_save_content_state');
+  variable_del('h5p_update_available');
+  variable_del('h5p_update_available_path');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
