@@ -122,7 +122,9 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implementation of setUnsupportedLibraries
    */
   public function setUnsupportedLibraries($libraries) {
-    variable_set('h5p_unsupported_libraries', $libraries);
+    if ($this->getUnsupportedLibraries() !== $libraries) {
+      variable_set('h5p_unsupported_libraries', $libraries);
+    }
   }
 
   /**

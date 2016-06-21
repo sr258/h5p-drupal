@@ -578,8 +578,8 @@ function h5p_view($node, $view_mode = 'full') {
  */
 function _h5p_display_unsupported_libraries($display_details = FALSE) {
   // Check if any unsupported libraries. Only users which may update this node will get the warning message
-  $unsupported_libraries = variable_get('h5p_unsupported_libraries');
-  if ($unsupported_libraries !== NULL) {
+  $unsupported_libraries = _h5p_get_instance('interface')->getUnsupportedLibraries();
+  if (is_array($unsupported_libraries) && !empty($unsupported_libraries)) {
     if ($display_details) {
       $core = _h5p_get_instance('core');
       $message = $core->createMarkupForUnsupportedLibraryList($unsupported_libraries);
