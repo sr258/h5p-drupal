@@ -123,7 +123,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    */
   public function setUnsupportedLibraries($libraries) {
     if ($this->getUnsupportedLibraries() !== $libraries) {
-      variable_set('h5p_unsupported_libraries', $libraries);
+      h5p_variable_set('h5p_unsupported_libraries', $libraries);
     }
   }
 
@@ -322,7 +322,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       $libraryData['libraryId'] = $libraryId;
       if ($libraryData['runnable']) {
         if (!variable_get('h5p_first_runnable_saved', 0)) {
-          variable_set('h5p_first_runnable_saved', 1);
+          h5p_variable_set('h5p_first_runnable_saved', 1);
         }
       }
     }
@@ -805,7 +805,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    *   Whatever we want to store as the setting
    */
   public function setOption($name, $value) {
-    variable_set('h5p_' . $name, $value);
+    h5p_variable_set('h5p_' . $name, $value);
   }
 
   /**

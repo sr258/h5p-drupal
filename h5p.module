@@ -157,7 +157,7 @@ function h5p_fetch_libraries_metadata($fetchingDisabled = FALSE) {
     // Fetch the library-metadata:
     $core = _h5p_get_instance('core');
     $core->fetchLibrariesMetadata($fetchingDisabled);
-    variable_set('h5p_fetched_library_metadata_on', time());
+    h5p_variable_set('h5p_fetched_library_metadata_on', time());
   }
 }
 
@@ -1529,5 +1529,15 @@ function h5p_views_pre_view($view, $display_id, $args) {
         $node->main_library['majorVersion'] . '.' . $node->main_library['minorVersion']
       );
     }
+  }
+}
+
+/**
+ * Checks if the variable has changed before setting it.
+ * This is to avoid performance costly mistakes.
+ */
+function h5p_variable_set($name, $value) {
+  if (variable_get($name) !== $value) {
+    variable_set($name, $value);
   }
 }
