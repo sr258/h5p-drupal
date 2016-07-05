@@ -47,12 +47,15 @@ function h5peditor_menu() {
  * @return bool
  */
 function h5peditor_access($node_id) {
-  if ($node_id === '0') {
-    return node_access('create', 'h5p_content');
+  $access = node_access('create', 'h5p_content');
+
+  if (!$access && $node_id !== '0') {
+    // No access to create, check edit access
+    $node = node_load($node_id);
+    $access = node_access('update', $node);
   }
 
-  $node = node_load($node_id);
-  return node_access('update', $node);
+  return $access;
 }
 
 /**
