@@ -41,16 +41,17 @@ function h5peditor_menu() {
 }
 
 /**
- * Access callback.
+ * Checks if the current user should have access to the editor.
  *
  * @param int $node_id
  * @return bool
  */
 function h5peditor_access($node_id) {
+  // Start by check if the user has access to create H5P content
   $access = node_access('create', 'h5p_content');
 
   if (!$access && $node_id !== '0') {
-    // No access to create, check edit access
+    // No access to create, check if the user has access to edit instead
     $node = node_load($node_id);
     $access = node_access('update', $node);
   }
