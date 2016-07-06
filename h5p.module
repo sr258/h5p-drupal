@@ -1431,9 +1431,10 @@ function h5p_embed($node) {
     return;
   }
 
+  $module_path = base_path() . drupal_get_path('module', 'h5p');
   $node = node_load($node);
   if (!$node || !node_access('view', $node) || !isset($node->json_content)) {
-    print '<body style="margin:0"><div style="background: #fafafa url(http://h5p.org/sites/all/themes/professional_themec/images/h5p.svg) no-repeat center;background-size: 50% 50%;width: 100%;height: 100%;"></div><div style="width:100%;position:absolute;top:75%;text-align:center;color:#434343;font-family: Consolas,monaco,monospace">' . t('Content unavailable.') . '</div></body>';
+    print '<body style="margin:0"><div style="background: #fafafa url(' . $module_path . '/library/images/h5p.svg) no-repeat center;background-size: 50% 50%;width: 100%;height: 100%;"></div><div style="width:100%;position:absolute;top:75%;text-align:center;color:#434343;font-family: Consolas,monaco,monospace">' . t('Content unavailable.') . '</div></body>';
     return;
   }
 
@@ -1443,8 +1444,6 @@ function h5p_embed($node) {
   $settings = h5p_get_core_settings();
   // TODO: The non-content specific settings could be apart of a combined
   // h5p-core.js file to avoid sending the same data multiple times.
-
-  $module_path = base_path() . drupal_get_path('module', 'h5p');
 
   // Get core scripts
   $scripts = array();
