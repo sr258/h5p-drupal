@@ -458,7 +458,7 @@ function h5p_library_upload_form_submit($form, &$form_state) {
  * Callback for rebuilding all content cache.
  */
 function h5p_rebuild_cache() {
-  if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') !== 'POST') {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     drupal_set_message(t('HTTP POST is required.'), 'error');
     drupal_set_title(t('Error'));
     return '';
@@ -490,7 +490,7 @@ function h5p_rebuild_cache() {
  * @return string HTML
  */
 function h5p_content_upgrade($library_id) {
-  if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') === 'POST') {
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     h5p_content_upgrade_progress($library_id);
     return;
   }
