@@ -440,7 +440,7 @@ function h5p_insert($node) {
       'embed_type' => $node->embed_type,
       'disable' => $node->disable,
       'library' => $lib,
-      'h5p_library' => $node->h5p_library
+      'h5p_library' => isset($node->h5p_library) ? $node->h5p_library : NULL
     ), $node->nid);
   }
 }
