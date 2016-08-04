@@ -375,7 +375,7 @@ function h5p_form_validate($form, &$form_state) {
     $_SESSION['h5p_upload'] = $form_state['values']['h5p'] = drupal_realpath($file->uri);
     $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
   }
-  elseif (!isset($form['#node']->nid) && empty($form_state['values']['h5p']) && empty($_SESSION['h5p_upload'])) {
+  elseif (empty($form['#node']->main_library_id) && empty($form_state['values']['h5p']) && empty($_SESSION['h5p_upload'])) {
     form_set_error('h5p', t('You must upload a h5p file.'));
   }
 }
