@@ -2852,7 +2852,6 @@ class H5PContentValidator {
    * @param $semantics
    */
   public function validateSelect(&$select, $semantics) {
-    $optional = isset($semantics->optional) && $semantics->optional;
     $strict = FALSE;
     if (isset($semantics->options) && !empty($semantics->options)) {
       // We have a strict set of options to choose from.
@@ -2872,7 +2871,7 @@ class H5PContentValidator {
       }
 
       foreach ($select as $key => &$value) {
-        if ($strict && !$optional && !isset($options[$value])) {
+        if ($strict && !isset($options[$value])) {
           $this->h5pF->setErrorMessage($this->h5pF->t('Invalid selected option in multi-select.'));
           unset($select[$key]);
         }
@@ -2888,7 +2887,7 @@ class H5PContentValidator {
         $select = $select[0];
       }
 
-      if ($strict && !$optional && !isset($options[$select])) {
+      if ($strict && !isset($options[$select])) {
         $this->h5pF->setErrorMessage($this->h5pF->t('Invalid selected option in select.'));
         $select = $semantics->options[0]->value;
       }
