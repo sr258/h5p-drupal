@@ -86,6 +86,7 @@ function h5p_uninstall() {
   variable_del('h5p_update_available');
   variable_del('h5p_update_available_path');
   variable_del('h5p_site_type');
+  variable_del('h5p_enable_lrs_content_types');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
