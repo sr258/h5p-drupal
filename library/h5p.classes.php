@@ -1574,11 +1574,15 @@ Class H5PExport {
     $zip = new ZipArchive();
     $zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
+    // Some system needs the root prefix for ZipArchive's addFile()
+    $rootPrefix = (empty($_SERVER['DOCUMENT_ROOT']) ? '' : $_SERVER['DOCUMENT_ROOT'] . '/');
+
     // Add all the files from the tmp dir.
     foreach ($files as $file) {
       // Please note that the zip format has no concept of folders, we must
       // use forward slashes to separate our directories.
       $zip->addFile($file->absolutePath, $file->relativePath);
+      $zip->addFile($rootPrefix . $file->absolutePath, $file->relativePath);
     }
 
     // Close zip and remove tmp dir
@@ -1808,7 +1812,10 @@ class H5PCore {
    * @return Object NULL on failure.
    */
   public function filterParameters(&$content) {
-    if (isset($content['filtered']) && $content['filtered'] !== '') {
+    if (!empty($content['filtered']) &&
+        (!$this->exportEnabled ||
+         ($content['slug'] &&
+          $this->fs->hasExport($content['slug'] . '-' . $content['id'] . '.h5p')))) {
       return $content['filtered'];
     }
 
