@@ -553,6 +553,11 @@ interface H5PFrameworkInterface {
    * return int
    */
   public function getLibraryContentCount();
+
+  /**
+   * Will trigger after the export file is created.
+   */
+  public function afterExportCreated();
 }
 
 /**
@@ -1595,9 +1600,11 @@ Class H5PExport {
     }
     catch (Exception $e) {
       $this->h5pF->setErrorMessage($this->h5pF->t($e->getMessage()));
+      return false;
     }
 
     unlink($tmpFile);
+    $this->h5pF->afterExportCreated();
 
     return true;
   }
