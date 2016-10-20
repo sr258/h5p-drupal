@@ -1220,8 +1220,9 @@ function h5p_update_7111() {
 function h5p_update_7112() {
   $whitelist = variable_get('h5p_whitelist', H5PCore::$defaultContentWhitelist);
 
-  if (strpos($whitelist, 'woff') !== false && strpos($whitelist, 'woff2') === false) {
-    $whitelist .= ' woff2';
-    variable_set('h5p_whitelist', $whitelist);
+  $woff_pos = strpos($whitelist, 'woff');
+  if ($woff_pos !== false && strpos($whitelist, 'woff2') === false) {
+    $new_whitelist = substr_replace($whitelist, ' woff2', $woff_pos + 4, 0);
+    variable_set('h5p_whitelist', $new_whitelist);
   }
 }
