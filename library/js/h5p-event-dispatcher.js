@@ -119,8 +119,6 @@ H5P.EventDispatcher = (function () {
         // Append
         triggers[type].push(trigger);
       }
-
-      return self;
     };
 
     /**
