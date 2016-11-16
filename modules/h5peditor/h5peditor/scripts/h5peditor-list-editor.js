@@ -21,6 +21,7 @@ H5PEditor.ListEditor = (function ($) {
 
     // Create add button
     var $button = $('<button/>', {
+      class: list.getImportance(),
       text: H5PEditor.t('core', 'addEntity', {':entity': entity})
     }).click(function () {
       list.addItem();
@@ -28,6 +29,11 @@ H5PEditor.ListEditor = (function ($) {
 
     // Used when dragging items around
     var adjustX, adjustY, marginTop, formOffset;
+    // Timeout triggered on mousedown
+    var dragStartTimeout = false;
+    // Time to wait before a drag is started
+    var dragDelay = 250;
+    var dragActive = false;
 
     /**
      * @private
@@ -182,21 +188,98 @@ H5PEditor.ListEditor = (function ($) {
         return false;
       };
 
+      /**
+       * Mouse down callback
+       *
+       * @private
+       * @param {Object} e
+       */
+      function mouseDown(e) {
+        dragStartTimeout = setTimeout(function dragStart() {
+          dragStartTimeout = false;
+          dragActive = true;
+
+          down(e);
+        }, dragDelay)
+      }
+
+      /**
+       * Mouse up callback
+       *
+       * @private
+       * @param {Object} e
+       */
+      function mouseUp(e) {
+        if (dragStartTimeout !== false) {
+          clearTimeout(dragStartTimeout);
+
+          if (e.target.className === 'order-up') {
+            moveItemUp();
+          }
+          else if (e.target.className === 'order-down') {
+            moveItemDown();
+          }
+        }
+        else if (dragActive) {
+          dragActive = false;
+
+          up(e);
+        }
+      }
+
+      /**
+       * Move list item up in list
+       *
+       * @private
+       */
+      function moveItemUp() {
+        var $prev = $item.prev();
+
+        // Move up if item isn't first in list
+        if ($prev.length) {
+          var currentIndex = $item.index();
+
+          // Prevent wysiwyg becoming unresponsive
+          H5PEditor.Html.removeWysiwyg();
+
+          $prev.insertAfter($item);
+
+          list.moveItem(currentIndex, currentIndex - 1);
+        }
+      }
+
+      /**
+       * Move list item down in list
+       *
+       * @private
+       */
+      function moveItemDown() {
+        var $next = $item.next();
+
+        // Move down if item isn't last in list
+        if ($next.length) {
+          var currentIndex = $item.index();
+
+          // Prevent wysiwyg becoming unresponsive
+          H5PEditor.Html.removeWysiwyg();
+
+          $next.insertBefore($item);
+
+          list.moveItem(currentIndex, currentIndex + 1);
+        }
+      }
+
       // List item title bar
       var $titleBar = $('<div/>', {
         'class': 'list-item-title-bar',
         appendTo: $item
       });
 
-      // Append order button
-      $('<div/>', {
-        'class' : 'order',
-        role: 'button',
-        tabIndex: 1,
-        on: {
-          mousedown: down
-        }
-      }).appendTo($titleBar);
+      // Container for list actions
+      var $listActions = $('<div/>', {
+        class: 'list-actions',
+        appendTo: $titleBar
+      })
 
       // Append remove button
       $('<div/>', {
@@ -208,13 +291,54 @@ H5PEditor.ListEditor = (function ($) {
             confirmRemovalDialog.show($(this).offset().top);
           }
         }
-      }).appendTo($titleBar);
+      }).appendTo($listActions);
+
+      // Append order button
+      var $orderGroup = $('<div/>', {
+        class : 'order-group',
+        appendTo: $listActions
+      });
+
+      $('<div/>', {
+        class: 'order-up',
+        role: 'button',
+        tabIndex: 1,
+        on: {
+          keydown: function (e) {
+            if (e.keyCode === 32) {
+              moveItemUp();
+              return false;
+            }
+          },
+          mousedown: mouseDown,
+          mouseup: mouseUp
+        },
+        appendTo: $orderGroup
+      });
+
+      $('<div/>', {
+        class: 'order-down',
+        role: 'button',
+        tabIndex: 1,
+        on: {
+          keydown: function (e) {
+            if (e.keyCode === 32) {
+              moveItemDown();
+              return false;
+            }
+          },
+          mousedown: mouseDown,
+          mouseup: mouseUp
+        },
+        appendTo: $orderGroup
+      });
 
       // Append new field item to content wrapper
       if (item instanceof H5PEditor.Group) {
         // Append to item
         item.appendTo($item);
         $item.addClass('listgroup');
+        $titleBar.addClass(list.getImportance());
 
         // Move label
         $item.children('.field').children('.title').appendTo($titleBar).addClass('h5peditor-label');
@@ -245,10 +369,60 @@ H5PEditor.ListEditor = (function ($) {
       // Append item to list
       $item.appendTo($list);
 
-      // Good UX: automatically expand groups if not explicitly disabled by semantics
       if (item instanceof H5PEditor.Group) {
+        // Good UX: automatically expand groups if not explicitly disabled by semantics
         item.expand();
+
+        item.children.some(function (child) {
+          var isTextField = self.isTextField(child);
+          if (isTextField) {
+            // Change label to reflect content of list group
+            setListgroupTitle(item.field.label, parseHtml(child.value));
+
+            // Update label when description has changed
+            child.$input.change(function () {
+              setListgroupTitle(item.field.label, parseHtml(child.value));
+            });
+          }
+          return isTextField;
+        });
       }
+
+      /**
+       * Parses a html string with special character codes into a text string
+       *
+       * @param {string} html
+       * @returns {string} Parsed html string
+       */
+      function parseHtml(html) {
+        return $('<p>').html(html).text();
+      }
+
+      /**
+       * Add text to the listgroups title element.
+       *
+       * @private
+       * @param {string} label
+       * @param {string} text
+       */
+      function setListgroupTitle(label, text) {
+        var title = label;
+        if (text !== undefined && text !== '') {
+          title += ': ' + text;
+        }
+        $titleBar.children('.title').html(title);
+      }
+    };
+
+    /**
+     * Determine if child is a text field
+     *
+     * @param {Object} child
+     * @returns {boolean} True if child is a text field
+     */
+    self.isTextField = function (child) {
+      var widget = ns.getWidgetName(child.field);
+      return widget === 'html' || widget === 'text';
     };
 
     /**

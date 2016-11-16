@@ -394,6 +394,28 @@ ns.createError = function (message) {
 };
 
 /**
+ * Turn a numbered importance into a string.
+ *
+ * @param {Number} importance
+ * @returns {String}
+ */
+ns.createImportance = function (importance) {
+  if (importance === 1) {
+    return 'very-important';
+  }
+  else if (importance === 2) {
+    return 'important';
+  }
+  else if (importance === 3) {
+    return 'less-important';
+  }
+  else {
+    return '';
+  }
+};
+
+
+/**
  * Create HTML wrapper for field items.
  *
  * @param {String} type
@@ -452,14 +474,14 @@ ns.createText = function (value, maxLength, placeholder) {
  * @param {String} content
  * @returns {String}
  */
-ns.createLabel = function (field) {
+ns.createLabel = function (field, content) {
   var html = '<label class="h5peditor-label-wrapper">';
 
   if (field.label !== 0) {
     html += '<span class="h5peditor-label' + (field.optional ? '' : ' h5peditor-required') + '">' + (field.label === undefined ? field.name : field.label) + '</span>';
   }
 
-  return html + '</label>';
+  return html + (content || '') + '</label>';
 };
 
 /**

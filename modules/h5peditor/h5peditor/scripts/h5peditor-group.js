@@ -77,7 +77,7 @@ ns.Group.prototype.appendTo = function ($wrapper) {
 
   // Add fieldset wrapper for group
   this.$group = ns.$('<fieldset/>', {
-    'class': 'field group',
+    'class': 'field group ' + H5PEditor.createImportance(this.field.importance),
     appendTo: $wrapper
   });
 
@@ -234,7 +234,7 @@ ns.Group.prototype.setSummary = function (summary) {
     summaryText = this.field.label;
   }
 
-  this.$group.children('.title').html(summaryText);
+  this.$group.children('.title').text(summaryText);
 };
 
 /**
