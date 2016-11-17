@@ -721,7 +721,7 @@ function h5p_set_finished() {
     return H5PCore::ajaxError(t('Invalid security token.'));
   }
 
-  if ($user->uid && $_POST['contentId'] !== NULL && $_POST['score'] !== NULL && $_POST['maxScore'] !== NULL) {
+  if ($user->uid && is_numeric($_POST['contentId']) && is_numeric($_POST['score']) && is_numeric($_POST['maxScore'])) {
     db_update('h5p_points')
       ->fields(array(
         'finished' => time(),
