@@ -1503,7 +1503,7 @@ function _h5p_dependencies_to_library_list($dependencies) {
 function h5p_views_pre_view($view, $display_id, $args) {
   if ($view->name === 'node_results' && $display_id === 'page' && $view->base_field === 'nid') {
     $node = node_load($view->args[0]);
-    if ($node) {
+    if ($node && isset($node->main_library)) {
       // Log view of results page
       new H5PEvent('results', 'content',
         $node->nid,
