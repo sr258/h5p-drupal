@@ -936,18 +936,25 @@ function h5p_get_content_settings($content) {
  * Alter disable settings for embed and download
  */
 function _h5p_alter_disable_settings(&$disable, $nid) {
-  $user_may_update = node_access('update', $nid);
+  /**
+   * Checking if user has access to updating a node.
+   * Wrapping this in so we make sure this is only run if needed, and only once.
+   */
+  function may_user_update($nid) {
+    static $user_may_update = null;
+    return $user_may_update != null ? $user_may_update : ($user_may_update = node_access('update', node_load($nid)));
+  }
 
   // If download is disabled
   if ($disable & H5PCore::DISABLE_DOWNLOAD) {
-    if (user_access('download all h5ps') || ($user_may_update && user_access('download own h5ps'))) {
+    if (user_access('download all h5ps') || (may_user_update($nid) && user_access('download own h5ps'))) {
       $disable &= ~H5PCore::DISABLE_DOWNLOAD;
     }
   }
 
   // If embed is disabled
   if ($disable & H5PCore::DISABLE_EMBED) {
-    if (user_access('embed all h5ps') || ($user_may_update && user_access('embed own h5ps'))) {
+    if (user_access('embed all h5ps') || (may_user_update($nid) && user_access('embed own h5ps'))) {
       $disable &= ~H5PCore::DISABLE_EMBED;
     }
   }
