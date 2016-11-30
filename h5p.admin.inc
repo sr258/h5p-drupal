@@ -26,12 +26,14 @@ function h5p_admin_settings($form, &$form_state) {
   );
 
   $labels = _h5p_get_disable_labels();
+  $descriptions = _h5p_get_disable_descriptions();
   foreach (H5PCore::$disable as $bit => $name) {
     $name = ($bit & H5PCore::DISABLE_DOWNLOAD ? 'export' : $name);
     $form['h5p_display_options']['h5p_' . $name] = array(
       '#type' => 'checkbox',
       '#title' => $labels[$bit],
-      '#default_value' => variable_get('h5p_' . $name, TRUE)
+      '#default_value' => variable_get('h5p_' . $name, TRUE),
+      '#description' => $descriptions[$bit],
     );
   }
   // TODO: Should we remove existing H5P files when export gets disabled?

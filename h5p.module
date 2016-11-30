@@ -235,19 +235,19 @@ function h5p_permission() {
     ),
     'download all h5ps' => array(
       'title' => t('Download enabled for all H5Ps'),
-      'description' => t('The download button will be available for all H5Ps even if download button is hidden by configuration settings'),
+      'description' => t("The download button will be available for all H5Ps even if download button is hidden by configuration settings. This won't have any effect if download button is globally disabled"),
     ),
     'download own h5ps' => array(
       'title' => t('Download enabled for own H5Ps'),
-      'description' => t('The download button will be available for own H5Ps even if download button is hidden by configuration settings'),
+      'description' => t("The download button will be available for own H5Ps even if download button is hidden by configuration settings. This won't have any effect if download button is globally disabled"),
     ),
     'embed all h5ps' => array(
       'title' => t('Embed enabled for all H5Ps'),
-      'description' => t('The embed button will be available for all H5Ps even if embed button is hidden by configuration settings'),
+      'description' => t("The embed button will be available for all H5Ps even if embed button is hidden by configuration settings. This won't have any effect if embed button is globally disabled"),
     ),
     'embed own h5ps' => array(
       'title' => t('Embed enabled for own H5Ps'),
-      'description' => t('The embed button will be available for own H5Ps even if embed button is hidden by configuration settings'),
+      'description' => t("The embed button will be available for own H5Ps even if embed button is hidden by configuration settings. This won't have any effect if embed button is globally disabled"),
     ),
   );
 }
@@ -367,6 +367,20 @@ function _h5p_get_disable_labels() {
     H5PCore::DISABLE_ABOUT => t('About H5P button')
   );
 }
+
+/**
+ * Provide descriptions for display options.
+ */
+function _h5p_get_disable_descriptions() {
+  return array(
+    H5PCore::DISABLE_FRAME => '',
+    H5PCore::DISABLE_DOWNLOAD => t("When disabling the download button the permissions related to this won't have any effect"),
+    H5PCore::DISABLE_EMBED => t("When disabling the embed button the permissions related to this won't have any effect"),
+    H5PCore::DISABLE_COPYRIGHT => '',
+    H5PCore::DISABLE_ABOUT => ''
+  );
+}
+
 
 /**
  * Validate the h5p file
