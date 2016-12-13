@@ -260,6 +260,8 @@ function h5p_form(&$node, $form_state) {
 
   _h5p_maintain_session_variables();
 
+  $core = _h5p_get_instance('core');
+
   $type = node_type_get_type($node);
 
   $form['#validate'][] = 'h5p_form_validate';
@@ -282,7 +284,6 @@ function h5p_form(&$node, $form_state) {
 
   if (isset($node->json_content) || isset($node->translation_source) && isset($node->translation_source->json_content)) {
     $content = h5p_get_content(isset($node->translation_source) ? $node->translation_source : $node);
-    $core = _h5p_get_instance('core');
     $filtered_params = $core->filterParameters($content);
   }
   else {
@@ -326,19 +327,15 @@ function h5p_form(&$node, $form_state) {
         'class' => array('h5p-action-bar-settings')
       ),
       '#attached' => array(
-        'js' => array(drupal_get_path('module', 'h5p') . '/library/js/disable.js')
+        'js' => array(drupal_get_path('module', 'h5p') . '/library/js/h5p-display-options.js')
       )
     );
 
+    // Add display options
+    $display_options = $core->getDisplayOptionsForEdit($node->disable !== H5PCore::DISABLE_NONE ? $node->disable : NULL);
     $labels = _h5p_get_disable_labels();
-    foreach (H5PCore::$disable as $bit => $name) {
-      if (variable_get('h5p_' . ($bit & H5PCore::DISABLE_DOWNLOAD ? 'export' : $name), TRUE)) {
-        $form['h5p_options'][$name] = array(
-          '#type' => 'checkbox',
-          '#title' => $labels[$bit],
-          '#default_value' => !($node->disable & $bit)
-        );
-      }
+    foreach ($display_options as $name => $value) {
+      _h5p_add_display_option($form['h5p_options'], $name, $labels[$name], $value, ($name === 'frame' ? '.h5p-action-bar-settings .form-item:not(.form-item-frame)' : NULL));
     }
 
     $form['#submit'][] = '_h5p_form_submit';
@@ -348,11 +345,40 @@ function h5p_form(&$node, $form_state) {
 }
 
 /**
+ * Helper function for adding display options to form
+ *
+ * @method _h5p_add_display_option
+ * @param  Array      $element               Reference to form element
+ * @param  String     $name                  Name of form element
+ * @param  String     $title
+ * @param  String     $value
+ * @param  [type]     $visibility_subject_id A jquery selector. If this is set,
+ *                    these DOM elements will be hidden when this this checkbox
+ *                    is unchecked
+ */
+function _h5p_add_display_option (&$element, $name, $title, $value, $visibility_subject_id = null) {
+  $element[$name] = array(
+    '#type' => 'checkbox',
+    '#title' => $title,
+    '#default_value' => $value !== NULL ? $value : variable_get('h5p_' . $name, TRUE),
+  );
+
+  if ($visibility_subject_id !== null) {
+    $classes = array('h5p-visibility-toggler');
+    $element[$name]['#attributes'] = array(
+      'class' => $classes,
+      'data-h5p-visibility-subject-selector' => $visibility_subject_id,
+    );
+  }
+}
+
+
+/**
  * Handle h5p node form submission
  */
 function _h5p_form_submit($form, &$form_state) {
   $core = _h5p_get_instance('core');
-  $form_state['values']['disable'] = $core->getDisable($form_state['values'], $form_state['values']['disable']);
+  $form_state['values']['disable'] = $core->getDisplayOptionsAsByte($form_state['values'], $form_state['values']['disable']);
 }
 
 /**
@@ -360,27 +386,13 @@ function _h5p_form_submit($form, &$form_state) {
  */
 function _h5p_get_disable_labels() {
   return array(
-    H5PCore::DISABLE_FRAME => t('Display action bar and frame'),
-    H5PCore::DISABLE_DOWNLOAD => t('Download button'),
-    H5PCore::DISABLE_EMBED => t('Embed button'),
-    H5PCore::DISABLE_COPYRIGHT => t('Copyright button'),
-    H5PCore::DISABLE_ABOUT => t('About H5P button')
+    'frame' => t('Display action bar and frame'),
+    'download' => t('Download button'),
+    'embed' => t('Embed button'),
+    'copyright' => t('Copyright button'),
+    'about' => t('About H5P button')
   );
 }
-
-/**
- * Provide descriptions for display options.
- */
-function _h5p_get_disable_descriptions() {
-  return array(
-    H5PCore::DISABLE_FRAME => '',
-    H5PCore::DISABLE_DOWNLOAD => t("When disabling the download button the permissions related to this won't have any effect"),
-    H5PCore::DISABLE_EMBED => t("When disabling the embed button the permissions related to this won't have any effect"),
-    H5PCore::DISABLE_COPYRIGHT => '',
-    H5PCore::DISABLE_ABOUT => ''
-  );
-}
-
 
 /**
  * Validate the h5p file
@@ -870,10 +882,7 @@ function h5p_get_core_settings() {
 
 function h5p_get_content($node) {
   $core = _h5p_get_instance('core');
-  $node->disable |= $core->getGlobalDisable();
-  if (!($node->disable & H5PCore::DISABLE_FRAME) && !variable_get('h5p_icon_in_action_bar', TRUE)) {
-    $node->disable |= H5PCore::DISABLE_ABOUT;
-  }
+
   return array(
     'id' => h5p_get_content_id($node),
     'mainId' => $node->nid,
@@ -884,7 +893,7 @@ function h5p_get_content($node) {
     'embedType' => 'div',
     'filtered' => $node->filtered,
     'url' => url('node/' . $node->nid, array('absolute' => TRUE)),
-    'disable' => $node->disable,
+    'displayOptions' => $core->getDisplayOptionsForView($node->disable, $node->nid),
     'slug' => $node->h5p_slug
   );
 }
@@ -929,8 +938,6 @@ function h5p_get_content_settings($content) {
     $content_user_data[$result->sub_content_id][$result->data_id] = $result->data;
   }
 
-  _h5p_alter_disable_settings($content['disable'], $content['mainId']);
-
   return array(
     'library' => H5PCore::libraryToString($content['library']),
     'jsonContent' => $filtered,
@@ -942,36 +949,8 @@ function h5p_get_content_settings($content) {
     'url' => $content['url'],
     'title' => $content['title'],
     'contentUserData' => $content_user_data,
-    'disable' => $content['disable']
+    'displayOptions' => $content['displayOptions'],
   );
-}
-
-/**
- * Alter disable settings for embed and download
- */
-function _h5p_alter_disable_settings(&$disable, $nid) {
-  /**
-   * Checking if user has access to updating a node.
-   * Wrapping this in so we make sure this is only run if needed, and only once.
-   */
-  function may_user_update($nid) {
-    static $user_may_update = null;
-    return $user_may_update != null ? $user_may_update : ($user_may_update = node_access('update', node_load($nid)));
-  }
-
-  // If download is disabled
-  if ($disable & H5PCore::DISABLE_DOWNLOAD) {
-    if (user_access('download all h5ps') || (may_user_update($nid) && user_access('download own h5ps'))) {
-      $disable &= ~H5PCore::DISABLE_DOWNLOAD;
-    }
-  }
-
-  // If embed is disabled
-  if ($disable & H5PCore::DISABLE_EMBED) {
-    if (user_access('embed all h5ps') || (may_user_update($nid) && user_access('embed own h5ps'))) {
-      $disable &= ~H5PCore::DISABLE_EMBED;
-    }
-  }
 }
 
 function h5p_get_resize_url() {
