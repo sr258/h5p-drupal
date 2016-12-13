@@ -360,7 +360,7 @@ function _h5p_add_display_option (&$element, $name, $title, $value, $visibility_
   $element[$name] = array(
     '#type' => 'checkbox',
     '#title' => $title,
-    '#default_value' => $value !== NULL ? $value : variable_get('h5p_' . $name, TRUE),
+    '#default_value' => $value,
   );
 
   if ($visibility_subject_id !== null) {

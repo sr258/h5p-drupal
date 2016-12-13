@@ -30,10 +30,10 @@ function h5p_admin_settings($form, &$form_state) {
     H5PDisplayOptionBehaviour::ALWAYS_SHOW => t('Always show'),
     H5PDisplayOptionBehaviour::CONTROLLED_BY_PERMISSIONS => t('Show only if permitted through permissions'),
     H5PDisplayOptionBehaviour::CONTROLLED_BY_AUTHOR_DEFAULT_ON => t('Controlled by author, default is on'),
-    H5PDisplayOptionBehaviour::CONTROLLED_BY_AUTHOR_DEFAULT_OFF => t('Controlled by author, default is on'),
+    H5PDisplayOptionBehaviour::CONTROLLED_BY_AUTHOR_DEFAULT_OFF => t('Controlled by author, default is off'),
   );
 
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display action bar and frame'), NULL, '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display action bar and frame'), variable_get('h5p_frame', TRUE), '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
   $form['h5p_display_options']['h5p_export'] = array(
     '#title' => t('Download button'),
     '#options' => $button_behaviours,
@@ -46,8 +46,8 @@ function h5p_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('h5p_embed', H5PDisplayOptionBehaviour::ALWAYS_SHOW),
     '#type' => 'select',
   );
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_copyright', t('Copyright button'), NULL);
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_icon', t('About H5P button'), NULL);
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_copyright', t('Copyright button'), variable_get('h5p_copyright', TRUE));
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_icon', t('About H5P button'), variable_get('h5p_icon', TRUE));
   // TODO: Should we remove existing H5P files when export gets disabled?
 
   $form['h5p_default_path'] = array(
