@@ -885,8 +885,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * @return boolean
    */
   private static function mayCurrentUserUpdateNode($nid) {
-    static $user_may_update = null;
-    return $user_may_update != null ? $user_may_update : ($user_may_update = node_access('update', node_load($nid)));
+    return node_access('update', node_load($nid));
   }
 
   /**
