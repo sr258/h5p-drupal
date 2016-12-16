@@ -378,7 +378,7 @@ function _h5p_add_display_option (&$element, $name, $title, $value, $visibility_
  */
 function _h5p_form_submit($form, &$form_state) {
   $core = _h5p_get_instance('core');
-  $form_state['values']['disable'] = $core->getDisplayOptionsAsByte($form_state['values'], $form_state['values']['disable']);
+  $form_state['values']['disable'] = $core->getStorableDisplayOptions($form_state['values'], $form_state['values']['disable']);
 }
 
 /**
