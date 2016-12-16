@@ -335,7 +335,7 @@ function h5p_form(&$node, $form_state) {
     $display_options = $core->getDisplayOptionsForEdit($node->disable !== H5PCore::DISABLE_NONE ? $node->disable : NULL);
     $labels = _h5p_get_disable_labels();
     foreach ($display_options as $name => $value) {
-      _h5p_add_display_option($form['h5p_options'], $name, $labels[$name], $value, ($name === 'frame' ? '.h5p-action-bar-settings .form-item:not(.form-item-frame)' : NULL));
+      _h5p_add_display_option($form['h5p_options'], $name, $labels[$name], $value, ($name === H5PCore::DISPLAY_OPTION_FRAME ? '.h5p-action-bar-settings .form-item:not(.form-item-frame)' : NULL));
     }
 
     $form['#submit'][] = '_h5p_form_submit';
@@ -386,11 +386,11 @@ function _h5p_form_submit($form, &$form_state) {
  */
 function _h5p_get_disable_labels() {
   return array(
-    'frame' => t('Display action bar and frame'),
-    'download' => t('Download button'),
-    'embed' => t('Embed button'),
-    'copyright' => t('Copyright button'),
-    'about' => t('About H5P button')
+    H5PCore::DISPLAY_OPTION_FRAME => t('Display action bar and frame'),
+    H5PCore::DISPLAY_OPTION_DOWNLOAD => t('Download button'),
+    H5PCore::DISPLAY_OPTION_EMBED => t('Embed button'),
+    H5PCore::DISPLAY_OPTION_COPYRIGHT => t('Copyright button'),
+    H5PCore::DISPLAY_OPTION_ABOUT => t('About H5P button')
   );
 }
 
