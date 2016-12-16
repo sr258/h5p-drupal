@@ -880,8 +880,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Helper function to determine access
    *
-   * @method mayCurrentUserUpdateNode
-   * @param  int    $nid
+   * @param int $nid
    * @return boolean
    */
   private static function mayCurrentUserUpdateNode($nid) {
@@ -891,18 +890,23 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements hasPermission
    *
-   * @method hasPermission
-   * @param  H5PPermission $permission
-   * @param  int           $content_id
-   * @return boolean
+   * @param H5PPermission $permission
+   * @param int $content_id
+   * @return bool
    */
   public function hasPermission($permission, $content_id = NULL) {
     switch ($permission) {
       case H5PPermission::DOWNLOAD_H5P:
-        return $content_id !== NULL && (user_access('download all h5ps') || (self::mayCurrentUserUpdateNode($content_id) && user_access('download own h5ps')));
+        return $content_id !== NULL && (
+          user_access('download all h5ps') ||
+          (self::mayCurrentUserUpdateNode($content_id) && user_access('download own h5ps'))
+        );
 
       case H5PPermission::EMBED_H5P:
-        return $content_id !== NULL && (user_access('embed all h5ps') || (self::mayCurrentUserUpdateNode($content_id) && user_access('embed own h5ps')));
+        return $content_id !== NULL && (
+          user_access('embed all h5ps') ||
+          (self::mayCurrentUserUpdateNode($content_id) && user_access('embed own h5ps'))
+        );
     }
     return FALSE;
   }
