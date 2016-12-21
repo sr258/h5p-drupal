@@ -239,7 +239,7 @@ function h5p_permission() {
     ),
     'download own h5ps' => array(
       'title' => t('Download enabled for own H5Ps'),
-      'description' => t("The download button will be available for own H5Ps even if download button is hidden by configuration settings. This won't have any effect if download button is globally disabled"),
+      'description' => t("The download button will be available for H5Ps the user has access to edit even if download button is hidden by configuration settings. This won't have any effect if download button is globally disabled"),
     ),
     'embed all h5ps' => array(
       'title' => t('Embed enabled for all H5Ps'),
@@ -247,7 +247,7 @@ function h5p_permission() {
     ),
     'embed own h5ps' => array(
       'title' => t('Embed enabled for own H5Ps'),
-      'description' => t("The embed button will be available for own H5Ps even if embed button is hidden by configuration settings. This won't have any effect if embed button is globally disabled"),
+      'description' => t("The embed button will be available for H5Ps the user has access to edit even even if embed button is hidden by configuration settings. This won't have any effect if embed button is globally disabled"),
     ),
   );
 }
