@@ -268,6 +268,23 @@ ns.findLibraryAncestor = function (parent) {
 };
 
 /**
+ * getParentZebra
+ *
+ * Alternate the background color of fields
+ *
+ * @param parent
+ * @returns {string} to determine background color of callee
+ */
+ns.getParentZebra = function (parent) {
+  if (parent.zebra) {
+    return parent.zebra;
+  }
+  else {
+    return ns.getParentZebra(parent.parent);
+  }
+};
+
+/**
  * Find the nearest ancestor which handles commonFields.
  *
  * @param {type} parent
@@ -400,8 +417,12 @@ ns.createError = function (message) {
  * @returns {String}
  */
 ns.createImportance = function (importance) {
-  if(importance) return 'importance-'.concat(importance);
-  else return '';
+  if (importance) {
+    return 'importance-'.concat(importance);
+  }
+  else {
+    return '';
+  }
 };
 
 
@@ -568,26 +589,32 @@ ns.htmlspecialchars = function(string) {
  * @param {string} id Typical CSS class format
  * @param {string} title Human readable format
  * @param {function} handler Action handler when triggered
+ * @param {boolean} [displayTitle=false] Show button with text
  * @return {H5P.jQuery}
  */
-ns.createButton = function (id, title, handler) {
-  return ns.$('<div/>', {
+ns.createButton = function (id, title, handler, displayTitle) {
+  var options = {
     class: 'h5peditor-button ' + id,
     role: 'button',
     tabIndex: 0,
-    'aria-label': title,
+    'aria-disabled': 'false',
     on: {
       click: function (event) {
-        handler();
+        handler.call(this);
       },
       keydown: function (event) {
         switch (event.which) {
           case 13: // Enter
           case 32: // Space
-            handler();
+            handler.call(this);
             event.preventDefault();
         }
       }
     }
-  });
+  };
+
+  // Determine if we're a icon only button or have a textual label
+  options[displayTitle ? 'html' : 'aria-label'] = title;
+
+  return ns.$('<div/>', options);
 };

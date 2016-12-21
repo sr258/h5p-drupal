@@ -80,7 +80,18 @@ a {
     color: $form-input-placeholder-color;
   }
   select {
-    padding: 2px;
+    padding: 10px 30px 10px 8px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 16px;
+    border: 1px solid $form-border-color;;
+    background: $form-input-color inline-image('down.png') no-repeat;
+    background-position: calc(100% - 10px);
+    @include box-shadow($form-input-box-shadow);
+    -moz-appearance: none;
+    -webkit-appearance: none;
+  }
+  select::-ms-expand {
+    display: none;
   }
   a:focus {
     outline: none;
@@ -103,8 +114,8 @@ a {
 
       &.placeholder {
         box-sizing: border-box;
-        background: $white;
-        border: 1px solid $form-border-color;
+        background: #e8f2fa;
+        border: dashed 2px #2782d1;
       }
 
       &:hover {
@@ -121,7 +132,7 @@ a {
     }
   }
   input[type="button"], button {
-    @include border-radius(3px);
+    @include border-radius(0.25em);
     @include button-background(
       $form-item-importance-medium-background,
       $form-item-importance-medium-background-highlight);
@@ -136,6 +147,12 @@ a {
     line-height: $form-item-height-normal;
     color: $white;
     cursor: pointer;
+    font-weight: 600;
+
+    &:before,
+    &:after {
+      color: $white;
+    }
 
     &[disabled] {
       opacity: 0.5;
@@ -145,7 +162,6 @@ a {
       @include button-background(
         $form-item-importance-medium-background-hover,
         $form-item-importance-medium-background-hover-highlight);
-      border-color: $form-item-importance-medium-background-hover;
       text-decoration: none;
     }
 
@@ -154,18 +170,23 @@ a {
     }
 
     &.importance-high {
-      @include border-radius(3px);
+      @include border-radius(0.25em);
       @include button-background(
         $form-item-importance-high-background,
         $form-item-importance-high-background-highlight);
       border: 1px solid $form-item-importance-high-border-color;
       text-transform: uppercase;
-      font-size: $font-size-large;
+      font-size: $font-size-normal;
       font-weight: 600;
       color: $white;
       height: $form-item-height-large;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+
+      &:before,
+      &:after {
+        color: $white;
+      }
 
       &:hover:not([disabled]) {
         @include button-background(
@@ -176,24 +197,29 @@ a {
     }
 
     &.importance-low {
-      @include border-radius(3px);
+      @include border-radius(0.25em);
       @include button-background(
-        $form-item-importance-medium-background,
-        $form-item-importance-medium-background-highlight);
-      border: 1px solid $form-item-importance-medium-border-color;
+        $form-item-importance-low-background,
+        $form-item-importance-low-background-highlight);
+      border: 1px solid $form-item-importance-low-border-color;
       text-transform: uppercase;
       font-size: $font-size-normal;
       font-weight: 600;
-      color: $text-color;
+      color: $black;
       height: $form-item-height-normal;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
 
+      &:before,
+      &:after {
+        color: $black;
+      }
+
       &:hover:not([disabled]) {
         @include button-background(
-          $form-item-importance-medium-background-hover,
-          $form-item-importance-medium-background-hover-highlight);
-        border-color: $form-item-importance-medium-background-hover;
+          $form-item-importance-low-background-hover,
+          $form-item-importance-low-background-hover-highlight);
+        border-color: $form-item-importance-low-background-hover;
       }
     }
   }
@@ -273,12 +299,12 @@ a {
       color: #b83c3c;
       background: transparent;
       border: 0;
-      outline: 0;
       cursor: pointer;
     }
     .h5p-cancel:focus,
     .h5p-cancel:hover {
       color: #e20d0d;
+      background: transparent;
     }
   }
   .h5p-or {
@@ -349,6 +375,9 @@ a {
   .file {
     position: relative;
 
+    .file {
+      float: left;
+    }
     .thumbnail {
       display: inline-block;
       margin: 10px 10px 10px 0;
@@ -360,11 +389,12 @@ a {
       display: inline-block;
       cursor: pointer;
       padding: 0.5em 1.5em 0.5em 1.2em;
-      background: linear-gradient(to bottom, #ffffff 0, #f2f2f2 100%);
-      border: 1px solid #cccccc;
+      background: linear-gradient(to bottom, #fbfbfb 0, #f2f2f2 100%);
+      border: 1px solid #d0d0d1;
       border-radius: 0.25em;
       color: #222222;
-      font-weight:bold;
+      font-weight: bold;
+      text-transform: uppercase;
 
       &:hover {
         background: #ededed;
@@ -473,46 +503,45 @@ a {
   }
 
   a.h5p-copyright-button {
-    background: linear-gradient(to bottom,#fff 0,#f2f2f2 100%);
-    border: 1px solid #ccc;
-    border-radius: 0.25em;
-    font-size: 0.875em;
-    color: #333;
-    cursor: pointer;
-    line-height: 2em;
-
-    &:before {
-      padding-left: 0.25em;
-    }
+    height: $form-item-height-small;
+    float: left;
+    display: block;
   }
 
   .h5p-copyright-button {
-    float: left;
-    display: block;
+    @include border-radius(0.25em);
+    height: 30px;
+    background: linear-gradient(to bottom, #fff 0, #f2f2f2 100%);
+    border: 1px solid $form-border-color;
+    color: $black;
+    font-size: $font-size-small;
+    line-height: $form-item-height-small;
+    padding-right: $padding;
+    padding-left: 0;
+    margin-bottom: $min-padding;
     clear: both;
-    padding-right: 1em;
-    line-height: 1.5;
-    margin-bottom: 0.5em;
+    font-weight: normal;
 
     &:before {
       font-family: $i;
       content: "\e88f";
       color: #666;
-      padding-right: 0.25em;
+      padding: 0 0.25em 0 0.25em;
       vertical-align: middle;
       font-size: 1.5em;
       line-height: 0.9;
     }
-    &:hover {
+
+    &:hover:not([disabled]) {
+      background: linear-gradient(to bottom, #fff 0, #d0d0d1 100%);
       text-decoration: none;
-      border-color: #999;
+      border-color: #666666;
     }
   }
 
   .h5p-editor-dialog {
     position: absolute;
     z-index: 1;
-    background: #fff;
     padding: 10px 10px 0;
     margin: 5.5em 0 1em;
     visibility: hidden;
@@ -536,6 +565,17 @@ a {
       box-shadow: none;
     }
 
+    .content {
+      border: none;
+      background: $white;
+
+      .h5peditor-label {
+        color: $black;
+        font-size: $font-size-large;
+        font-weight: 600;
+      }
+    }
+
     .h5p-close {
       color: #494949;
 
@@ -556,45 +596,8 @@ a {
     }
   }
 
-  .h5p-editing-image-button {
-    line-height: 1.5;
-    margin-right: 0.5em;
-    margin-bottom: 0.5em;
-    padding-right: 1em;
-  }
-
-  .h5p-editing-image-button:before {
-    font-family: "H5P";
-    content: "\e900";
-    color: #666;
-    padding-right: 0.25em;
-    vertical-align: middle;
-    font-size: 1.5em;
-    line-height: 0.9;
-  }
-
-  .ui-dialog .h5p-editing-image-button,
-  .ui-dialog .h5p-copyright-button {
-    padding-left: 0.5em;
-  }
-
-  .h5p-editing-image-button.loading:before {
-    content: "\e901";
-  }
-
   .h5p-editing-image-button.hidden {
     display: none;
-  }
-
-  .h5p-editor-image-buttons {
-    .h5p-editor-image-buttons {
-      display: block;
-    }
-
-    .h5p-copyright-button {
-      float: none;
-      display: inline-block;
-    }
   }
 
   .h5p-li > .content > .library {
@@ -606,27 +609,27 @@ a {
 .h5peditor-field-description,
 .h5p-help-text {
   font-size: 12px;
-  margin-top: 6px;
-  margin-bottom: 6px;
+  margin-top: 4px;
+  margin-bottom: 8px;
   font-weight: 500;
-  color: #454347;
+  color: #5d6c7d;
   line-height: 15px;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.5px;
 }
 
 .h5peditor-form {
   position: relative;
-  padding: 10px;
+  padding: 20px;
   background: $form-background;
   border: 1px solid $form-border-color;
 }
 
 .h5peditor-label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-weight: 600;
-  font-size: 20px;
-  color: #1b5891;
+  font-size: 1.1em;
+  color: $blue;
 }
 
 #h5peditor-uploader {
@@ -662,10 +665,10 @@ a {
   border: 1px solid #ccc;
   border-bottom: 0;
   margin-left: 0.5em;
-  padding: 0.25em 0.5em;
-  color: #555;
+  padding: 0.6em 1em;
+  color: #0E1A25;
   font-size: 0.875em;
-  background: #f4f4f4;
+  background: #e4eaf2;
   line-height: 1.285714286em;
   cursor: pointer;
   outline: none;
@@ -847,4 +850,23 @@ body.h5p-editor-image-popup {
     background: none;
     color: #e40000;
   }
+}
+
+.h5peditor-widgets > .h5peditor-label {
+  margin-top: 5px;
+}
+
+/* Help CKEditor blend into the H5PEditor */
+.h5peditor .cke_bottom,
+.h5peditor .cke_top {
+  background: #e4eaf2;
+}
+.h5peditor .cke_chrome {
+  border: 1px solid #D0D0D1;
+  background: #e4eaf2;
+}
+.h5peditor .cke_contents,
+.h5peditor .cke_toolgroup,
+.h5peditor .cke_combo_button {
+  border: 1px solid #D0D0D1;
 }

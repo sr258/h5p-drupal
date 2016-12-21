@@ -1,5 +1,9 @@
+@import 'variables';
+@import 'mixins';
+
 %title-bar-base {
   visibility: inherit;
+  cursor: pointer;
 }
 
 %title-bar-importance-high {
@@ -51,10 +55,8 @@
     @extend %title-bar-base;
     @extend %title-bar-importance-medium;
     @extend %title-bar-text-importance-medium;
-
     padding: 0 $min-padding;
     outline: none;
-    cursor: pointer;
     color: $white;
   }
 
@@ -81,13 +83,46 @@
     &:before {
       color: $text-color;
     }
+
     &:focus:before {
       outline: 1px dashed $text-color;
     }
   }
 }
 
-.list-item-title-bar {
+// Zebra pattern for lists and groups
+.h5p-collection > .content {
+  background-color: $white;
+}
+
+.common,
+.h5p-collection > .content {
+  .h5p-collection > .content {
+    background-color: $form-background;
+
+    .h5p-collection > .content {
+      background-color: $white;
+
+      .h5p-collection > .content {
+        background-color: $form-background;
+
+        .h5p-collection > .content {
+          background-color: $white;
+
+          .h5p-collection > .content {
+            background-color: $form-background;
+
+            .h5p-collection > .content {
+              background-color: $white;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.h5p-li > .list-item-title-bar {
   @extend %title-bar-base;
   @extend %title-bar-importance-medium;
 
@@ -103,9 +138,18 @@
     text-overflow: ellipsis;
   }
 
+  &.importance-high > .h5peditor-label {
+    @extend %title-bar-text-importance-high;
+  }
+
+  &.importance-low > .h5peditor-label {
+    @extend %title-bar-text-importance-low;
+  }
+
   & > .list-actions {
     height: 100%;
     float: right;
+    position: relative;
   }
 
   .remove {
@@ -266,7 +310,7 @@
 .listgroup > .list-item-title-bar > .h5peditor-label {
   cursor: pointer;
 }
-.list-item-title-bar > .h5peditor-label,
+.list-item-title-bar > .title,
 .group > .title  {
   &:before {
     content: "\e566";
@@ -308,7 +352,7 @@
 }
 
 .common {
-  margin-top: $min-padding;
+  margin-top: $padding;
 
   & > .h5peditor-label {
     @extend %title-bar-base;
@@ -321,10 +365,18 @@
     & > .icon:before {
       content: "\e565";
       font-family: $i;
-      opacity: 0.7;
+      margin-right: 5px;
     }
     &:hover > .icon {
       opacity: 1;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus > .icon:before {
+      outline: 1px dashed $text-color;
     }
   }
   & > .fields {
@@ -333,6 +385,12 @@
     border: 1px solid $form-border-color;
     border-top: none;
     background: $form-content-background;
+
+    .h5peditor-label {
+      color: $black;
+      font-size: $font-size-large;
+      font-weight: 600;
+    }
 
     & > .desc {
       margin: 0;
@@ -360,16 +418,14 @@
 }
 
 .h5peditor-button[aria-label] {
-  position: relative;
 
   &:before {
     content: attr(aria-label);
     visibility: hidden;
 
     position: absolute;
-    top: 125%;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 115%;
+    right: -10%;
     z-index: 2;
 
     padding: 0.25em 0.75em;
@@ -381,8 +437,13 @@
     box-shadow: 0 0 0.5em $form-input-placeholder-color;
   }
 
-  &:hover:before,
-  &:focus:before {
+  &:hover:before {
     visibility: visible;
   }
+
+  &[aria-disabled="true"]:before {
+    display: none;
+  }
+
+
 }
