@@ -1233,4 +1233,5 @@ function h5p_update_7112() {
 function h5p_update_7113() {
   variable_set('h5p_icon', variable_get('h5p_icon_in_action_bar', TRUE));
   variable_del('h5p_icon_in_action_bar');
+  drupal_set_message('<span style="font-weight: bold;">Upgrade your H5P content types!</span> Old content types will still work, but the authoring tool will look and feel much better if you <a href="https://h5p.org/update-all-content-types">upgrade the content types</a>.', 'warning');
 }
