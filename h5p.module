@@ -386,7 +386,7 @@ function _h5p_form_submit($form, &$form_state) {
  */
 function _h5p_get_disable_labels() {
   return array(
-    H5PCore::DISPLAY_OPTION_FRAME => t('Display action bar and frame'),
+    H5PCore::DISPLAY_OPTION_FRAME => t('Display buttons (download, embed and copyright)'),
     H5PCore::DISPLAY_OPTION_DOWNLOAD => t('Download button'),
     H5PCore::DISPLAY_OPTION_EMBED => t('Embed button'),
     H5PCore::DISPLAY_OPTION_COPYRIGHT => t('Copyright button'),

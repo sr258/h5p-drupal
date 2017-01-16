@@ -33,7 +33,7 @@ function h5p_admin_settings($form, &$form_state) {
     H5PDisplayOptionBehaviour::CONTROLLED_BY_AUTHOR_DEFAULT_OFF => t('Controlled by author, default is off'),
   );
 
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display action bar and frame'), variable_get('h5p_frame', TRUE), '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display buttons (download, embed and copyright)'), variable_get('h5p_frame', TRUE), '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
   $form['h5p_display_options']['h5p_export'] = array(
     '#title' => t('Download button'),
     '#options' => $button_behaviours,
