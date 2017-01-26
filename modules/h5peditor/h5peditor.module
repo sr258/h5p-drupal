@@ -147,6 +147,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
 
   $content_validator = _h5p_get_instance('contentvalidator');
   $file_path = file_stream_wrapper_get_instance_by_uri('public://')->getDirectoryPath();
+  $content_id = h5p_get_content_id($node);
   $settings = array(
     'h5peditor' => array(
       'filesPath' => base_path() . $file_path . '/h5peditor',
@@ -155,7 +156,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
         'width' => 50,
         'height' => 50,
       ),
-      'ajaxPath' => url('h5peditor/' . H5PCore::createToken('editorajax') . '/' . (isset($node->nid) ? $node->nid : 0) . '/'),
+      'ajaxPath' => url('h5peditor/' . H5PCore::createToken('editorajax') . '/' . ($content_id ? $content_id : 0) . '/'),
       'modulePath' => $h5peditor_module_path,
       'libraryPath' => _h5p_get_h5p_path() . '/libraries/',
       'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
@@ -166,7 +167,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
   );
 
   if (isset($node->json_content)) {
-    $settings['h5peditor']['nodeVersionId'] = h5p_get_content_id($node);
+    $settings['h5peditor']['nodeVersionId'] = $content_id;
   }
 
   drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));
