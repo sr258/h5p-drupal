@@ -112,20 +112,6 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   /**
-   * Implementation of getUnsupportedLibraries
-   */
-  public function getUnsupportedLibraries() {
-    return variable_get('h5p_unsupported_libraries');
-  }
-
-  /**
-   * Implementation of setUnsupportedLibraries
-   */
-  public function setUnsupportedLibraries($libraries) {
-    variable_set('h5p_unsupported_libraries', $libraries);
-  }
-
-  /**
    * Implements getAdminUrl
    */
   public function getAdminUrl() {
@@ -320,7 +306,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       $libraryData['libraryId'] = $libraryId;
       if ($libraryData['runnable']) {
         if (!variable_get('h5p_first_runnable_saved', 0)) {
-          variable_set('h5p_first_runnable_saved', 1);
+          h5p_variable_set('h5p_first_runnable_saved', 1);
         }
       }
     }
@@ -803,7 +789,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    *   Whatever we want to store as the setting
    */
   public function setOption($name, $value) {
-    variable_set('h5p_' . $name, $value);
+    h5p_variable_set('h5p_' . $name, $value);
   }
 
   /**
@@ -883,5 +869,45 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements deleteCachedAssets
    */
   public function deleteCachedAssets($library_id) {
+  }
+
+  /**
+   * Implements afterExportCreated
+   */
+  public function afterExportCreated() {
+  }
+
+  /**
+   * Helper function to determine access
+   *
+   * @param int $nid
+   * @return boolean
+   */
+  private static function mayCurrentUserUpdateNode($nid) {
+    return node_access('update', node_load($nid));
+  }
+
+  /**
+   * Implements hasPermission
+   *
+   * @param H5PPermission $permission
+   * @param int $content_id
+   * @return bool
+   */
+  public function hasPermission($permission, $content_id = NULL) {
+    switch ($permission) {
+      case H5PPermission::DOWNLOAD_H5P:
+        return $content_id !== NULL && (
+          user_access('download all h5ps') ||
+          (self::mayCurrentUserUpdateNode($content_id) && user_access('download own h5ps'))
+        );
+
+      case H5PPermission::EMBED_H5P:
+        return $content_id !== NULL && (
+          user_access('embed all h5ps') ||
+          (self::mayCurrentUserUpdateNode($content_id) && user_access('embed own h5ps'))
+        );
+    }
+    return FALSE;
   }
 }

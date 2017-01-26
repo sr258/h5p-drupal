@@ -53,11 +53,11 @@ class H5PDefaultStorage implements \H5PFileStorage {
    *
    * @param string $source
    *  Path on file system to content directory.
-   * @param int $id
-   *  What makes this content unique.
+   * @param array $content
+   *  Content properties
    */
-  public function saveContent($source, $id) {
-    $dest = "{$this->path}/content/{$id}";
+  public function saveContent($source, $content) {
+    $dest = "{$this->path}/content/{$content['id']}";
 
     // Remove any old content
     \H5PCore::deleteFileTree($dest);
@@ -68,11 +68,11 @@ class H5PDefaultStorage implements \H5PFileStorage {
   /**
    * Remove content folder.
    *
-   * @param int $id
-   *  Content identifier
+   * @param array $content
+   *  Content properties
    */
-  public function deleteContent($id) {
-    \H5PCore::deleteFileTree("{$this->path}/content/{$id}");
+  public function deleteContent($content) {
+    \H5PCore::deleteFileTree("{$this->path}/content/{$content['id']}");
   }
 
   /**
@@ -109,7 +109,15 @@ class H5PDefaultStorage implements \H5PFileStorage {
    *  Where the content folder will be saved
    */
   public function exportContent($id, $target) {
-    self::copyFileTree("{$this->path}/content/{$id}", $target);
+    $source = "{$this->path}/content/{$id}";
+    if (file_exists($source)) {
+      // Copy content folder if it exists
+      self::copyFileTree($source, $target);
+    }
+    else {
+      // No contnet folder, create emty dir for content.json
+      self::dirReady($target);
+    }
   }
 
   /**
@@ -135,11 +143,18 @@ class H5PDefaultStorage implements \H5PFileStorage {
    *  Path on file system to temporary export file.
    * @param string $filename
    *  Name of export file.
+   * @throws Exception Unable to save the file
    */
   public function saveExport($source, $filename) {
     $this->deleteExport($filename);
-    self::dirReady("{$this->path}/exports");
-    copy($source, "{$this->path}/exports/{$filename}");
+
+    if (!self::dirReady("{$this->path}/exports")) {
+      throw new Exception("Unable to create directory for H5P export file.");
+    }
+
+    if (!copy($source, "{$this->path}/exports/{$filename}")) {
+      throw new Exception("Unable to save H5P export file.");
+    }
   }
 
   /**
@@ -152,6 +167,17 @@ class H5PDefaultStorage implements \H5PFileStorage {
     if (file_exists($target)) {
       unlink($target);
     }
+  }
+
+  /**
+   * Check if the given export file exists
+   *
+   * @param string $filename
+   * @return boolean
+   */
+  public function hasExport($filename) {
+    $target = "{$this->path}/exports/{$filename}";
+    return file_exists($target);
   }
 
   /**
@@ -271,7 +297,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
     // Prepare directory
     if (empty($contentId)) {
       // Should be in editor tmp folder
-      $path = ($this->alteditorpath !== NULL ? $this->alteditorpath : $path . '/editor');
+      $path = ($this->alteditorpath !== NULL ? $this->alteditorpath : $this->path . '/editor');
     }
     else {
       // Should be in content folder
@@ -290,6 +316,8 @@ class H5PDefaultStorage implements \H5PFileStorage {
     else {
       copy($_FILES['file']['tmp_name'], $path);
     }
+
+    return $path;
   }
 
   /**
@@ -373,6 +401,8 @@ class H5PDefaultStorage implements \H5PFileStorage {
       throw new \Exception('unabletocopy');
     }
 
+    $ignoredFiles = self::getIgnoredFiles("{$source}/.h5pignore");
+
     $dir = opendir($source);
     if ($dir === FALSE) {
       trigger_error('Unable to open directory ' . $source, E_USER_WARNING);
@@ -380,7 +410,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
     }
 
     while (false !== ($file = readdir($dir))) {
-      if (($file != '.') && ($file != '..') && $file != '.git' && $file != '.gitignore') {
+      if (($file != '.') && ($file != '..') && $file != '.git' && $file != '.gitignore' && !in_array($file, $ignoredFiles)) {
         if (is_dir("{$source}/{$file}")) {
           self::copyFileTree("{$source}/{$file}", "{$destination}/{$file}");
         }
@@ -390,6 +420,25 @@ class H5PDefaultStorage implements \H5PFileStorage {
       }
     }
     closedir($dir);
+  }
+
+  /**
+   * Retrieve array of file names from file.
+   *
+   * @param string $file
+   * @return array Array with files that should be ignored
+   */
+  private static function getIgnoredFiles($file) {
+    if (file_exists($file) === FALSE) {
+      return array();
+    }
+
+    $contents = file_get_contents($file);
+    if ($contents === FALSE) {
+      return array();
+    }
+
+    return preg_split('/\s+/', $contents);
   }
 
   /**
