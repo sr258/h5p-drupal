@@ -819,14 +819,9 @@ function h5p_get_core_settings() {
     'baseUrl' => $base_url,
     'url' => base_path() . _h5p_get_h5p_path(),
     'postUserStatistics' =>  $user->uid > 0,
-    'ajaxPath' => url('h5p-ajax') . '/',
     'ajax' => array(
-      'setFinished' => url('h5p-ajax/set-finished.json'),
-      'contentUserData' => str_replace('%3A', ':', url('h5p-ajax/content-user-data/:contentId/:dataType/:subContentId'))
-    ),
-    'tokens' => array(
-      'result' => H5PCore::createToken('result'),
-      'contentUserData' => H5PCore::createToken('contentuserdata')
+      'setFinished' => url('h5p-ajax/set-finished.json', array('query' => array('token' => \H5PCore::createToken('result')))),
+      'contentUserData' => str_replace('%3A', ':', url('h5p-ajax/content-user-data/:contentId/:dataType/:subContentId', array('query' => array('token' => \H5PCore::createToken('contentuserdata')))))
     ),
     'saveFreq' => variable_get('h5p_save_content_state', 0) ? variable_get('h5p_save_content_frequency', 30) : FALSE,
     'l10n' => array(
@@ -1331,7 +1326,6 @@ function h5p_access_user_points($account = NULL) {
 
 /**
  * Handles insert, updating and deleteing content user data through AJAX.
- * TODO: Use token to prevent false deletion of data?
  *
  * @param string $content_id
  * @param string $data_id
@@ -1356,7 +1350,7 @@ function h5p_content_user_data($content_id, $data_id, $sub_content_id) {
   $preload = filter_input(INPUT_POST, 'preload');
   $invalidate = filter_input(INPUT_POST, 'invalidate');
   if ($data !== NULL && $preload !== NULL && $invalidate !== NULL) {
-    if (!H5PCore::validToken('contentuserdata', filter_input(INPUT_POST, 'token'))) {
+    if (!H5PCore::validToken('contentuserdata', filter_input(INPUT_GET, 'token'))) {
       return H5PCore::ajaxError(t('Invalid security token.'));
     }
 
