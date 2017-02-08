@@ -759,7 +759,7 @@ function h5p_set_started($content_id) {
 function h5p_set_finished() {
   global $user;
 
-  if (!H5PCore::validToken('result', filter_input(INPUT_POST, 'token'))) {
+  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
     return H5PCore::ajaxError(t('Invalid security token.'));
   }
 
