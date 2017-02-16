@@ -115,6 +115,15 @@ function h5p_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // TODO: Implement more granular permission for endpoint (h5p_library_install_access)
+  $items['h5p-ajax/library/install'] = array(
+    'title' => 'H5P Install Library',
+    'page callback' => 'h5p_library_install',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'h5p.admin.inc',
+  );
+
   return $items;
 }
 

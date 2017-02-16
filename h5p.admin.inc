@@ -398,6 +398,74 @@ function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
 }
 
 /**
+ * Install library from external file
+ */
+function h5p_library_install() {
+  // Get endpoint from post
+  $endpoint = isset($_POST['contentTypeUrl']) ? $_POST['contentTypeUrl'] : '';
+  // TODO: Test with no endpoint/post specified
+  $h5p_data = file_get_contents($endpoint);
+  $h5p_core = _h5p_get_instance('storage');
+
+  $response = (object) array(
+    'success' => false
+  );
+  if (!$h5p_data) {
+    $h5p_core->h5pF->setErrorMessage(
+      t('The library was not found on the hub, please notify an H5P admin on H5P.org')
+    );
+  }
+  else {
+    // New uploads need to be saved in temp in order to be viewable
+    // during node preview.
+    $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . uniqid('h5p-');
+    file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
+//    $file = file_save_data($h5p_data, $temporary_file_path . '/libraries.h5p');
+    $file = file_unmanaged_save_data($h5p_data, $temporary_file_path . '/libraries.h5p');
+
+    if ($file) {
+      // These has to be set instead of sending parameters to the validation function.
+      $_SESSION['h5p_upload']        = drupal_realpath($file);
+      $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+
+      $validator = _h5p_get_instance('validator');
+      if ($validator->isValidPackage(TRUE, FALSE) === FALSE) {
+        $h5p_core->h5pF->setErrorMessage(
+          t('The library you requested is invaid. Please notify an H5P admin on H5P.org')
+        );
+        // Maintain session variables.
+        unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+      }
+      else {
+        // Save H5P
+        $h5p_core->savePackage(NULL, NULL, TRUE);
+        $response->success = true;
+      }
+    }
+  }
+
+  // Response
+  drupal_add_http_header('Cache-Control', 'no-cache');
+  drupal_add_http_header('Content-type', 'application/json; charset=utf-8');
+  print json_encode($response);
+}
+
+/**
+ * Check permissions for installing libraries
+ */
+function h5p_library_install_access() {
+  // TODO: Permission to install content types at all
+
+  // TODO: Check if content type is recommended
+
+  // TODO: Permission to install recommended content types
+
+  // TODO: Permission to install restricted
+
+  return TRUE;
+}
+
+/**
  * Library upload form.
  */
 function h5p_library_upload_form($form_state) {
