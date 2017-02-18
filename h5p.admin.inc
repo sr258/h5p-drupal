@@ -150,9 +150,50 @@ function h5p_admin_settings($form, &$form_state) {
  * Update content type cache
  */
 function h5p_update_content_type_cache() {
-  // TODO: Actually update the content type cache :)
+  $endpoint = 'http://hubendpoints/';
+  $result = drupal_http_request($endpoint);
+  $interface = \_h5p_get_instance('interface');
 
+  if ($result->code != 200) {
+    $interface->setErrorMessage(t('Could not connect to the H5P Content Type hub. Please try again later.'));
+    return;
+  }
 
+  $json = json_decode($result->data);
+
+  if (!isset($json->libraries) || empty($json->libraries)) {
+    $interface = \_h5p_get_instance('interface');
+    $interface->setErrorMessage(t('No libraries was found on the H5P Content Type hub. Please try again later.'));
+    return;
+  }
+
+  // Replace existing cache
+  db_delete('h5p_libraries_hub_cache')
+    ->execute();
+  foreach ($json->libraries as $library) {
+    db_insert('h5p_libraries_hub_cache')
+      ->fields(array(
+        'library_id' => $library->library_id,
+        'machine_name' => $library->machine_name,
+        'title' => $library->title,
+        'major_version' => $library->major_version,
+        'minor_version' => $library->minor_version,
+        'patch_version' => $library->patch_version,
+        'h5p_version' => $library->h5p_version,
+        'short_description' => $library->short_description,
+        'long_description' => $library->long_description,
+        'icon' => $library->icon,
+        'created' => $library->created,
+        'updated' => $library->updated,
+        'is_recommended' => $library->is_recommended,
+        'is_reviewed' => $library->is_reviewed,
+        'times_downloaded' => $library->times_downloaded,
+        'example_content' => $library->example_content
+      ))
+      ->execute();
+  }
+
+  $interface->setInfoMessage(t('Library cache was successfully updated!'));
   h5p_variable_set('h5p_content_type_cache_updated', time());
   return;
 }

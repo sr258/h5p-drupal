@@ -326,14 +326,6 @@ function h5p_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'restricted' => array(
-        'description' => 'Restricts the ability to create new content using this library.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'h5p_version' => array(
         'description' => 'The version required of H5P core.',
         'type' => 'varchar',
@@ -1398,14 +1390,6 @@ function h5p_update_7114() {
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'restricted' => array(
-        'description' => 'Restricts the ability to create new content using this library.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
       ),
       'h5p_version' => array(
         'description' => 'The version required of H5P core.',
