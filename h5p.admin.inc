@@ -128,9 +128,10 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
+  $last_updated = variable_get('h5p_content_type_cache_updated', false);
+  $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
   $form['h5p_content_type_cache_last_updated'] = array(
-    '#markup' => t('Last time content type cache was updated: ') .
-                 format_date(variable_get('h5p_content_type_cache_updated'))
+    '#markup' => t('Last time content type cache was updated: ') . $date_formatted . ' '
   );
 
   $form['h5p_update_content_type_cache'] = array(
