@@ -135,6 +135,10 @@ function h5p_enable() {
   }
 
   _h5p_inform_h5p_org_communication();
+
+  // Update content type cache
+  module_load_include('inc', 'h5p', 'h5p.admin');
+  \h5p_update_content_type_cache();
 }
 
 function _h5p_inform_h5p_org_communication() {
@@ -1459,4 +1463,17 @@ function h5p_update_7114() {
     ),
     'primary key' => array('library_id'),
   ));
+
+  // Update content type cache
+  module_load_include('inc', 'h5p', 'h5p.admin');
+
+  // Make sure the needed modules are loaded
+  module_load_include('module', 'h5p', 'h5p');
+  module_load_include('php', 'h5p', 'library/h5p-development.class');
+  module_load_include('php', 'h5p', 'library/h5p.classes');
+  module_load_include('php', 'h5p', 'library/h5p-file-storage.interface');
+  module_load_include('php', 'h5p', 'library/h5p-default-storage.class');
+  module_load_include('inc', 'h5p', 'h5p.classes');
+  module_load_include('inc', 'h5p', 'h5p.event');
+  \h5p_update_content_type_cache();
 }
