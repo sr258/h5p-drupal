@@ -124,6 +124,10 @@ function h5p_menu() {
 function h5p_cron() {
   h5p_fetch_libraries_metadata();
   remove_old_log_events();
+
+  // Update content type cache
+  module_load_include('inc', 'h5p', 'h5p.admin');
+  h5p_update_content_type_cache();
 }
 
 /**
