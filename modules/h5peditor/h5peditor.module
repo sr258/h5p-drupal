@@ -114,6 +114,15 @@ function h5peditor_h5p_content_node_form_after_build($form) {
   }
   $done = TRUE;
 
+  // Update content type cache if it is old
+  $interface = _h5p_get_instance('interface');
+  $ct_cache_last_update = $interface->getOption('content_type_cache_updated', 0);
+  $outdated_cache = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
+  if (time() > $outdated_cache) {
+    module_load_include('inc', 'h5p', 'h5p.admin');
+    \h5p_update_content_type_cache();
+  }
+
   $node = h5peditor_get_source_node($form['#node']);
   $assets = h5p_add_core_assets();
   h5p_add_files_and_settings(TRUE, TRUE); // Force integration
