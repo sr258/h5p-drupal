@@ -137,7 +137,7 @@ function h5p_admin_settings($form, &$form_state) {
       'placeholder' => (variable_get('h5p_site_uuid', '') ? '********-****-****-****-************' : t('Empty'))
     ),
     '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-uuid" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
-    '#description' => t("In seconds, how often do you wish the user to auto save their progress. Increasee this number if you're having issues with many ajax request."),
+    '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
   );
 
   // Make changes to the settings before passing them off to
