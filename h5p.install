@@ -87,6 +87,7 @@ function h5p_uninstall() {
   variable_del('h5p_update_available_path');
   variable_del('h5p_site_type');
   variable_del('h5p_enable_lrs_content_types');
+  variable_del('h5p_disable_hub');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
@@ -134,11 +135,93 @@ function h5p_enable() {
   }
 
   _h5p_inform_h5p_org_communication();
+
+  // Check requirements
+  _h5p_check_h5p_requirements();
 }
 
 function _h5p_inform_h5p_org_communication() {
   if (variable_get('h5p_allow_communication_with_h5p_org', TRUE)) {
     drupal_set_message(t('By default, H5P is set up to automatically fetch information regarding Content Type updates from H5P.org. When doing so, H5P will also contribute anonymous usage data to aid the development of H5P. This behaviour can be altered through the <a href="@url">Settings</a> page.', array('@url' => url('admin/config/system/h5p'))));
+  }
+}
+
+/**
+ * Check H5P requirements for using the plugin
+ */
+function _h5p_check_h5p_requirements() {
+  $interface = _h5p_get_instance('interface');
+  $disable_hub = FALSE;
+
+  if (!class_exists('ZipArchive')) {
+    $interface->setErrorMessage($interface->t('Your PHP version does not support ZipArchive.'));
+    $disable_hub = TRUE;
+  }
+
+  if (!extension_loaded('mbstring')) {
+    $interface->setErrorMessage(
+      $interface->t('The mbstring PHP extension is not loaded. H5P need this to function properly')
+    );
+    $disable_hub = TRUE;
+  }
+
+  // Check php version >= 5.2
+  $php_version = explode('.', phpversion());
+  if ($php_version[0] < 5 || ($php_version[0] === 5 && $php_version[1] < 2)) {
+    $interface->setErrorMessage(
+      $interface->t('Your PHP version is too old. H5P needs at least version 5.2 to function properly')
+    );
+    $disable_hub = TRUE;
+  }
+
+  // Check max upload and post size
+  function return_bytes($val) {
+    $val = trim($val);
+    $last = strtolower($val[strlen($val)-1]);
+    switch($last) {
+      case 'g':
+        $val *= 1024;
+      case 'm':
+        $val *= 1024;
+      case 'k':
+        $val *= 1024;
+    }
+
+    return $val;
+  }
+
+  $max_upload_size = ini_get('upload_max_filesize');
+  $max_post_size = ini_get('post_max_size');
+  $byte_threshold = 5000000; // 5MB
+  if (return_bytes($max_upload_size) < $byte_threshold) {
+    $interface->setErrorMessage(
+      $interface->t('Your PHP max upload size option is too small. You should consider to increase it to more than 5MB.')
+    );
+  }
+
+  if (return_bytes($max_post_size) < $byte_threshold) {
+    $interface->setErrorMessage(
+      $interface->t('Your PHP max post size option is too small. You should consider to increase it to more than 5MB.')
+    );
+  }
+
+  // Check SSL
+  if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
+    $interface->setErrorMessage(
+      $interface->t('Your server does not have SSL enabled. SSL should be enabled to ensure a secure connection with the H5P hub.')
+    );
+    $disable_hub = TRUE;
+  }
+
+  // Disable hub, and inform how to re-enable it
+  $interface->setOption('disable_hub', $disable_hub);
+  if ($disable_hub) {
+    $interface->setErrorMessage(
+      $interface->t('One or more H5P requirements failed, so H5P hub communication has been disabled.')
+    );
+    $interface->setErrorMessage(
+      $interface->t('When you have revised your server setup you may re-enable H5P hub communication in H5P Settings.')
+    );
   }
 }
 
