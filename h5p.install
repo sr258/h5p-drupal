@@ -138,7 +138,7 @@ function h5p_enable() {
 
   // Check requirements
   $core = _h5p_get_instance('core');
-  $core->check_setup_for_requirements();
+  $core->checkSetupForRequirements();
 }
 
 function _h5p_inform_h5p_org_communication() {
