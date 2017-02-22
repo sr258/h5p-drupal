@@ -126,8 +126,8 @@ function h5p_cron() {
   remove_old_log_events();
 
   // Update content type cache
-  module_load_include('inc', 'h5p', 'h5p.admin');
-  h5p_update_content_type_cache();
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }
 
 /**

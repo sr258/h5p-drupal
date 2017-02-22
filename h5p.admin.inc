@@ -128,75 +128,11 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
-  $last_updated = variable_get('h5p_content_type_cache_updated', false);
-  $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
-  $form['h5p_content_type_cache_last_updated'] = array(
-    '#markup' => t('Last time content type cache was updated: ') . $date_formatted . ' '
-  );
-
-  $form['h5p_update_content_type_cache'] = array(
-    '#type' => 'submit',
-    '#value' => t('Update content type cache now'),
-    '#submit' => array('h5p_update_content_type_cache')
-  );
-
   // Make changes to the settings before passing them off to
   // system_settings_form_submit().
   $form['#submit'][] = 'h5p_admin_settings_submit';
 
   return system_settings_form($form);
-}
-
-/**
- * Update content type cache
- */
-function h5p_update_content_type_cache() {
-  $endpoint = 'http://hubendpoints/';
-  $result = drupal_http_request($endpoint);
-  $interface = \_h5p_get_instance('interface');
-
-  if ($result->code != 200) {
-    $interface->setErrorMessage(t('Could not connect to the H5P Content Type hub. Please try again later.'));
-    return;
-  }
-
-  $json = json_decode($result->data);
-
-  if (!isset($json->libraries) || empty($json->libraries)) {
-    $interface = \_h5p_get_instance('interface');
-    $interface->setErrorMessage(t('No libraries was found on the H5P Content Type hub. Please try again later.'));
-    return;
-  }
-
-  // Replace existing cache
-  db_delete('h5p_libraries_hub_cache')
-    ->execute();
-  foreach ($json->libraries as $library) {
-    db_insert('h5p_libraries_hub_cache')
-      ->fields(array(
-        'library_id' => $library->library_id,
-        'machine_name' => $library->machine_name,
-        'title' => $library->title,
-        'major_version' => $library->major_version,
-        'minor_version' => $library->minor_version,
-        'patch_version' => $library->patch_version,
-        'h5p_version' => $library->h5p_version,
-        'short_description' => $library->short_description,
-        'long_description' => $library->long_description,
-        'icon' => $library->icon,
-        'created' => $library->created,
-        'updated' => $library->updated,
-        'is_recommended' => $library->is_recommended,
-        'is_reviewed' => $library->is_reviewed,
-        'times_downloaded' => $library->times_downloaded,
-        'example_content' => $library->example_content
-      ))
-      ->execute();
-  }
-
-  $interface->setInfoMessage(t('Library cache was successfully updated!'));
-  h5p_variable_set('h5p_content_type_cache_updated', time());
-  return;
 }
 
 /**
@@ -304,7 +240,13 @@ function h5p_library_list() {
   // will appends it's data to. This id is used by h5pintegration
   // to find where to put the admin content.
   $upload_form = drupal_get_form('h5p_library_upload_form');
-  return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' . drupal_render($upload_form) . '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3><div id="h5p-admin-container"></div>';
+  $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
+  return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
+         drupal_render($upload_form) .
+         '<h3 class="h5p-admin-header">' . t('Update Content Type Cache') . '</h3>' .
+         drupal_render($ct_cache_update_form) .
+         '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
+         '<div id="h5p-admin-container"></div>';
 }
 
 /**
@@ -459,6 +401,37 @@ function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
   drupal_add_js(array(
     'h5p' => h5p_get_core_settings()
   ), 'setting');
+}
+
+/**
+ * Content type cache update form
+ *
+ * @param $form_state Drupal form state
+ *
+ * @return mixed Form
+ */
+function h5p_content_type_cache_update_form($form_state) {
+  $last_updated = variable_get('h5p_content_type_cache_updated_at', false);
+  $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
+  $form['h5p_content_type_cache_last_updated'] = array(
+    '#markup' => t('Last time content type cache was updated: ') . $date_formatted . ' '
+  );
+
+  $form['submit'] = array(
+    '#value' => t('Update content type cache now'),
+    '#type' => 'submit'
+  );
+
+  return $form;
+}
+
+/**
+ * Content type cache update form submit handler
+ */
+function h5p_content_type_cache_update_form_submit($form, &$form_state) {
+  // Update content type cache
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }
 
 /**

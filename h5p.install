@@ -87,7 +87,7 @@ function h5p_uninstall() {
   variable_del('h5p_update_available_path');
   variable_del('h5p_site_type');
   variable_del('h5p_enable_lrs_content_types');
-  variable_del('h5p_content_type_cache_updated');
+  variable_del('h5p_content_type_cache_updated_at');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
@@ -137,8 +137,8 @@ function h5p_enable() {
   _h5p_inform_h5p_org_communication();
 
   // Update content type cache
-  module_load_include('inc', 'h5p', 'h5p.admin');
-  \h5p_update_content_type_cache();
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }
 
 function _h5p_inform_h5p_org_communication() {
@@ -1465,15 +1465,6 @@ function h5p_update_7114() {
   ));
 
   // Update content type cache
-  module_load_include('inc', 'h5p', 'h5p.admin');
-
-  // Make sure the needed modules are loaded
-  module_load_include('module', 'h5p', 'h5p');
-  module_load_include('php', 'h5p', 'library/h5p-development.class');
-  module_load_include('php', 'h5p', 'library/h5p.classes');
-  module_load_include('php', 'h5p', 'library/h5p-file-storage.interface');
-  module_load_include('php', 'h5p', 'library/h5p-default-storage.class');
-  module_load_include('inc', 'h5p', 'h5p.classes');
-  module_load_include('inc', 'h5p', 'h5p.event');
-  \h5p_update_content_type_cache();
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }
