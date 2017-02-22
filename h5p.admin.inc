@@ -150,10 +150,10 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
-  $form['h5p_disable_hub'] = array(
+  $form['h5p_hub_is_disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disable hub'),
-    '#default_value' => variable_get('h5p_disable_hub', 0),
+    '#default_value' => variable_get('h5p_hub_is_disabled', 0),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
     '#description' => t('It is strongly discouraged to disable the hub. It will disable all communication with the H5P hub, which mean you will not be able to create, reuse and share content and content types through the H5P hub interface. You will also have to install libraries manually through uploading them.'),
   );
