@@ -859,7 +859,8 @@ function h5p_get_core_settings() {
         'cancelLabel' => t('Cancel'),
         'confirmLabel' => t('Confirm')
       )
-    )
+    ),
+    'disableHub' => variable_get('h5p_disable_hub', 0)
   );
 
   if ($user->uid) {
