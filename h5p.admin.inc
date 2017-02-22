@@ -128,15 +128,16 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
-  $form['h5p_site_uuid'] = array(
+  $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
+  $form['h5p_site_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Site Key'),
     '#default_value' => '',
     '#attributes' => array(
-      'data-value' => variable_get('h5p_site_uuid', ''),
-      'placeholder' => (variable_get('h5p_site_uuid', '') ? '********-****-****-****-************' : t('Empty'))
+      'data-value' => $site_key,
+      'placeholder' => ($site_key ? '********-****-****-****-************' : t('Empty'))
     ),
-    '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-uuid" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
+    '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-key" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
     '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
   );
 
@@ -177,9 +178,9 @@ function h5p_admin_settings_submit($form, &$form_state) {
   // Ensure that the h5p white list is always stored in lower case.
   $form_state['values']['h5p_whitelist'] = mb_strtolower($form_state['values']['h5p_whitelist']);
 
-  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $form_state['values']['h5p_site_uuid'])) {
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $form_state['values']['h5p_site_key'])) {
     // Invalid key, use the old one
-    $form_state['values']['h5p_site_uuid'] = variable_get('h5p_site_uuid', '');
+    $form_state['values']['h5p_site_key'] = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
   }
 
   if($form_state['values']['h5p_allow_communication_with_h5p_org'] == 0) {
