@@ -860,7 +860,7 @@ function h5p_get_core_settings() {
         'confirmLabel' => t('Confirm')
       )
     ),
-    'hubIsEnabled' => variable_get('h5p_hub_is_enabled', TRUE)
+    'hubIsEnabled' => variable_get('h5p_hub_is_enabled', TRUE) ? TRUE : FALSE
   );
 
   if ($user->uid) {
