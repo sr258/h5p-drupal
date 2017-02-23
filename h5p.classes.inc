@@ -912,23 +912,6 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   /**
-   * Get content type cache from an external url.
-   *
-   * @param string $endpoint Endpoint containing content type cache
-   *
-   * @return object Json object with an array called 'libraries' containing
-   *  all content types that should be cached
-   */
-  public function getExternalContentTypeCache($endpoint) {
-    $result = drupal_http_request($endpoint);
-    if ($result->code != 200) {
-      $interface->setErrorMessage(t('Could not connect to the H5P Content Type hub. Please try again later.'));
-    }
-
-    return $result->data;
-  }
-
-  /**
    * Replaces existing content type cache with the one passed in
    *
    * @param object $contentTypeCache Json with an array called 'libraries'

@@ -124,10 +124,6 @@ function h5p_menu() {
 function h5p_cron() {
   h5p_fetch_libraries_metadata();
   remove_old_log_events();
-
-  // Update content type cache
-  $core = _h5p_get_instance('core');
-  $core->updateContentTypeCache();
 }
 
 /**
