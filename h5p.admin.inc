@@ -243,7 +243,7 @@ function h5p_library_list() {
   $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
   return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
          drupal_render($upload_form) .
-         '<h3 class="h5p-admin-header">' . t('Update Content Type Cache') . '</h3>' .
+         '<h3 class="h5p-admin-header">' . t('Content type cache') . '</h3>' .
          drupal_render($ct_cache_update_form) .
          '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
          '<div id="h5p-admin-container"></div>';
@@ -411,14 +411,23 @@ function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
  * @return mixed Form
  */
 function h5p_content_type_cache_update_form($form_state) {
+
+  $form['#attributes'] = array(
+    'class' => 'h5p-admin-upload-libraries-form'
+  );
+
   $last_updated = variable_get('h5p_content_type_cache_updated_at', false);
   $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
+
   $form['h5p_content_type_cache_last_updated'] = array(
-    '#markup' => t('Last time content type cache was updated: ') . $date_formatted . ' '
+    '#type' => 'item',
+    '#title' => t('Last update'),
+    '#markup' => $date_formatted,
+    '#description' => t('Here you can update the content type cache from the H5P hub. This is used to show the available libraries in the H5P authoring tool. Making sure the content type cache is up to date will ensure that you can view and download the latest libraries.')
   );
 
   $form['submit'] = array(
-    '#value' => t('Update content type cache now'),
+    '#value' => t('Update'),
     '#type' => 'submit'
   );
 
