@@ -87,6 +87,7 @@ function h5p_uninstall() {
   variable_del('h5p_update_available_path');
   variable_del('h5p_site_type');
   variable_del('h5p_enable_lrs_content_types');
+  variable_del('h5p_hub_is_enabled');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
@@ -134,6 +135,10 @@ function h5p_enable() {
   }
 
   _h5p_inform_h5p_org_communication();
+
+  // Check requirements
+  $core = _h5p_get_instance('core');
+  $core->checkSetupForRequirements();
 }
 
 function _h5p_inform_h5p_org_communication() {

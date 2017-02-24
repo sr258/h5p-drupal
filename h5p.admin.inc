@@ -4,7 +4,7 @@
  */
 function h5p_admin_settings($form, &$form_state) {
   // make sure core is loaded
-  _h5p_get_instance('core');
+  $core = _h5p_get_instance('core');
 
   $form['h5p_allow_communication_with_h5p_org'] = array(
     '#type' => 'checkbox',
@@ -14,13 +14,35 @@ function h5p_admin_settings($form, &$form_state) {
   );
 
   $path = drupal_get_path('module', 'h5p');
+
+  // Get server setup error messages
+  $server_setup_errors = $core->checkSetupErrorMessage();
+  $disable_hub_data = array(
+    'errors' => $server_setup_errors,
+    'header' => $core->h5pF->t('Confirmation action'),
+    'confirmationDialogMsg' => $core->h5pF->t('Do you still want to enable the hub ?'),
+    'cancelLabel' => $core->h5pF->t('Cancel'),
+    'confirmLabel' => $core->h5pF->t('Confirm')
+  );
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Options'),
     '#attached' => array(
       'js' => array(
+        array(
+          'data' => 'H5PDisableHubData = ' . json_encode($disable_hub_data) . ';',
+          'type' => 'inline'
+        ),
         $path . '/library/js/jquery.js',
-        $path . '/library/js/h5p-display-options.js'
+        $path . '/library/js/h5p-event-dispatcher.js',
+        $path . '/library/js/h5p-confirmation-dialog.js',
+        $path . '/library/js/settings/h5p-disable-hub.js',
+        $path . '/library/js/h5p-display-options.js',
+      ),
+      'css' => array(
+        $path . '/library/styles/h5p-confirmation-dialog.css',
+        $path . '/library/styles/h5p.css',
+        $path . '/library/styles/h5p-core-button.css'
       )
     )
   );
@@ -128,6 +150,14 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
+  $form['h5p_hub_is_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable hub'),
+    '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
+    '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
+    '#description' => t('It is strongly discouraged to disable the hub. It will disable all communication with the H5P hub, which mean you will not be able to create, reuse and share content and content types through the H5P hub interface. You will also have to install libraries manually through uploading them.'),
+  );
+
   $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
   $form['h5p_site_key'] = array(
     '#type' => 'textfield',
@@ -140,6 +170,9 @@ function h5p_admin_settings($form, &$form_state) {
     '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-key" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
     '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
   );
+
+  // Set h5p settings class on form container
+  $form['#attributes'] = array('class' => array('h5p-settings-container'));
 
   // Make changes to the settings before passing them off to
   // system_settings_form_submit().
