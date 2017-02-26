@@ -162,12 +162,21 @@ function h5peditor_h5p_content_node_form_after_build($form) {
       'copyrightSemantics' => $content_validator->getCopyrightSemantics(),
       'assets' => $assets,
       'contentRelUrl' => '../h5p/content/',
-      'editorRelUrl' => '../../../h5peditor/',
+      'editorRelUrl' => '../../../h5peditor/'
     ),
   );
 
   if (isset($node->json_content)) {
     $settings['h5peditor']['nodeVersionId'] = $content_id;
+  }
+
+  $core = _h5p_get_instance('core');
+  if ($core->h5pF->getOption('hub_is_enabled', TRUE)) {
+    $results = db_query(
+      'SELECT * FROM {h5p_libraries_hub_cache}'
+    )->fetchAll();
+
+    $settings['h5peditor']['contentTypeCache'] = $results;
   }
 
   drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));

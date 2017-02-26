@@ -20,6 +20,7 @@ var ns = H5PEditor;
     ns.relativeUrl = Drupal.settings.h5peditor.relativeUrl;
     ns.contentRelUrl = Drupal.settings.h5peditor.contentRelUrl;
     ns.editorRelUrl = Drupal.settings.h5peditor.editorRelUrl;
+    ns.contentTypeCache = Drupal.settings.h5peditor.contentTypeCache;
 
     // Semantics describing what copyright information can be stored for media.
     ns.copyrightSemantics = Drupal.settings.h5peditor.copyrightSemantics;
