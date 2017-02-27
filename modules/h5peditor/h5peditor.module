@@ -20,6 +20,13 @@ function h5peditor_menu() {
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
+  $items['h5peditor/%/%/contenttypecache'] = array(
+    'title' => 'H5Peditor Content type cache',
+    'page callback' => 'h5peditor_content_type_cache_callback',
+    'access callback' => 'h5peditor_access',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK
+  );
   $items['h5peditor/%/%/libraries/%/%/%'] = array(
     'title' => 'H5peditor Library',
     'page callback' => 'h5peditor_library_callback',
@@ -170,15 +177,6 @@ function h5peditor_h5p_content_node_form_after_build($form) {
     $settings['h5peditor']['nodeVersionId'] = $content_id;
   }
 
-  $core = _h5p_get_instance('core');
-  if ($core->h5pF->getOption('hub_is_enabled', TRUE)) {
-    $results = db_query(
-      'SELECT * FROM {h5p_libraries_hub_cache}'
-    )->fetchAll();
-
-    $settings['h5peditor']['contentTypeCache'] = $results;
-  }
-
   drupal_add_js($settings, array('type' => 'setting', 'scope' => JS_DEFAULT));
 
   return $form;
@@ -271,28 +269,53 @@ function _h5peditor_create_content($node) {
 function h5peditor_libraries_callback() {
   $editor = h5peditor_get_instance();
 
-  // Update content type cache if enabled and too old
-  $h5p_drupal = _h5p_get_instance('interface');
-  if (!$h5p_drupal->getOption('hub_is_disabled', FALSE)) {
-    $ct_cache_last_update = $h5p_drupal->getOption('content_type_cache_updated_at', 0);
-    $outdated_cache = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
-    if (time() > $outdated_cache) {
-      $core = _h5p_get_instance('core');
-      $success = $core->updateContentTypeCache();
-      if (!$success) {
-        drupal_add_http_header('Status', 404);
-        $core::ajaxError(
-          $core->h5pF->t('Could not connect to the H5P Content Type Hub. Please try again later.'),
-          'NO_RESPONSE'
-        );
-        return;
-      }
-    }
-  }
-
   drupal_add_http_header('Cache-Control', 'no-cache');
   drupal_add_http_header('Content-type', 'application/json');
   print $editor->getLibraries();
+}
+
+/**
+ * Callback that returns the content type cache
+ */
+function h5peditor_content_type_cache_callback() {
+
+  drupal_add_http_header('Cache-Control', 'no-cache');
+  drupal_add_http_header('Content-type', 'application/json');
+
+  $core = _h5p_get_instance('core');
+  if (!$core->h5pF->getOption('hub_is_enabled', TRUE)) {
+
+    drupal_add_http_header('Status', 403);
+    $core::ajaxError(
+      $core->h5pF->t('The hub is disabled. You can enable it in the H5P settings.'),
+      'HUB_DISABLED'
+    );
+    return;
+  }
+
+  // Update content type cache if enabled and too old
+  $ct_cache_last_update = $core->h5pF->getOption('content_type_cache_updated_at', 0);
+  $outdated_cache = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
+  if (time() > $outdated_cache) {
+    $success = $core->updateContentTypeCache();
+    if (!$success) {
+      drupal_add_http_header('Status', 404);
+      $core::ajaxError(
+        $core->h5pF->t('Could not connect to the H5P Content Type Hub. Please try again later.'),
+        'NO_RESPONSE'
+      );
+      return;
+    }
+  }
+
+  $results = db_query(
+    'SELECT * FROM {h5p_libraries_hub_cache}'
+  )->fetchAll();
+
+  drupal_add_http_header('Status', 200);
+  print json_encode(array(
+    'libraries' => $results
+  ));
 }
 
 /**
