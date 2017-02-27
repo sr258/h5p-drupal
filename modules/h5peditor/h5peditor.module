@@ -20,7 +20,7 @@ function h5peditor_menu() {
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/%/contenttypecache'] = array(
+  $items['h5peditor/%/%/content_type_cache'] = array(
     'title' => 'H5Peditor Content type cache',
     'page callback' => 'h5peditor_content_type_cache_callback',
     'access callback' => 'h5peditor_access',
