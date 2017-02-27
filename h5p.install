@@ -137,15 +137,13 @@ function h5p_enable() {
 
   _h5p_inform_h5p_org_communication();
 
-<<<<<<< HEAD
+  $core = _h5p_get_instance('core');
+
   // Check requirements
-  $core = _h5p_get_instance('core');
   $core->checkSetupForRequirements();
-=======
+
   // Update content type cache
-  $core = _h5p_get_instance('core');
   $core->updateContentTypeCache();
->>>>>>> 7.x-1.x-dev-content-type-cache
 }
 
 function _h5p_inform_h5p_org_communication() {
