@@ -1158,7 +1158,7 @@ function _h5p_maintain_session_variables() {
  *  Core functions and storage in the h5p library
  * @param string $type
  *  Specifies the instance to be returned; validator, storage, interface or core
- * @return object
+ * @return H5PDrupal|H5PValidator|H5PStorage|H5PContentValidator|H5PExport|H5PCore
  *  The instance og h5p specified by type
  */
 function _h5p_get_instance($type) {

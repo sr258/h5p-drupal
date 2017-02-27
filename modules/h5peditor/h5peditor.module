@@ -262,6 +262,17 @@ function _h5peditor_create_content($node) {
 function h5peditor_libraries_callback() {
   $editor = h5peditor_get_instance();
 
+  // Update content type cache if enabled and too old
+  $h5p_drupal = _h5p_get_instance('interface');
+  if (!$h5p_drupal->getOption('hub_is_disabled', FALSE)) {
+    $ct_cache_last_update = $h5p_drupal->getOption('content_type_cache_updated_at', 0);
+    $outdated_cache = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
+    if (time() > $outdated_cache) {
+      $core = _h5p_get_instance('core');
+      $core->updateContentTypeCache();
+    }
+  }
+
   drupal_add_http_header('Cache-Control', 'no-cache');
   drupal_add_http_header('Content-type', 'application/json');
   print $editor->getLibraries();

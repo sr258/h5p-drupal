@@ -88,6 +88,7 @@ function h5p_uninstall() {
   variable_del('h5p_site_type');
   variable_del('h5p_enable_lrs_content_types');
   variable_del('h5p_hub_is_enabled');
+  variable_del('h5p_content_type_cache_updated_at');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
@@ -136,9 +137,15 @@ function h5p_enable() {
 
   _h5p_inform_h5p_org_communication();
 
+<<<<<<< HEAD
   // Check requirements
   $core = _h5p_get_instance('core');
   $core->checkSetupForRequirements();
+=======
+  // Update content type cache
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
+>>>>>>> 7.x-1.x-dev-content-type-cache
 }
 
 function _h5p_inform_h5p_org_communication() {
@@ -285,6 +292,115 @@ function h5p_schema() {
         'description' => 'URL to a tutorial for this library',
         'type' => 'varchar',
         'length' => 1000
+      ),
+    ),
+    'primary key' => array('library_id'),
+  );
+
+  $schema['h5p_libraries_hub_cache'] = array(
+    'description' => 'Stores information about what h5p uses what libraries.',
+    'fields' => array(
+      'library_id' => array(
+        'description' => 'Primary Key: The id of the library.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'machine_name' => array(
+        'description' => 'The library machine name',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The human readable name of this library',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'major_version' => array(
+        'description' => 'The version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'minor_version' => array(
+        'description' => 'The minor version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'patch_version' => array(
+        'description' => 'The patch version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'h5p_version' => array(
+        'description' => 'The version required of H5P core.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'short_description' => array(
+        'description' => 'Short description of library.',
+        'type' => 'text',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+      'long_description' => array(
+        'description' => 'Long description of library.',
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+      'icon' => array(
+        'description' => 'URL to icon.',
+        'type' => 'varchar',
+        'length' => 511,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'Time that the library was uploaded.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'updated' => array(
+        'description' => 'Time that the library had its latest update.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'is_recommended' => array(
+        'description' => 'Whether the library is recommended by the HUB moderators.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'is_reviewed' => array(
+        'description' => 'Whether the library is reviewed by the HUB moderators.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'times_downloaded' => array(
+        'description' => 'How many times the library has been downloaded.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'example_content' => array(
+        'description' => 'URL to example content for this library.',
+        'type' => 'varchar',
+        'length' => 511,
+        'not null' => TRUE,
+        'default' => '',
       ),
     ),
     'primary key' => array('library_id'),
@@ -1239,4 +1355,123 @@ function h5p_update_7113() {
   variable_set('h5p_icon', variable_get('h5p_icon_in_action_bar', TRUE));
   variable_del('h5p_icon_in_action_bar');
   drupal_set_message('<span style="font-weight: bold;">Upgrade your H5P content types!</span> Old content types will still work, but the authoring tool will look and feel much better if you <a href="https://h5p.org/update-all-content-types">upgrade the content types</a>.', 'warning');
+}
+
+/**
+ * Create content type cache from hub
+ */
+function h5p_update_7114() {
+
+  db_create_table('h5p_libraries_hub_cache', array(
+    'description' => 'Stores information about what h5p uses what libraries.',
+    'fields' => array(
+      'library_id' => array(
+        'description' => 'Primary Key: The id of the library.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'machine_name' => array(
+        'description' => 'The library machine name',
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The human readable name of this library',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'major_version' => array(
+        'description' => 'The version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'minor_version' => array(
+        'description' => 'The minor version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'patch_version' => array(
+        'description' => 'The patch version of this library',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'h5p_version' => array(
+        'description' => 'The version required of H5P core.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'short_description' => array(
+        'description' => 'Short description of library.',
+        'type' => 'text',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+      'long_description' => array(
+        'description' => 'Long description of library.',
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => TRUE,
+      ),
+      'icon' => array(
+        'description' => 'URL to icon.',
+        'type' => 'varchar',
+        'length' => 511,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'Time that the library was uploaded.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'updated' => array(
+        'description' => 'Time that the library had its latest update.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'is_recommended' => array(
+        'description' => 'Whether the library is recommended by the HUB moderators.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'is_reviewed' => array(
+        'description' => 'Whether the library is reviewed by the HUB moderators.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'times_downloaded' => array(
+        'description' => 'How many times the library has been downloaded.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'example_content' => array(
+        'description' => 'URL to example content for this library.',
+        'type' => 'varchar',
+        'length' => 511,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('library_id'),
+  ));
+
+  // Update content type cache
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }

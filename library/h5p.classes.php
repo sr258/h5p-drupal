@@ -568,6 +568,14 @@ interface H5PFrameworkInterface {
    * @return boolean
    */
   public function hasPermission($permission, $id = NULL);
+
+  /**
+   * Replaces existing content type cache with the one passed in
+   *
+   * @param object $contentTypeCache Json with an array called 'libraries'
+   *  containing the new content type cache that should replace the old one.
+   */
+  public function replaceContentTypeCache($contentTypeCache);
 }
 
 /**
@@ -2400,9 +2408,9 @@ class H5PCore {
   }
 
   /**
-   * Fetch a list of libraries' metadata from h5p.org.
-   * Save URL tutorial to database. Each platform implementation
-   * is responsible for invoking this, eg using cron
+   * Communicate with H5P.org and get content type cache. Each platform
+   * implementation is responsible for invoking this, eg using cron
+   *
    * @param bool $fetchingDisabled
    */
   public function fetchLibrariesMetadata($fetchingDisabled = FALSE) {
@@ -2431,37 +2439,26 @@ class H5PCore {
       )))
     );
 
-    // Send request
-    $protocol = (extension_loaded('openssl') ? 'https' : 'http');
-    $result = $this->h5pF->fetchExternalData("{$protocol}://h5p.org/libraries-metadata.json", $data);
-    if (empty($result)) {
-      return;
-    }
+    $result = $this->updateContentTypeCache($data);
 
-    // Process results
-    $json = json_decode($result);
-    if (empty($json)) {
+    // No data received
+    if (!$result || empty($result)) {
       return;
     }
 
     // Handle libraries metadata
-    if (isset($json->libraries)) {
-      foreach ($json->libraries as $machineName => $libInfo) {
-        if (isset($libInfo->tutorialUrl)) {
-          $this->h5pF->setLibraryTutorialUrl($machineName, $libInfo->tutorialUrl);
+    if (isset($result->libraries)) {
+      foreach ($result->libraries as $library) {
+        if (isset($library->tutorialUrl) && isset($library->machineName)) {
+          $this->h5pF->setLibraryTutorialUrl($library->machineNamee, $library->tutorialUrl);
         }
       }
     }
 
-    // Handle new uuid
-    if ($uuid === '' && isset($json->uuid)) {
-      $this->h5pF->setOption('site_uuid', $json->uuid);
-    }
-
     // Handle latest version of H5P
-    if (!empty($json->latest)) {
-      $this->h5pF->setOption('update_available', $json->latest->releasedAt);
-      $this->h5pF->setOption('update_available_path', $json->latest->path);
+    if (!empty($result->packageReleased)) {
+      $this->h5pF->setOption('update_available', $result->packageReleased->releasedAt);
+      $this->h5pF->setOption('update_available_path', $result->packageReleased->path);
     }
   }
 
@@ -2693,13 +2690,18 @@ class H5PCore {
    * @param string $message
    * @since 1.6.0
    */
-  public static function ajaxError($message = NULL) {
+  public static function ajaxError($message = NULL, $error_code = NULL) {
     $response = array(
       'success' => FALSE
     );
     if ($message !== NULL) {
       $response['message'] = $message;
     }
+
+    if ($error_code !== NULL) {
+      $response['error_code'] = $error_code;
+    }
+
     self::printJson($response);
   }
 
@@ -2753,6 +2755,56 @@ class H5PCore {
     $time_factor = self::getTimeFactor();
     return $token === substr(hash('md5', $action . $time_factor . $_SESSION['h5p_token']), -16, 13) || // Under 12 hours
            $token === substr(hash('md5', $action . ($time_factor - 1) . $_SESSION['h5p_token']), -16, 13); // Between 12-24 hours
+  }
+
+  /**
+   * Update content type cache
+   *
+   * @param object $postData Data sent to the hub
+   *
+   * @return bool|object Returns endpoint data if found, otherwise FALSE
+   */
+  public function updateContentTypeCache($postData = NULL) {
+    $endpoint = 'http://hubendpoints/contenttypes';
+
+    $interface = $this->h5pF;
+
+    // Set uuid
+    if (!$postData) {
+      $postData = array(
+        'uuid' => $this->h5pF->getOption('site_uuid', '')
+      );
+    }
+
+    $postData['current_cache'] = $this->h5pF->getOption('content_type_cache_updated_at', 0);
+
+    $data = $interface->fetchExternalData($endpoint, $postData);
+
+    // No data received
+    if (!$data) {
+      $interface->setErrorMessage(
+        $interface->t('Could not connect to the H5P Content Type Hub. Please try again later.')
+      );
+      return FALSE;
+    }
+
+    $json = json_decode($data);
+
+    // No libraries received
+    if (!isset($json->libraries) || empty($json->libraries)) {
+      $interface->setErrorMessage(
+        $interface->t('No libraries was received from the Content Type Hub. Please try again later.')
+      );
+      return FALSE;
+    }
+
+    // Replace content type cache
+    $interface->replaceContentTypeCache($json);
+
+    // Inform of the changes and update timestamp
+    $interface->setInfoMessage($interface->t('Library cache was successfully updated!'));
+    $interface->setOption('content_type_cache_updated_at', time());
+    return $data;
   }
 
   /**

@@ -291,7 +291,13 @@ function h5p_library_list() {
   // will appends it's data to. This id is used by h5pintegration
   // to find where to put the admin content.
   $upload_form = drupal_get_form('h5p_library_upload_form');
-  return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' . drupal_render($upload_form) . '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3><div id="h5p-admin-container"></div>';
+  $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
+  return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
+         drupal_render($upload_form) .
+         '<h3 class="h5p-admin-header">' . t('Content type cache') . '</h3>' .
+         drupal_render($ct_cache_update_form) .
+         '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
+         '<div id="h5p-admin-container"></div>';
 }
 
 /**
@@ -504,6 +510,46 @@ function h5p_library_install() {
   }
 
   print json_encode($response);
+}
+
+/**
+ * Content type cache update form
+ *
+ * @param $form_state Drupal form state
+ *
+ * @return mixed Form
+ */
+function h5p_content_type_cache_update_form($form_state) {
+
+  $form['#attributes'] = array(
+    'class' => 'h5p-admin-upload-libraries-form'
+  );
+
+  $last_updated = variable_get('h5p_content_type_cache_updated_at', false);
+  $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
+
+  $form['h5p_content_type_cache_last_updated'] = array(
+    '#type' => 'item',
+    '#title' => t('Last update'),
+    '#markup' => $date_formatted,
+    '#description' => t('Here you can update the content type cache from the H5P hub. This is used to show the available libraries in the H5P authoring tool. Making sure the content type cache is up to date will ensure that you can view and download the latest libraries.')
+  );
+
+  $form['submit'] = array(
+    '#value' => t('Update'),
+    '#type' => 'submit'
+  );
+
+  return $form;
+}
+
+/**
+ * Content type cache update form submit handler
+ */
+function h5p_content_type_cache_update_form_submit($form, &$form_state) {
+  // Update content type cache
+  $core = _h5p_get_instance('core');
+  $core->updateContentTypeCache();
 }
 
 /**
