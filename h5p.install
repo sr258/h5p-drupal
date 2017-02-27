@@ -300,7 +300,7 @@ function h5p_schema() {
   $schema['h5p_libraries_hub_cache'] = array(
     'description' => 'Stores information about what h5p uses what libraries.',
     'fields' => array(
-      'library_id' => array(
+      'id' => array(
         'description' => 'Primary Key: The id of the library.',
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -362,12 +362,12 @@ function h5p_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'created' => array(
+      'created_at' => array(
         'description' => 'Time that the library was uploaded.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'updated' => array(
+      'updated_at' => array(
         'description' => 'Time that the library had its latest update.',
         'type' => 'int',
         'not null' => TRUE,
@@ -388,7 +388,7 @@ function h5p_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
-      'times_downloaded' => array(
+      'popularity' => array(
         'description' => 'How many times the library has been downloaded.',
         'type' => 'int',
         'unsigned' => TRUE,
@@ -403,7 +403,7 @@ function h5p_schema() {
         'default' => '',
       ),
     ),
-    'primary key' => array('library_id'),
+    'primary key' => array('id'),
   );
 
   $schema['h5p_libraries_libraries'] = array(
@@ -1365,7 +1365,7 @@ function h5p_update_7114() {
   db_create_table('h5p_libraries_hub_cache', array(
     'description' => 'Stores information about what h5p uses what libraries.',
     'fields' => array(
-      'library_id' => array(
+      'id' => array(
         'description' => 'Primary Key: The id of the library.',
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -1427,12 +1427,12 @@ function h5p_update_7114() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'created' => array(
+      'created_at' => array(
         'description' => 'Time that the library was uploaded.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'updated' => array(
+      'updated_at' => array(
         'description' => 'Time that the library had its latest update.',
         'type' => 'int',
         'not null' => TRUE,
@@ -1453,7 +1453,7 @@ function h5p_update_7114() {
         'not null' => TRUE,
         'default' => 1,
       ),
-      'times_downloaded' => array(
+      'popularity' => array(
         'description' => 'How many times the library has been downloaded.',
         'type' => 'int',
         'unsigned' => TRUE,
@@ -1468,7 +1468,7 @@ function h5p_update_7114() {
         'default' => '',
       ),
     ),
-    'primary key' => array('library_id'),
+    'primary key' => array('id'),
   ));
 
   // Update content type cache
