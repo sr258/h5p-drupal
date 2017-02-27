@@ -475,6 +475,14 @@ function h5p_library_install() {
     return;
   }
 
+  if (!user_access('install any h5p content type') ||
+      !(filter_input(INPUT_POST, 'contentTypeRecommended') && user_access('install recommended h5p content type'))) {
+    $response->error_code = 'ACCESS_DENIED';
+    $response->error_msg = 'No permission to install content type';
+    print json_encode($response);
+    return;
+  }
+  
   $endpoint = $_POST['contentTypeUrl'];
   $h5p_data = file_get_contents($endpoint);
   $h5p_core = _h5p_get_instance('storage');
