@@ -311,13 +311,6 @@ function h5p_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'title' => array(
-        'description' => 'The human readable name of this library',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
       'major_version' => array(
         'description' => 'The version of this library',
         'type' => 'int',
@@ -336,21 +329,33 @@ function h5p_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'h5p_version' => array(
-        'description' => 'The version required of H5P core.',
+      'h5p_major_version' => array(
+        'description' => 'The major version required of H5P core.',
+        'type' => 'int',
+        'unsigned' => TRUE
+      ),
+      'h5p_minor_version' => array(
+        'description' => 'The minor version required of H5P core.',
+        'type' => 'int',
+        'unsigned' => TRUE
+      ),
+      'title' => array(
+        'description' => 'The human readable name of this library',
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
       ),
-      'short_description' => array(
+      'summary' => array(
         'description' => 'Short description of library.',
         'type' => 'text',
-        'size' => 'tiny',
+        'size' => 'small',
         'not null' => TRUE,
       ),
-      'long_description' => array(
+      'description' => array(
         'description' => 'Long description of library.',
         'type' => 'text',
-        'size' => 'small',
+        'size' => 'medium',
         'not null' => TRUE,
       ),
       'icon' => array(
@@ -378,14 +383,6 @@ function h5p_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
-      'is_reviewed' => array(
-        'description' => 'Whether the library is reviewed by the HUB moderators.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 1,
-      ),
       'popularity' => array(
         'description' => 'How many times the library has been downloaded.',
         'type' => 'int',
@@ -393,13 +390,38 @@ function h5p_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'example_content' => array(
+      'screenshots' => array(
+        'description' => 'Screenshot URLs json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      ),
+      'license' => array(
+        'description' => 'License of the library',
+        'type' => 'varchar',
+        'length' => 511
+      ),
+      'example' => array(
         'description' => 'URL to example content for this library.',
         'type' => 'varchar',
         'length' => 511,
         'not null' => TRUE,
         'default' => '',
       ),
+      'tutorial' => array(
+        'description' => 'Tutorial URL',
+        'type' => 'varchar',
+        'length' => 511
+      ),
+      'keywords' => array(
+        'description' => 'Keywords for library json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      ),
+      'categories' => array(
+        'description' => 'Categories for library json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      )
     ),
     'primary key' => array('id'),
   );
@@ -1376,13 +1398,6 @@ function h5p_update_7114() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'title' => array(
-        'description' => 'The human readable name of this library',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
       'major_version' => array(
         'description' => 'The version of this library',
         'type' => 'int',
@@ -1401,21 +1416,33 @@ function h5p_update_7114() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'h5p_version' => array(
-        'description' => 'The version required of H5P core.',
+      'h5p_major_version' => array(
+        'description' => 'The major version required of H5P core.',
+        'type' => 'int',
+        'unsigned' => TRUE
+      ),
+      'h5p_minor_version' => array(
+        'description' => 'The minor version required of H5P core.',
+        'type' => 'int',
+        'unsigned' => TRUE
+      ),
+      'title' => array(
+        'description' => 'The human readable name of this library',
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
       ),
-      'short_description' => array(
+      'summary' => array(
         'description' => 'Short description of library.',
         'type' => 'text',
-        'size' => 'tiny',
+        'size' => 'small',
         'not null' => TRUE,
       ),
-      'long_description' => array(
+      'description' => array(
         'description' => 'Long description of library.',
         'type' => 'text',
-        'size' => 'small',
+        'size' => 'medium',
         'not null' => TRUE,
       ),
       'icon' => array(
@@ -1443,14 +1470,6 @@ function h5p_update_7114() {
         'not null' => TRUE,
         'default' => 1,
       ),
-      'is_reviewed' => array(
-        'description' => 'Whether the library is reviewed by the HUB moderators.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 1,
-      ),
       'popularity' => array(
         'description' => 'How many times the library has been downloaded.',
         'type' => 'int',
@@ -1458,13 +1477,38 @@ function h5p_update_7114() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'example_content' => array(
+      'screenshots' => array(
+        'description' => 'Screenshot URLs json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      ),
+      'license' => array(
+        'description' => 'License of the library',
+        'type' => 'varchar',
+        'length' => 511
+      ),
+      'example' => array(
         'description' => 'URL to example content for this library.',
         'type' => 'varchar',
         'length' => 511,
         'not null' => TRUE,
         'default' => '',
       ),
+      'tutorial' => array(
+        'description' => 'Tutorial URL',
+        'type' => 'varchar',
+        'length' => 511
+      ),
+      'keywords' => array(
+        'description' => 'Keywords for library json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      ),
+      'categories' => array(
+        'description' => 'Categories for library json encoded',
+        'type' => 'text',
+        'size' => 'medium'
+      )
     ),
     'primary key' => array('id'),
   ));
