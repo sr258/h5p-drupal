@@ -48,6 +48,22 @@ function h5peditor_menu() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function h5peditor_permission() {
+  return array(
+    'install any h5p content type' => array(
+      'title' => t('Install any H5P Content Type'),
+      'description' => t('Install any of the content types available at the Hub.'),
+    ),
+    'install recommended h5p content type' => array(
+      'title' => t('Install recommended H5P Content Type'),
+      'description' => t('Install only recommended content types available at the Hub.'),
+    )
+  );
+}
+
+/**
  * Checks if the current user should have access to the editor.
  *
  * @param int $node_id
@@ -311,6 +327,22 @@ function h5peditor_content_type_cache_callback() {
   $results = db_query(
     'SELECT * FROM {h5p_libraries_hub_cache}'
   )->fetchAll();
+
+  // Determine access
+  $can_install_any = user_access('install any h5p content type');
+  $can_install_recommended = user_access('install recommended h5p content type');
+
+  foreach ($results as &$result) {
+    if ($can_install_any) {
+      $result->restricted = false;
+    }
+    elseif ($result->is_recommended && $can_install_recommended) {
+      $result->restricted = false;
+    }
+    else {
+      $result->restricted = true;
+    }
+  }
 
   drupal_add_http_header('Status', 200);
   print json_encode(array(
