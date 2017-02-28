@@ -335,6 +335,12 @@ class H5PDrupal implements H5PFrameworkInterface {
       $libraryData['majorVersion'] . '.' . $libraryData['minorVersion']
     );
 
+    // Invoke h5p_library_installed hook for each library that has
+    // been installed
+    if (sizeof(module_implements('h5p_library_installed')) > 0) {
+      module_invoke_all('h5p_library_installed', $libraryData, $new);
+    }
+
     db_delete('h5p_libraries_languages')
     ->condition('library_id', $libraryData['libraryId'])
     ->execute();
