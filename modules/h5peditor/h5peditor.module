@@ -446,6 +446,7 @@ function h5peditor_content_type_cache_callback() {
     }
 
     $libraries[] = array(
+      'id'              => $result->id,
       'machineName'     => $result->machine_name,
       'majorVersion'    => $result->major_version,
       'minorVersion'    => $result->minor_version,
