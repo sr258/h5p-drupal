@@ -421,6 +421,11 @@ function h5p_schema() {
         'description' => 'Categories for library json encoded',
         'type' => 'text',
         'size' => 'medium'
+      ),
+      'owner' => array(
+        'description' => 'Owner of the library',
+        'type' => 'varchar',
+        'length' => 511
       )
     ),
     'primary key' => array('id'),
@@ -1508,6 +1513,11 @@ function h5p_update_7114() {
         'description' => 'Categories for library json encoded',
         'type' => 'text',
         'size' => 'medium'
+      ),
+      'owner' => array(
+        'description' => 'Owner of the library',
+        'type' => 'varchar',
+        'length' => 511
       )
     ),
     'primary key' => array('id'),
