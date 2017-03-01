@@ -511,7 +511,7 @@ function h5peditor_files_callback($token, $content_id) {
 
   $file = new H5peditorFile(_h5p_get_instance('interface'));
   if (!$file->isLoaded()) {
-    H5PCore::ajaxError(t('File not found on server. Check file upload settings.', $this->plugin_slug));
+    H5PCore::ajaxError(t('File not found on server. Check file upload settings.'));
     return;
   }
 
