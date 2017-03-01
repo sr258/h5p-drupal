@@ -403,9 +403,9 @@ function h5peditor_content_type_cache_callback() {
 
   // Set content type cache
   $results = db_query(
-    'SELECT c.*, l.id as installed ' .
-    'FROM {hvp_libraries_hub_cache} as c ' .
-    'LEFT JOIN {hvp_libraries} as l ' .
+    'SELECT c.*, l.library_id as installed ' .
+    'FROM h5p_libraries_hub_cache as c ' .
+    'LEFT JOIN h5p_libraries as l ' .
     'ON c.machine_name = l.machine_name ' .
     'AND c.major_version = l.major_version ' .
     'AND c.minor_version = l.minor_version ' .
