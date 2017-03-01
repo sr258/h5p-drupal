@@ -61,12 +61,8 @@ function h5peditor_menu() {
  */
 function h5peditor_permission() {
   return array(
-    'install any h5p content type' => array(
-      'title' => t('Install any H5P Content Type'),
-      'description' => t('Install any of the content types available at the Hub.'),
-    ),
-    'install recommended h5p content type' => array(
-      'title' => t('Install recommended H5P Content Type'),
+    'install recommended h5p libraries' => array(
+      'title' => t('Install recommended H5P Libraries'),
       'description' => t('Install only recommended content types available at the Hub.'),
     )
   );
@@ -305,39 +301,50 @@ function h5peditor_libraries_callback() {
  */
 function h5peditor_library_install_callback() {
 
-  // Response
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json; charset=utf-8');
-
-  $response = (object) array(
-    'success' => false
-  );
-
-  // Get endpoint from post
-  $id = filter_input(INPUT_GET, 'id');
-  if (!$id) {
-    $response->error_code = 'NO_ID';
-    $response->error_msg = 'No library id was specified for the library';
-    print json_encode($response);
+  // Verify token
+  if (!\H5PCore::validToken('h5p_editor_ajax', filter_input(INPUT_POST, 'token'))) {
+    \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
     return;
   }
 
-  if (!user_access('install any h5p content type') ||
-      !(filter_input(INPUT_POST, 'contentTypeRecommended') && user_access('install recommended h5p content type'))) {
-    $response->error_code = 'ACCESS_DENIED';
-    $response->error_msg = 'No permission to install content type';
-    print json_encode($response);
+  // Determine which content type to install from post data
+  $name = filter_input(INPUT_POST, 'id');
+  if (!$name) {
+    H5PCore::ajaxError(t('No content type was specified.'), 'NO_CONTENT_TYPE');
     return;
+  }
+
+  // Look up content type to ensure it's valid(and to check permissions)
+  $content_type = db_query(
+      "SELECT id, is_recommended
+         FROM {h5p_libraries_hub_cache}
+        WHERE machine_name = :name",
+      array(':name' => $name)
+  )->fetchObject();
+  if (!$content_type) {
+    H5PCore::ajaxError(t('The chosen content type is invalid.'), 'INVALID_CONTENT_TYPE');
+    return;
+  }
+
+  // Check if the user has access to install or update content types
+  $can_install_all = user_access('update h5p libraries');
+  $can_install_recommended = ($content_type->is_recommended && user_access('install recommended h5p libraries'));
+  if (!$can_install_all || !$can_install_recommended) {
+    H5PCore::ajaxError(t('No permission to install content type.'), 'INSTALL_DENIED');
+    return;
+  }
+
+  if (!$can_install_all && $can_install_recommended) {
+    // Override core permission check
+    $core = _h5p_get_instance('core');
+    $core->mayUpdateLibraries(TRUE);
   }
 
   $endpoint = 'http://api.h5p.org/v1/content-types/';
-  $h5p_data = file_get_contents($endpoint . $id);
-  $h5p_core = _h5p_get_instance('storage');
+  $h5p_data = file_get_contents($endpoint . $name);
 
   if (!$h5p_data) {
-    $response->error_code = 'DOWNLOAD_FAILED';
-    $response->error_msg = 'Failed to download the requested H5P';
-    print json_encode($response);
+    H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
     return;
   }
 
@@ -345,26 +352,36 @@ function h5peditor_library_install_callback() {
   file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
   $file = file_unmanaged_save_data($h5p_data, $temporary_file_path . '/libraries.h5p');
 
-  if ($file) {
-    // These has to be set instead of sending parameters to the validation function.
-    $_SESSION['h5p_upload']        = drupal_realpath($file);
-    $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
-
-    $validator = _h5p_get_instance('validator');
-    if ($validator->isValidPackage(TRUE, FALSE) === FALSE) {
-      $response->error_code = 'VALIDATION_FAILED';
-      $response->error_msg = 'The requested file was not a valid H5P';
-      // Maintain session variables.
-      unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
-    }
-    else {
-      // Save H5P
-      $h5p_core->savePackage(NULL, NULL, TRUE);
-      $response->success = true;
-    }
+  if (!$file) {
+    H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
+    return;
   }
 
-  print json_encode($response);
+  // These has to be set instead of sending parameters to the validation function.
+  $_SESSION['h5p_upload']        = drupal_realpath($file);
+  $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+
+  $validator = _h5p_get_instance('validator');
+  if (!$validator->isValidPackage(TRUE, FALSE)) {
+    file_unmanaged_delete($_SESSION['h5p_upload']);
+
+    // Maintain session variables.
+    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+
+    $errors = drupal_get_messages('error');
+    if (empty($errors)) {
+      $errors = t('Validating h5p package failed.');
+    }
+    H5PCore::ajaxError($errors, 'VALIDATION_FAILED');
+    return;
+  }
+
+  // Save H5P
+  $h5p_core = _h5p_get_instance('storage');
+  $h5p_core->savePackage(NULL, NULL, TRUE);
+
+  // Successfully installed.
+  H5PCore::ajaxSuccess();
 }
 
 /**
@@ -413,8 +430,8 @@ function h5peditor_content_type_cache_callback() {
   )->fetchAll();
 
   // Determine access
-  $can_install_any = user_access('install any h5p content type');
-  $can_install_recommended = user_access('install recommended h5p content type');
+  $can_install_all = user_access('update h5p libraries');
+  $can_install_recommended = user_access('install recommended h5p libraries');
 
   $libraries = array();
   foreach ($results as &$result) {
@@ -494,7 +511,7 @@ function h5peditor_files_callback($token, $content_id) {
 
   $file = new H5peditorFile(_h5p_get_instance('interface'));
   if (!$file->isLoaded()) {
-    H5PCore::ajaxError(__('File not found on server. Check file upload settings.', $this->plugin_slug));
+    H5PCore::ajaxError(t('File not found on server. Check file upload settings.'));
     return;
   }
 
