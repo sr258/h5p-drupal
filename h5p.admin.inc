@@ -448,6 +448,7 @@ function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
   drupal_add_js('H5PAdminIntegration = ' . json_encode($settings) . ';', 'inline');
   drupal_add_css($module_path . '/library/styles/h5p.css');
   drupal_add_css($module_path . '/library/styles/h5p-admin.css');
+  drupal_add_css($module_path . '/library/styles/h5p-hub-client.css');
 
   drupal_add_js(array(
     'h5p' => h5p_get_core_settings()

@@ -33,8 +33,35 @@ ns.Editor = function (library, defaultParams, replace) {
     this.contentWindow.H5P.$body = $(this.contentDocument.body);
     var $container = $('body > .h5p-editor');
 
+    // create hub client
+    var hubClient = new H5P.HubClient({
+        apiRootUrl: H5PEditor.ajaxPath
+    });
+
+    $(hubClient.getElement()).appendTo($container.html(''));
+
+    // on content type select
+    hubClient.on('select', function(event) {
+      // add loading
+      $('<br>').appendTo($container);
+      var $loading = $('<div class="h5peditor-loading h5p-throbber">' + ns.t('core', 'loading') + '</div>').appendTo($container);
+
+      // get content type definition by id
+      // TODO Can we get semantics by id?
+      hubClient.getContentType(event.id).then(function(contentType){
+        var contentTypeName = contentType.machine_name + ' ' + contentType.major_version + '.' + contentType.minor_version;
+
+        ns.loadLibrary(contentTypeName, function(semantics) {
+          var form = new H5PEditor.Form();
+          form.processSemantics(semantics, (library === form.defaultLibrary || library === form.defaultLibraryParameterized ? form.defaultParams : {}));
+
+          $loading.replaceWith(form.$form);
+        });
+      });
+    });
+
     // Load libraries list
-    $.ajax({
+    /*$.ajax({
       dataType: 'json',
       url: ns.getAjaxUrl('libraries')
     }).fail(function () {
@@ -45,10 +72,10 @@ ns.Editor = function (library, defaultParams, replace) {
       if (library) {
         self.selector.$selector.change();
       }
-    });
+    });*/
 
     // Start resizing the iframe
-    if (iframe.contentWindow.MutationObserver !== undefined) {
+    /*if (iframe.contentWindow.MutationObserver !== undefined) {
       // If supported look for changes to DOM elements. This saves resources.
       var running;
       var limitedResize = function (mutations) {
@@ -70,13 +97,13 @@ ns.Editor = function (library, defaultParams, replace) {
       });
       H5P.$window.resize(limitedResize);
     }
-    else {
+    else {*/
       // Use an interval for resizing the iframe
       (function resizeInterval() {
         resize();
         setTimeout(resizeInterval, 40); // No more than 25 times per second
       })();
-    }
+    //}
   }).get(0);
   iframe.contentDocument.open();
   iframe.contentDocument.write(

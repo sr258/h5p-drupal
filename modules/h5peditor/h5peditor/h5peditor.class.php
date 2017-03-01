@@ -4,6 +4,8 @@ class H5peditor {
 
   public static $styles = array(
     'libs/darkroom.css',
+    'styles/css/h5p-hub-client.css',
+    'styles/css/fonts.css',
     'styles/css/application.css'
   );
   public static $scripts = array(
