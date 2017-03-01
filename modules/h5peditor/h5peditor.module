@@ -430,8 +430,8 @@ function h5peditor_content_type_cache_callback() {
   )->fetchAll();
 
   // Determine access
-  $can_install_any = user_access('install any h5p content type');
-  $can_install_recommended = user_access('install recommended h5p content type');
+  $can_install_all = user_access('update h5p libraries');
+  $can_install_recommended = user_access('install recommended h5p libraries');
 
   $libraries = array();
   foreach ($results as &$result) {
