@@ -301,6 +301,7 @@ class H5PDrupal implements H5PFrameworkInterface {
         'preloaded_css' => $preloadedCss,
         'drop_library_css' => $dropLibraryCss,
         'semantics' => $libraryData['semantics'],
+        'has_icon' => $libraryData['hasIcon'] ? 1 : 0,
       ))
       ->execute();
       $libraryData['libraryId'] = $libraryId;
@@ -321,7 +322,8 @@ class H5PDrupal implements H5PFrameworkInterface {
         'preloaded_js' => $preloadedJs,
         'preloaded_css' => $preloadedCss,
         'drop_library_css' => $dropLibraryCss,
-        'semantics' => $libraryData['semantics']
+        'semantics' => $libraryData['semantics'],
+        'has_icon' => $libraryData['hasIcon'] ? 1 : 0,
       ))
       ->condition('library_id', $libraryData['libraryId'])
       ->execute();
@@ -622,7 +624,8 @@ class H5PDrupal implements H5PFrameworkInterface {
                 fullscreen,
                 runnable,
                 semantics,
-                tutorial_url
+                tutorial_url,
+                has_icon
           FROM {h5p_libraries}
           WHERE machine_name = :machine_name
           AND major_version = :major_version
@@ -949,9 +952,9 @@ class H5PDrupal implements H5PFrameworkInterface {
           'screenshots' => json_encode($ct->screenshots),
           'license' => $ct->license,
           'example' => $ct->example,
-          'tutorial' => $ct->tutorial,
-          'keywords' => json_encode($ct->keywords),
-          'categories' => json_encode($ct->categories),
+          'tutorial' => isset($ct->tutorial) ? $ct->tutorial : '',
+          'keywords' => json_encode(isset($ct->keywords) ? $ct->keywords : array()),
+          'categories' => json_encode(isset($ct->categories) ? $ct->categories : array()),
           'owner' => $ct->owner
         ))
         ->execute();

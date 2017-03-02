@@ -721,7 +721,7 @@ class H5PValidator {
     $mainH5pData = null;
     $libraryJsonData = null;
     $contentJsonData = null;
-    $mainH5pExists = $imageExists = $contentExists = FALSE;
+    $mainH5pExists = $contentExists = FALSE;
     foreach ($files as $file) {
       if (in_array(substr($file, 0, 1), array('.', '_'))) {
         continue;
@@ -748,10 +748,6 @@ class H5PValidator {
             $this->h5pF->setErrorMessage($this->h5pF->t('The main h5p.json file is not valid'));
           }
         }
-      }
-      // Check for h5p.jpg?
-      elseif (strtolower($file) == 'h5p.jpg') {
-        $imageExists = TRUE;
       }
       // Content directory holds content.
       elseif ($file == 'content') {
@@ -783,7 +779,7 @@ class H5PValidator {
       }
 
       // The rest should be library folders
-      elseif ($this->h5pF->mayUpdateLibraries()) {
+      elseif ($this->h5pC->mayUpdateLibraries()) {
          if (!is_dir($filePath)) {
           // Ignore this. Probably a file that shouldn't have been included.
           continue;
@@ -866,7 +862,7 @@ class H5PValidator {
         foreach ($missingLibraries as $libString => $library) {
           $this->h5pF->setErrorMessage($this->h5pF->t('Missing required library @library', array('@library' => $libString)));
         }
-        if (!$this->h5pF->mayUpdateLibraries()) {
+        if (!$this->h5pC->mayUpdateLibraries()) {
           $this->h5pF->setInfoMessage($this->h5pF->t("Note that the libraries may exist in the file you uploaded, but you're not allowed to upload new libraries. Contact the site administrator about this."));
         }
       }
@@ -936,6 +932,9 @@ class H5PValidator {
         $h5pData['language'][$parts[0]] = $languageJson;
       }
     }
+
+    // Check for icon:
+    $h5pData['hasIcon'] = file_exists($filePath . DIRECTORY_SEPARATOR . 'icon.svg');
 
     $validLibrary = $this->isValidH5pData($h5pData, $file, $this->libraryRequired, $this->libraryOptional);
 
@@ -1303,7 +1302,7 @@ class H5PStorage {
    * FALSE otherwise
    */
   public function savePackage($content = NULL, $contentMainId = NULL, $skipContent = FALSE, $options = array()) {
-    if ($this->h5pF->mayUpdateLibraries()) {
+    if ($this->h5pC->mayUpdateLibraries()) {
       // Save the libraries we processed during validation
       $this->saveLibraries();
     }
@@ -2808,6 +2807,100 @@ class H5PCore {
   }
 
   /**
+   * Extract library properties from cached library so they are ready to be
+   * returned as JSON
+   *
+   * @param object $cached_library A single library from the content type cache
+   *
+   * @return array A list containing the necessary properties for a cached
+   * library to send to the front-end
+   */
+  public function getCachedLibAsList($cached_library) {
+    return array(
+      'id'              => $cached_library->id,
+      'machineName'     => $cached_library->machine_name,
+      'majorVersion'    => $cached_library->major_version,
+      'minorVersion'    => $cached_library->minor_version,
+      'patchVersion'    => $cached_library->patch_version,
+      'h5pMajorVersion' => $cached_library->h5p_major_version,
+      'h5pMinorVersion' => $cached_library->h5p_minor_version,
+      'title'           => $cached_library->title,
+      'summary'         => $cached_library->summary,
+      'description'     => $cached_library->description,
+      'icon'            => $cached_library->icon,
+      'createdAt'       => $cached_library->created_at,
+      'updatedAt'       => $cached_library->updated_at,
+      'isRecommended'   => $cached_library->is_recommended,
+      'popularity'      => $cached_library->popularity,
+      'screenshots'     => json_decode($cached_library->screenshots),
+      'license'         => $cached_library->license,
+      'example'         => $cached_library->example,
+      'tutorial'        => $cached_library->tutorial,
+      'keywords'        => json_decode($cached_library->keywords),
+      'categories'      => json_decode($cached_library->categories),
+      'owner'           => $cached_library->owner,
+      'installed'       => FALSE,
+      'isUpToDate'      => FALSE,
+      'restricted'      => isset($cached_library->restricted) ? $cached_library->restricted : FALSE
+    );
+  }
+
+  /**
+   * Merge local libraries into cached libraries so that local libraries will
+   * get supplemented with the additional info from externally cached libraries.
+   *
+   * Also sets whether a given cached library is installed and up to date with
+   * the locally installed libraries
+   *
+   * @param object $local_libraries Locally installed libraries
+   * @param object $cached_libraries Cached libraries from the H5P hub
+   */
+  public function mergeLocalLibsIntoCachedLibs($local_libraries, &$cached_libraries) {
+
+    // Add local libraries to supplement content type cache
+    foreach ($local_libraries as $local_lib) {
+      $is_local_only = TRUE;
+      foreach ($cached_libraries as &$cached_lib) {
+
+        // Determine if library is local
+        $is_matching_library = $cached_lib['machineName'] === $local_lib->machine_name;
+        if ($is_matching_library) {
+          $is_local_only = FALSE;
+
+          // Set local properties
+          $cached_lib['installed']  = TRUE;
+          $cached_lib['restricted'] = $local_lib->restricted;
+          // TODO: set icon if it exists locally HFP-807
+
+          // Determine if library is the same as ct cache
+          $is_updated_library =
+            $cached_lib['majorVersion'] === $local_lib->major_version &&
+            $cached_lib['minorVersion'] === $local_lib->minor_version &&
+            $cached_lib['patchVersion'] === $local_lib->patch_version;
+
+          if ($is_updated_library) {
+            $cached_lib['isUpToDate'] = TRUE;
+          }
+        }
+      }
+
+      // Add minimal data to display local only libraries
+      if ($is_local_only) {
+        $cached_libraries[] = array(
+          'id'           => $local_lib->library_id,
+          'machineName'  => $local_lib->machine_name,
+          'majorVersion' => $local_lib->major_version,
+          'minorVersion' => $local_lib->minor_version,
+          'patchVersion' => $local_lib->patch_version,
+          'installed'    => TRUE,
+          'isUpToDate'   => TRUE,
+          'restricted'   => $local_lib->restricted
+        );
+      }
+    }
+  }
+
+  /**
    * Check if the current server setup is valid and set error messages
    *
    * @return array Errors found
@@ -2906,6 +2999,29 @@ class H5PCore {
     }
 
     return $val;
+  }
+
+  /**
+   * Check if the current user has permission to update and install new
+   * libraries.
+   *
+   * @param bool [$set] Optional, sets the permission
+   * @return bool
+   */
+  public function mayUpdateLibraries($set = null) {
+    static $can;
+
+    if ($set !== null) {
+      // Use value set
+      $can = $set;
+    }
+
+    if ($can === null) {
+      // Ask our framework
+      $can = $this->h5pF->mayUpdateLibraries();
+    }
+
+    return $can;
   }
 }
 
