@@ -426,37 +426,34 @@ function h5peditor_content_type_cache_callback() {
     }
   }
 
-  // Get latest version of local libraries
-  $local_libraries = db_query(
-    '
-      SELECT *
-      FROM
-      (SELECT
-       m.library_id,
-       m.machine_name,
-       m.major_version,
-       m.minor_version,
-       m.patch_version,
-       m.restricted
-     FROM {h5p_libraries} AS m
-       JOIN (SELECT
-               l.machine_name,
-               MAX(l.major_version * 1000000 + l.minor_version * 1000 + l.patch_version) AS maxversion
-             FROM {h5p_libraries} AS l
-             WHERE l.runnable = 1
-             GROUP BY l.machine_name) AS m1
-         ON m.machine_name = m1.machine_name AND
-            m.major_version * 1000000 + m.minor_version * 1000 + m.patch_version = maxversion
-    )as libs
-    '
-  )->fetchAll();
+  $max_major_version = "
+    SELECT hl.machine_name, max(hl.major_version) AS major_version
+    FROM {h5p_libraries} hl
+    WHERE hl.runnable = 1
+    GROUP BY hl.machine_name
+    ";
 
-  $cached_libraries = db_query(
-    '
-    SELECT *
-    FROM {h5p_libraries_hub_cache}
-    '
-  )->fetchAll();
+  $max_minor_version = "
+    SELECT hl2.machine_name, hl2.major_version, max(hl2.minor_version) AS minor_version
+    FROM ({$max_major_version}) hl1
+    JOIN {h5p_libraries} hl2
+    ON hl1.machine_name = hl2.machine_name
+    AND hl1.major_version = hl2.major_version
+    GROUP BY hl2.machine_name
+  ";
+
+  $local_libraries = db_query("
+    SELECT hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version
+    FROM {h5p_libraries} hl4
+    JOIN ({$max_minor_version}) hl3
+    ON hl4.machine_name = hl3.machine_name
+    AND hl4.major_version = hl3.major_version
+    AND hl4.minor_version = hl3.minor_version
+    GROUP BY hl4.machine_name
+  ")->fetchAll();
+
+  $cached_libraries = db_query("SELECT * FROM {h5p_libraries_hub_cache}")
+    ->fetchAll();
 
   // Determine access
   $can_install_all = user_access('update h5p libraries');
