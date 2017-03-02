@@ -302,7 +302,7 @@ function h5peditor_libraries_callback() {
 function h5peditor_library_install_callback() {
 
   // Verify token
-  if (!\H5PCore::validToken('h5p_editor_ajax', filter_input(INPUT_POST, 'token'))) {
+  if (!\H5PCore::validToken('h5p_editor_ajax', filter_input(INPUT_GET, 'token'))) {
     \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
     return;
   }
