@@ -309,7 +309,7 @@ function h5peditor_library_install_callback($token) {
   }
 
   // Verify token
-  if (!\H5PCore::validToken('h5p_editor_ajax', $token)) {
+  if (!\H5PCore::validToken('editorajax', $token)) {
     \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
     return;
   }
