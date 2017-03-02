@@ -438,11 +438,11 @@ function h5peditor_content_type_cache_callback() {
        m.minor_version,
        m.patch_version,
        m.restricted
-     FROM h5p_libraries AS m
+     FROM {h5p_libraries} AS m
        JOIN (SELECT
                l.machine_name,
                MAX(l.major_version * 1000000 + l.minor_version * 1000 + l.patch_version) AS maxversion
-             FROM h5p_libraries AS l
+             FROM {h5p_libraries} AS l
              WHERE l.runnable = 1
              GROUP BY l.machine_name) AS m1
          ON m.machine_name = m1.machine_name AND
@@ -454,7 +454,7 @@ function h5peditor_content_type_cache_callback() {
   $cached_libraries = db_query(
     '
     SELECT *
-    FROM h5p_libraries_hub_cache
+    FROM {h5p_libraries_hub_cache}
     '
   )->fetchAll();
 
