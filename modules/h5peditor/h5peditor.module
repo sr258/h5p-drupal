@@ -20,7 +20,7 @@ function h5peditor_menu() {
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/%/content_type_cache'] = array(
+  $items['h5peditor/%/%/content-type-cache'] = array(
     'title' => 'H5Peditor Content type cache',
     'page callback' => 'h5peditor_content_type_cache_callback',
     'access callback' => 'h5peditor_access',
@@ -28,7 +28,7 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['h5peditor/%/%/library_install'] = array(
+  $items['h5peditor/%/%/library-install'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
     'page arguments' => array(1),
@@ -347,8 +347,9 @@ function h5peditor_library_install_callback($token) {
     $core->mayUpdateLibraries(TRUE);
   }
 
-  $endpoint = 'http://api.h5p.org/v1/content-types/';
-  $h5p_data = file_get_contents($endpoint . $name);
+  $protocol = (extension_loaded('openssl') ? 'https' : 'http');
+  $endpoint = H5PCore::$hubEndpoints[H5PCore::CONTENT_TYPES];
+  $h5p_data = file_get_contents("{$protocol}://{$endpoint}{$name}");
 
   if (!$h5p_data) {
     H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
