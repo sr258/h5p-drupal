@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -445,43 +445,6 @@ var querySelectorAll = exports.querySelectorAll = (0, _functional.curry)(functio
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = renderErrorMessage;
-/**
- * @param  {string}   config.type         type of the message: info, success, error
- * @param  {boolean}  config.dismissible  whether the message can be dismissed
- * @param  {string}   config.content      message content usually a 'h3' and a 'p'
- * @return {HTMLElement} div containing the message element
- */
-
-//TODO handle strings, html, badly formed object
-function renderErrorMessage(message) {
-  console.log(message);
-  var closeButton = document.createElement('div');
-  closeButton.className = 'close';
-  closeButton.innerHTML = '&#x2715';
-
-  var messageContent = document.createElement('div');
-  messageContent.className = 'message-content';
-  messageContent.innerHTML = message.content;
-
-  var messageWrapper = document.createElement('div');
-  messageWrapper.className = 'message' + ' ' + ('' + message.type) + (message.dismissible ? ' dismissible' : '');
-  messageWrapper.appendChild(closeButton);
-  messageWrapper.appendChild(messageContent);
-  console.log(messageWrapper);
-  return messageWrapper;
-};
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -489,22 +452,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
  * @typedef {object} ContentType
- * @property {string} id
+ * @property {string} machineName
+ * @property {string} majorVersion
+ * @property {string} minorVersion
+ * @property {string} patchVersion
+ * @property {string} h5pMajorVersion
+ * @property {string} h5pMinorVersion
  * @property {string} title
  * @property {string} summary
  * @property {string} description
- * @property {string} icon
- * @property {string} created
- * @property {string} update
- * @property {boolean} recommended
- * @property {number} timesDownloaded
- * @property {string[]} screenshots
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {string} isRecommended
+ * @property {string} popularity
+ * @property {object[]} screenshots
+ * @property {string} license
  * @property {string} example
+ * @property {string} tutorial
  * @property {string[]} keywords
  * @property {string[]} categories
- * @property {string} license
+ * @property {string} owner
+ * @property {boolean} installed
+ * @property {boolean} restricted
  */
 
+/**
+ * @class
+ */
 var HubServices = function () {
   /**
    * @param {string} apiRootUrl
@@ -517,41 +491,25 @@ var HubServices = function () {
     this.apiRootUrl = apiRootUrl;
 
     if (!window.cachedContentTypes) {
-      window.cachedContentTypes = fetch(this.apiRootUrl + 'content-type-cache', {
+      window.cachedContentTypes = fetch(this.apiRootUrl + 'content_type_cache', {
         method: 'GET',
         credentials: 'include'
       }).then(function (result) {
         return result.json();
-      }).then(this.isValid).then(function (json) {
+      }).then(function (json) {
         return json.libraries;
       });
     }
   }
 
   /**
+   * Returns a list of content types
    *
-   * @param  {Object} response
-   * @return {Promise<ContentType[] | ErrorMessage>}
+   * @return {Promise.<ContentType[]>}
    */
 
 
   _createClass(HubServices, [{
-    key: 'isValid',
-    value: function isValid(response) {
-      if (response.messageCode) {
-        return Promise.reject(response);
-      } else {
-        return Promise.resolve(response);
-      }
-    }
-
-    /**
-     * Returns a list of content types
-     *
-     * @return {Promise.<ContentType[]>}
-     */
-
-  }, {
     key: 'contentTypes',
     value: function contentTypes() {
       return window.cachedContentTypes;
@@ -591,7 +549,7 @@ var HubServices = function () {
   }, {
     key: 'installContentType',
     value: function installContentType(id) {
-      return fetch(this.apiRootUrl + 'library-install?id=' + id, {
+      return fetch(this.apiRootUrl + 'library_install?id=' + id, {
         method: 'POST',
         credentials: 'include',
         body: ''
@@ -607,7 +565,7 @@ var HubServices = function () {
 exports.default = HubServices;
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -644,13 +602,13 @@ var show = (0, _elements.setAttribute)('aria-hidden', 'false');
  * @param {boolean} isExpanded
  */
 var toggleBodyVisibility = function toggleBodyVisibility(bodyElement, isExpanded) {
-  if (isExpanded) {
-    show(bodyElement);
-    bodyElement.style.height = bodyElement.scrollHeight + 'px';
-  } else {
+  if (!isExpanded) {
     hide(bodyElement);
-    bodyElement.style.height = "0";
-  }
+    //bodyElement.style.height = "0";
+  } else /*if(bodyElement.scrollHeight > 0)*/{
+      show(bodyElement);
+      //bodyElement.style.height = `${bodyElement.scrollHeight}px`;
+    }
 };
 
 /**
@@ -698,7 +656,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -712,25 +670,23 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hubView = __webpack_require__(16);
+var _hubView = __webpack_require__(15);
 
 var _hubView2 = _interopRequireDefault(_hubView);
 
-var _contentTypeSection = __webpack_require__(15);
+var _contentTypeSection = __webpack_require__(14);
 
 var _contentTypeSection2 = _interopRequireDefault(_contentTypeSection);
 
-var _uploadSection = __webpack_require__(18);
+var _uploadSection = __webpack_require__(17);
 
 var _uploadSection2 = _interopRequireDefault(_uploadSection);
 
-var _hubServices = __webpack_require__(4);
+var _hubServices = __webpack_require__(3);
 
 var _hubServices2 = _interopRequireDefault(_hubServices);
 
 var _eventful = __webpack_require__(0);
-
-var _errors = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -769,8 +725,8 @@ var Hub = function () {
       apiRootUrl: state.apiRootUrl
     });
 
-    // propagate controller events
-    this.propagate(['select', 'error'], this.contentTypeSection);
+    // propag ate controller events
+    this.propagate(['select'], this.contentTypeSection);
 
     // handle events
     this.on('select', this.setPanelTitle, this);
@@ -856,13 +812,13 @@ var Hub = function () {
 exports.default = Hub;
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -916,7 +872,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2870,7 +2826,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })();
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2890,7 +2846,7 @@ var _functional = __webpack_require__(1);
 
 var _eventful = __webpack_require__(0);
 
-var _panel = __webpack_require__(5);
+var _panel = __webpack_require__(4);
 
 var _panel2 = _interopRequireDefault(_panel);
 
@@ -3199,7 +3155,7 @@ var ContentTypeDetailView = function () {
 exports.default = ContentTypeDetailView;
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3213,11 +3169,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeDetailView = __webpack_require__(10);
+var _contentTypeDetailView = __webpack_require__(9);
 
 var _contentTypeDetailView2 = _interopRequireDefault(_contentTypeDetailView);
 
-var _hubServices = __webpack_require__(4);
+var _hubServices = __webpack_require__(3);
 
 var _hubServices2 = _interopRequireDefault(_hubServices);
 
@@ -3346,7 +3302,7 @@ var ContentTypeDetail = function () {
 exports.default = ContentTypeDetail;
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3453,17 +3409,13 @@ var ContentTypeListView = function () {
   }, {
     key: "updateList",
     value: function updateList(contentTypes) {
-      var _this = this;
-
       if (this.rootElement) {
         while (this.rootElement.firstChild) {
           this.rootElement.removeChild(this.rootElement.firstChild);
         }
       }
 
-      this.renderContentTypeList(contentTypes).forEach(function (contentType) {
-        return _this.rootElement.appendChild(contentType);
-      });
+      this.renderContentTypeList(contentTypes).forEach(this.rootElement.appendChild.bind(this.rootElement));
     }
 
     /**
@@ -3477,11 +3429,7 @@ var ContentTypeListView = function () {
   }, {
     key: "renderContentTypeList",
     value: function renderContentTypeList(contentTypes) {
-      var _this2 = this;
-
-      return contentTypes.map(function (contentType) {
-        return _this2.createContentTypeRow(contentType);
-      }).map(relayClickEventAs('row-selected', this));
+      return contentTypes.map(this.createContentTypeRow.bind(this)).map(relayClickEventAs('row-selected', this));
     }
 
     /**
@@ -3564,7 +3512,7 @@ var ContentTypeListView = function () {
 exports.default = ContentTypeListView;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3578,7 +3526,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeListView = __webpack_require__(12);
+var _contentTypeListView = __webpack_require__(11);
 
 var _contentTypeListView2 = _interopRequireDefault(_contentTypeListView);
 
@@ -3638,7 +3586,7 @@ var ContentTypeList = function () {
 exports.default = ContentTypeList;
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3809,7 +3757,7 @@ var ContentBrowserView = function () {
 exports.default = ContentBrowserView;
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3823,25 +3771,23 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeSectionView = __webpack_require__(14);
+var _contentTypeSectionView = __webpack_require__(13);
 
 var _contentTypeSectionView2 = _interopRequireDefault(_contentTypeSectionView);
 
-var _searchService = __webpack_require__(17);
+var _searchService = __webpack_require__(16);
 
 var _searchService2 = _interopRequireDefault(_searchService);
 
-var _contentTypeList = __webpack_require__(13);
+var _contentTypeList = __webpack_require__(12);
 
 var _contentTypeList2 = _interopRequireDefault(_contentTypeList);
 
-var _contentTypeDetail = __webpack_require__(11);
+var _contentTypeDetail = __webpack_require__(10);
 
 var _contentTypeDetail2 = _interopRequireDefault(_contentTypeDetail);
 
 var _eventful = __webpack_require__(0);
-
-var _errors = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3906,8 +3852,6 @@ var ContentTypeSection = function () {
       // initialize by search
       this.searchService.search("").then(function (contentTypes) {
         return _this2.contentTypeList.update(contentTypes);
-      }).catch(function (error) {
-        return _this2.fire('error', error);
       });
     }
 
@@ -3985,7 +3929,7 @@ var ContentTypeSection = function () {
 exports.default = ContentTypeSection;
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3997,11 +3941,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _panel = __webpack_require__(5);
+var _panel = __webpack_require__(4);
 
 var _panel2 = _interopRequireDefault(_panel);
 
-var _tabPanel = __webpack_require__(8);
+var _tabPanel = __webpack_require__(7);
 
 var _tabPanel2 = _interopRequireDefault(_tabPanel);
 
@@ -4212,7 +4156,7 @@ var HubView = function () {
 exports.default = HubView;
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4226,11 +4170,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _functional = __webpack_require__(1);
 
-var _hubServices = __webpack_require__(4);
+var _hubServices = __webpack_require__(3);
 
 var _hubServices2 = _interopRequireDefault(_hubServices);
 
-var _lunr = __webpack_require__(9);
+var _lunr = __webpack_require__(8);
 
 var _lunr2 = _interopRequireDefault(_lunr);
 
@@ -4242,24 +4186,6 @@ var findContentTypeByMachineName = (0, _functional.curry)(function (contentTypes
   return contentTypes.filter(function (contentType) {
     return contentType.machineName === machineName;
   })[0];
-});
-
-/**
- * Adds a content type to the search index
- *
- * @param  {lunr.Index} index
- * @param  {ContentType} contentType
- *
- * @return {ContentType}
- */
-var addToIndex = (0, _functional.curry)(function (index, contentType) {
-  index.add({
-    title: contentType.title,
-    summary: contentType.summary,
-    id: contentType.machineName
-  });
-
-  return contentType;
 });
 
 /**
@@ -4287,26 +4213,45 @@ var SearchService = function () {
       this.ref('id');
     });
 
-    this.contentTypes = this.services.contentTypes().then((0, _functional.map)(addToIndex(this.index))); // Add content types to search index
+    this.contentTypes = this.services.contentTypes(); // Get content types
+    this.contentTypes.then((0, _functional.forEach)(this.addToIndex.bind(this))); // Add content types to search index
   }
 
   /**
-   * Performs a search
+   * addToIndex - Adds a content type to the search index
    *
-   * @param {String} query
-   *
-   * @return {Promise<ContentType[]>}
+   * @param  {Object} contentType
    */
 
 
   _createClass(SearchService, [{
+    key: "addToIndex",
+    value: function addToIndex(contentType) {
+      this.index.add({
+        title: contentType.title,
+        summary: contentType.summary,
+        id: contentType.machineName
+      });
+    }
+
+    /**
+     * Performs a search
+     *
+     * @param {String} query
+     *
+     * @return {Promise<ContentType[]>}
+     */
+
+  }, {
     key: "search",
     value: function search(query) {
       var _this = this;
 
       // Display all content types by default
       if (query === '') {
-        return this.contentTypes;
+        return this.contentTypes.then(function (contentTypes) {
+          return contentTypes;
+        });
       }
 
       return this.contentTypes.then(function (contentTypes) {
@@ -4323,7 +4268,7 @@ var SearchService = function () {
 exports.default = SearchService;
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4360,18 +4305,17 @@ var UploadSection = function () {
 exports.default = UploadSection;
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(7);
+__webpack_require__(6);
 
 // Load library
 H5P = H5P || {};
-H5P.HubClient = __webpack_require__(6).default;
-H5P.HubClient.renderErrorMessage = __webpack_require__(3).default;
+H5P.HubClient = __webpack_require__(5).default;
 
 /***/ })
 /******/ ]);
