@@ -31,6 +31,7 @@ function h5peditor_menu() {
   $items['h5peditor/%/%/library_install'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
+    'page arguments' => array(1),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK
@@ -299,7 +300,7 @@ function h5peditor_libraries_callback() {
 /**
  * Install library from external file
  */
-function h5peditor_library_install_callback() {
+function h5peditor_library_install_callback($token) {
 
   // Only handle POST requests
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -308,7 +309,7 @@ function h5peditor_library_install_callback() {
   }
 
   // Verify token
-  if (!\H5PCore::validToken('h5p_editor_ajax', filter_input(INPUT_GET, 'token'))) {
+  if (!\H5PCore::validToken('h5p_editor_ajax', $token)) {
     \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
     return;
   }
