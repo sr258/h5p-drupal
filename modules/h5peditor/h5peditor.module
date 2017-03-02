@@ -301,6 +301,12 @@ function h5peditor_libraries_callback() {
  */
 function h5peditor_library_install_callback() {
 
+  // Only handle POST requests
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    drupal_not_found();
+    return;
+  }
+
   // Verify token
   if (!\H5PCore::validToken('h5p_editor_ajax', filter_input(INPUT_GET, 'token'))) {
     \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
@@ -308,7 +314,7 @@ function h5peditor_library_install_callback() {
   }
 
   // Determine which content type to install from post data
-  $name = filter_input(INPUT_POST, 'id');
+  $name = filter_input(INPUT_GET, 'id');
   if (!$name) {
     H5PCore::ajaxError(t('No content type was specified.'), 'NO_CONTENT_TYPE');
     return;
@@ -435,7 +441,7 @@ function h5peditor_content_type_cache_callback() {
 
   $libraries = array();
   foreach ($results as &$result) {
-    if ($can_install_any) {
+    if ($can_install_all) {
       $result->restricted = false;
     }
     elseif ($result->is_recommended && $can_install_recommended) {
