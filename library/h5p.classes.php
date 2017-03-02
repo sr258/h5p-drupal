@@ -1725,6 +1725,12 @@ class H5PCore {
     'js/h5p-utils.js',
   );
 
+  const CONTENT_TYPES = 0;
+
+  public static $hubEndpoints = array(
+    self::CONTENT_TYPES => 'api.h5p.org/v1/content-types/'
+  );
+
   public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm mp4 ogg mp3 txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile';
   public static $defaultLibraryWhitelistExtras = 'js css';
 
@@ -2764,8 +2770,6 @@ class H5PCore {
    * @return bool|object Returns endpoint data if found, otherwise FALSE
    */
   public function updateContentTypeCache($postData = NULL) {
-    $endpoint = 'http://api.h5p.org/v1/content-types';
-
     $interface = $this->h5pF;
 
     // Set uuid
@@ -2777,7 +2781,9 @@ class H5PCore {
 
     $postData['current_cache'] = $this->h5pF->getOption('content_type_cache_updated_at', 0);
 
-    $data = $interface->fetchExternalData($endpoint, $postData);
+    $protocol = (extension_loaded('openssl') ? 'https' : 'http');
+    $endpoint = H5PCore::$hubEndpoints[H5PCore::CONTENT_TYPES];
+    $data = $interface->fetchExternalData("{$protocol}://{$endpoint}", $postData);
 
     // No data received
     if (!$data) {
@@ -2852,8 +2858,8 @@ class H5PCore {
    * Also sets whether a given cached library is installed and up to date with
    * the locally installed libraries
    *
-   * @param object $local_libraries Locally installed libraries
-   * @param object $cached_libraries Cached libraries from the H5P hub
+   * @param array $local_libraries Locally installed libraries
+   * @param array $cached_libraries Cached libraries from the H5P hub
    */
   public function mergeLocalLibsIntoCachedLibs($local_libraries, &$cached_libraries) {
 

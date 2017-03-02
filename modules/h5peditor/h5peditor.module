@@ -346,8 +346,9 @@ function h5peditor_library_install_callback() {
     $core->mayUpdateLibraries(TRUE);
   }
 
-  $endpoint = 'http://api.h5p.org/v1/content-types/';
-  $h5p_data = file_get_contents($endpoint . $name);
+  $protocol = (extension_loaded('openssl') ? 'https' : 'http');
+  $endpoint = H5PCore::$hubEndpoints[H5PCore::CONTENT_TYPES];
+  $h5p_data = file_get_contents("{$protocol}://{$endpoint}{$name}");
 
   if (!$h5p_data) {
     H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
