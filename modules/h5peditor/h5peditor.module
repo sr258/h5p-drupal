@@ -20,7 +20,7 @@ function h5peditor_menu() {
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
-  $items['h5peditor/%/%/content_type_cache'] = array(
+  $items['h5peditor/%/%/content-type-cache'] = array(
     'title' => 'H5Peditor Content type cache',
     'page callback' => 'h5peditor_content_type_cache_callback',
     'access callback' => 'h5peditor_access',
@@ -28,7 +28,7 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['h5peditor/%/%/library_install'] = array(
+  $items['h5peditor/%/%/library-install'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
     'page arguments' => array(1),
