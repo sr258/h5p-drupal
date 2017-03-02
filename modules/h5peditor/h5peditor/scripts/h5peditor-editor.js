@@ -46,10 +46,9 @@ ns.Editor = function (library, defaultParams, replace) {
       $('<br>').appendTo($container);
       var $loading = $('<div class="h5peditor-loading h5p-throbber">' + ns.t('core', 'loading') + '</div>').appendTo($container);
 
-      // get content type definition by id
       // TODO Can we get semantics by id?
-      hubClient.getContentType(event.id).then(function(contentType){
-        var contentTypeName = contentType.machine_name + ' ' + contentType.major_version + '.' + contentType.minor_version;
+      hubClient.getContentType(event.id).then(function(contentType) {
+        var contentTypeName = contentType.machineName + ' ' + contentType.majorVersion + '.' + contentType.minorVersion;
 
         ns.loadLibrary(contentTypeName, function(semantics) {
           var form = new H5PEditor.Form();

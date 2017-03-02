@@ -550,8 +550,9 @@ var HubServices = function () {
     key: 'installContentType',
     value: function installContentType(id) {
       return fetch(this.apiRootUrl + 'library_install?id=' + id, {
-        method: 'GET',
-        credentials: 'include'
+        method: 'POST',
+        credentials: 'include',
+        body: ''
       }).then(function (result) {
         return result.json();
       });
@@ -2962,14 +2963,14 @@ var ContentTypeDetailView = function () {
 
     // use button
     this.useButton = document.createElement('span');
-    this.useButton.className = 'button';
+    this.useButton.className = 'button button-primary';
     this.useButton.innerHTML = 'Use';
     _hide(this.useButton);
     relayClickEventAs('select', this, this.useButton);
 
     // install button
     this.installButton = document.createElement('span');
-    this.installButton.className = 'button button-inverse';
+    this.installButton.className = 'button button-inverse-primary';
     this.installButton.innerHTML = 'Install';
     _hide(this.installButton);
     relayClickEventAs('install', this, this.installButton);
@@ -3484,7 +3485,7 @@ var ContentTypeListView = function () {
         button.setAttribute(ATTRIBUTE_CONTENT_TYPE_ID, contentType.machineName);
         relayClickEventAs('select', this, button);
       } else {
-        button.className = "button button-inverse";
+        button.className = "button button-inverse-primary";
         button.innerHTML = "install";
         // no functionality, uses click event on row
       }
