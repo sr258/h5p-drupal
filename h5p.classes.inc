@@ -949,9 +949,9 @@ class H5PDrupal implements H5PFrameworkInterface {
           'screenshots' => json_encode($ct->screenshots),
           'license' => $ct->license,
           'example' => $ct->example,
-          'tutorial' => $ct->tutorial,
-          'keywords' => json_encode($ct->keywords),
-          'categories' => json_encode($ct->categories),
+          'tutorial' => isset($ct->tutorial) ? $ct->tutorial : '',
+          'keywords' => json_encode(isset($ct->keywords) ? $ct->keywords : array()),
+          'categories' => json_encode(isset($ct->categories) ? $ct->categories : array()),
           'owner' => $ct->owner
         ))
         ->execute();
