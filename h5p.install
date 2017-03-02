@@ -291,6 +291,14 @@ function h5p_schema() {
         'type' => 'varchar',
         'length' => 1000
       ),
+      'has_icon' => array(
+        'description' => 'Whether or not this library contains an icon.svg',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('library_id'),
   );
@@ -1526,4 +1534,20 @@ function h5p_update_7114() {
   // Update content type cache
   $core = _h5p_get_instance('core');
   $core->updateContentTypeCache();
+}
+
+/**
+ * Add icon flag in libraries table
+ */
+function h5p_update_7115() {
+  if (!db_field_exists('h5p_libraries', 'has_icon')) {
+    db_add_field('h5p_libraries', 'has_icon', array(
+        'description' => 'Whether or not this library contains an icon.svg',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+    ));
+  }
 }
