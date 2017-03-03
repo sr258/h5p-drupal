@@ -413,7 +413,7 @@ function h5peditor_content_type_cache_callback() {
 
   // Update content type cache if enabled and too old
   $ct_cache_last_update = $core->h5pF->getOption('content_type_cache_updated_at', 0);
-  $outdated_cache = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
+  $outdated_cache       = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
   if (time() > $outdated_cache) {
     $success = $core->updateContentTypeCache();
     if (!$success) {
@@ -456,7 +456,7 @@ function h5peditor_content_type_cache_callback() {
     ->fetchAll();
 
   // Determine access
-  $can_install_all = user_access('update h5p libraries');
+  $can_install_all         = user_access('update h5p libraries');
   $can_install_recommended = user_access('install recommended h5p libraries');
 
 
@@ -464,16 +464,16 @@ function h5peditor_content_type_cache_callback() {
   $libraries = array();
   foreach ($cached_libraries as &$result) {
     if ($can_install_any) {
-      $result->restricted = false;
+      $result->restricted = FALSE;
     }
     elseif ($result->is_recommended && $can_install_recommended) {
-      $result->restricted = false;
+      $result->restricted = FALSE;
     }
     else {
-      $result->restricted = true;
+      $result->restricted = TRUE;
     }
 
-    $libraries[] = $core->getCachedLibAsList($result);
+    $libraries[] = $core->getCachedLibsMap($result);
   }
   $core->mergeLocalLibsIntoCachedLibs($local_libraries, $libraries);
 

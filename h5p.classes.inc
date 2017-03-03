@@ -916,6 +916,9 @@ class H5PDrupal implements H5PFrameworkInterface {
           user_access('embed all h5ps') ||
           (self::mayCurrentUserUpdateNode($content_id) && user_access('embed own h5ps'))
         );
+
+      case H5PPermission::CREATE_RESTRICTED:
+        return user_access('create restricted h5p content types');
     }
     return FALSE;
   }
