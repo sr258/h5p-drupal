@@ -16,7 +16,7 @@ function h5p_admin_settings($form, &$form_state) {
   $path = drupal_get_path('module', 'h5p');
 
   // Get server setup error messages
-  $server_setup_errors = $core->checkSetupErrorMessage();
+  $server_setup_errors = $core->checkSetupErrorMessage()->errors;
   $disable_hub_data = array(
     'errors' => $server_setup_errors,
     'header' => $core->h5pF->t('Confirmation action'),
