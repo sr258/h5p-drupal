@@ -1530,10 +1530,6 @@ function h5p_update_7114() {
     ),
     'primary key' => array('id'),
   ));
-
-  // Update content type cache
-  $core = _h5p_get_instance('core');
-  $core->updateContentTypeCache();
 }
 
 /**
