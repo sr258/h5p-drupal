@@ -323,7 +323,7 @@ function h5peditor_library_install_callback($token) {
 
   // Look up content type to ensure it's valid(and to check permissions)
   $content_type = db_query(
-      "SELECT id, is_recommended
+      "SELECT *
          FROM {h5p_libraries_hub_cache}
         WHERE machine_name = :name",
       array(':name' => $name)
@@ -385,11 +385,29 @@ function h5peditor_library_install_callback($token) {
   }
 
   // Save H5P
-  $h5p_core = _h5p_get_instance('storage');
-  $h5p_core->savePackage(NULL, NULL, TRUE);
+  $core = _h5p_get_instance('core');
+  $storage = _h5p_get_instance('storage');
+  $storage->savePackage(NULL, NULL, TRUE);
+
+  // Get updated values for content type
+  $installed_ct = db_query("
+    SELECT *
+    FROM {h5p_libraries}
+    WHERE machine_name = :machine_name
+    AND major_version = :major_version
+    AND minor_version = :minor_version
+    AND patch_version = :patch_version
+  ", array(
+    ':machine_name' => $content_type->machine_name,
+    ':major_version' => $content_type->major_version,
+    ':minor_version' => $content_type->minor_version,
+    ':patch_version' => $content_type->patch_version
+  ))->fetchObject();
+  $cached_content_types = array($core->getCachedLibsMap($content_type));
+  $core->mergeLocalLibsIntoCachedLibs(array($installed_ct), $cached_content_types);
 
   // Successfully installed.
-  H5PCore::ajaxSuccess();
+  H5PCore::ajaxSuccess($cached_content_types[0]);
 }
 
 /**
