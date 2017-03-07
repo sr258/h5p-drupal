@@ -37,6 +37,15 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
+  $items['h5peditor/%/%/library-upload'] = array(
+    'title' => 'H5P Upload library',
+    'page callback' => 'h5peditor_library_upload_callback',
+    'page arguments' => array(1),
+    'access callback' => 'h5peditor_access',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK
+  );
+
   $items['h5peditor/%/%/libraries/%/%/%'] = array(
     'title' => 'H5peditor Library',
     'page callback' => 'h5peditor_library_callback',
@@ -295,6 +304,62 @@ function h5peditor_libraries_callback() {
   drupal_add_http_header('Cache-Control', 'no-cache');
   drupal_add_http_header('Content-type', 'application/json');
   print $editor->getLibraries();
+}
+
+/**
+ * Upload library from endpoint
+ */
+function h5peditor_library_upload_callback($token) {
+
+  // Only handle POST requests
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    drupal_not_found();
+    return;
+  }
+
+  // Verify token
+  if (!\H5PCore::validToken('editorajax', $token)) {
+    \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
+    return;
+  }
+
+  // New uploads need to be saved in temp to extract the relevant information.
+  $core = _h5p_get_instance('core');
+  $field_name = 'h5p';
+  $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p')
+                         . '/temp/' . uniqid('h5p-');
+  file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
+  $file = move_uploaded_file($_FILES[$field_name]['tmp_name'],
+    $temporary_file_path . '/' . $_FILES[$field_name]['name']);
+
+  if (!$file) {
+    H5PCore::ajaxError(t('Failed to upload the requested H5P.'), 'UPLOAD_FAILED');
+    return;
+  }
+
+  // These has to be set instead of sending parameteres to the validation function.
+  $_SESSION['h5p_upload'] = drupal_realpath($temporary_file_path . '/'. $_FILES[$field_name]['name']);
+  $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+
+  $validator = _h5p_get_instance('validator');
+  if (!$validator->isValidPackage()) {
+    file_unmanaged_delete($_SESSION['h5p_upload']);
+
+    // Maintain session variables.
+    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+
+    H5PCore::ajaxError(t('The file you uploaded is not a valid HTML5 Package.'), 'VALIDATION_FAILED');
+    return;
+  }
+
+  // Save H5P
+  $storage = _h5p_get_instance('storage');
+  $storage->savePackage(NULL, NULL, TRUE);
+
+  // Successfully loaded content json of file into editor
+  $content_path = $core->h5pF->getUploadedH5pFolderPath() . DIRECTORY_SEPARATOR . 'content';
+  $json = file_get_contents($content_path . DIRECTORY_SEPARATOR . 'content.json');
+  H5PCore::ajaxSuccess($json);
 }
 
 /**
