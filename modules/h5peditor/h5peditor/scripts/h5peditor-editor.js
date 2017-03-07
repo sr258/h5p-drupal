@@ -48,13 +48,13 @@ ns.Editor = function (library, defaultParams, replace) {
 
       // TODO Can we get semantics by id?
       hubClient.getContentType(event.id).then(function(contentType) {
-        var contentTypeName = contentType.machineName + ' ' + contentType.majorVersion + '.' + contentType.minorVersion;
+        self.selectedContentTypeId = contentType.machineName + ' ' + contentType.majorVersion + '.' + contentType.minorVersion;
 
-        ns.loadLibrary(contentTypeName, function(semantics) {
-          var form = new H5PEditor.Form();
-          form.processSemantics(semantics, (library === form.defaultLibrary || library === form.defaultLibraryParameterized ? form.defaultParams : {}));
+        ns.loadLibrary(self.selectedContentTypeId, function(semantics) {
+          self.form = new H5PEditor.Form();
+          self.form.processSemantics(semantics, (library === self.form.defaultLibrary || library === self.form.defaultLibraryParameterized ? self.form.defaultParams : {}));
 
-          $loading.replaceWith(form.$form);
+          $loading.replaceWith(self.form.$form);
         });
       });
     });
@@ -152,6 +152,12 @@ ns.Editor.prototype.getLibrary = function () {
   if (this.selector !== undefined) {
     return this.selector.$selector.val();
   }
+  else if(this.selectedContentTypeId) {
+    return this.selectedContentTypeId;
+  }
+  else {
+    console.warn('no selector defined for "getLibrary"');
+  }
 };
 
 /**
@@ -163,6 +169,12 @@ ns.Editor.prototype.getLibrary = function () {
 ns.Editor.prototype.getParams = function () {
   if (this.selector !== undefined) {
     return this.selector.getParams();
+  }
+  else if(this.form){
+    return this.form.params;
+  }
+  else {
+    console.warn('no selector defined for "getParams"');
   }
 };
 
