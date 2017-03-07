@@ -4,6 +4,29 @@
 var H5PEditor = (H5PEditor || {});
 var ns = H5PEditor;
 
+
+/**
+ * Interface for classes can select a content type
+ *
+ * @interface ContentTypeSelector
+ */
+/**
+ * Returns an element to apply to the dom
+ *
+ * @function
+ * @name ContentTypeSelector#getElement
+ * @returns {HTMLElement}
+ */
+/**
+ * Calls a callback when a Content Type is selected
+ *
+ * @function
+ * @name ContentTypeSelector#onSelect
+ * @param {function} callback
+ * @param {object} [scope]
+ */
+
+
 /**
  * Construct the editor.
  *
@@ -28,50 +51,35 @@ ns.Editor = function (library, defaultParams, replace) {
     'class': 'h5p-editor-iframe',
     frameBorder: '0'
   }).replaceAll(replace).load(function () {
-    var $ = this.contentWindow.H5P.jQuery;
+    var SelectorHub = this.contentWindow.H5PEditor.SelectorHub;
     var LibrarySelector = this.contentWindow.H5PEditor.LibrarySelector;
+    var SelectorLegacy = this.contentWindow.H5PEditor.SelectorLegacy;
+
+    var $ = this.contentWindow.H5P.jQuery;
     this.contentWindow.H5P.$body = $(this.contentDocument.body);
     var $container = $('body > .h5p-editor');
 
-    // create hub client
-    var hubClient = new H5P.HubClient({
-        apiRootUrl: H5PEditor.ajaxPath
-    });
+    if(H5PIntegration.hubIsEnabled) {
+      /**
+       * @type {ContentTypeSelector}
+       */
+      var selector = new SelectorHub();
 
-    $(hubClient.getElement()).appendTo($container.html(''));
+      // add hub to container
+      $(selector.getElement()).appendTo($container.html(''));
 
-    // on content type select
-    hubClient.on('select', function(event) {
-      // add loading
-      $('<br>').appendTo($container);
-      var $loading = $('<div class="h5peditor-loading h5p-throbber">' + ns.t('core', 'loading') + '</div>').appendTo($container);
-
-      // TODO Can we get semantics by id?
-      hubClient.getContentType(event.id).then(function(contentType) {
-        self.selectedContentTypeId = contentType.machineName + ' ' + contentType.majorVersion + '.' + contentType.minorVersion;
-
-        ns.loadLibrary(self.selectedContentTypeId, function(semantics) {
-          self.form = new H5PEditor.Form();
-          self.form.processSemantics(semantics, (library === self.form.defaultLibrary || library === self.form.defaultLibraryParameterized ? self.form.defaultParams : {}));
-
-          $loading.replaceWith(self.form.$form);
-        });
+      // add editor to container on load
+      selector.onSelect(function(contentTypeId) {
+        var $element = self.handleLoadLibrary(contentTypeId, library);
+        $element .appendTo($container);
+        self.selectedContentTypeId = contentTypeId;
       });
-    });
+    }
+    else {
+      var legacySelector = new SelectorLegacy();
 
-    // Load libraries list
-    /*$.ajax({
-      dataType: 'json',
-      url: ns.getAjaxUrl('libraries')
-    }).fail(function () {
-      $container.html('Error, unable to load libraries.');
-    }).done(function (data) {
-      self.selector = new LibrarySelector(data, library, defaultParams);
-      self.selector.appendTo($container.html(''));
-      if (library) {
-        self.selector.$selector.change();
-      }
-    });*/
+
+    }
 
     // Start resizing the iframe
     /*if (iframe.contentWindow.MutationObserver !== undefined) {
@@ -141,6 +149,45 @@ ns.Editor = function (library, defaultParams, replace) {
     iframe.parentElement.style.height = parentHeight;
   };
 };
+
+
+/**
+ * Handles loading the library
+ *
+ * @param {string} id
+ * @param {string} library
+ *
+ * @return {HTMLElement}
+ */
+ns.Editor.prototype.handleLoadLibrary = function (id, library) {
+  var self = this;
+
+  // add loading throbber
+  var $loading = ns.$('<div class="h5peditor-loading h5p-throbber">' + ns.t('core', 'loading') + '</div>');
+
+  // load the library
+  ns.loadLibrary(id, function(semantics){
+    self.form = self.createAndLoadForm(semantics, library);
+    $loading.replaceWith(self.form.$form);
+  });
+
+  return $loading;
+};
+
+/**
+ * Creates the form and loads it
+ *
+ * @param {object} semantics
+ * @param {string} library
+ *
+ * @return {H5PEditor.Form}
+ */
+ns.Editor.prototype.createAndLoadForm = function(semantics, library) {
+  var form = new H5PEditor.Form();
+  form.processSemantics(semantics, (library === form.defaultLibrary || library === form.defaultLibraryParameterized ? form.defaultParams : {}));
+  return form;
+};
+
 
 /**
  * Find out which library is used/selected.
