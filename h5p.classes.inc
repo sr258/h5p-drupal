@@ -293,6 +293,9 @@ class H5PDrupal implements H5PFrameworkInterface {
     if (!isset($libraryData['fullscreen'])) {
       $libraryData['fullscreen'] = 0;
     }
+    if (!isset($libraryData['hasIcon'])) {
+      $libraryData['hasIcon'] = 0;
+    }
     if ($new) {
       $libraryId = db_insert('h5p_libraries')
       ->fields(array(
