@@ -333,7 +333,7 @@ function h5peditor_library_upload_callback($token) {
     $temporary_file_path . '/' . $_FILES[$field_name]['name']);
 
   if (!$file) {
-    H5PCore::ajaxError(t('Failed to upload the requested H5P.'), 'UPLOAD_FAILED');
+    H5PCore::ajaxError(t('Could not get posted H5P.'), 'NO_CONTENT_TYPE');
     return;
   }
 
@@ -352,14 +352,17 @@ function h5peditor_library_upload_callback($token) {
     return;
   }
 
-  // Save H5P
+  // Install any required dependencies
   $storage = _h5p_get_instance('storage');
   $storage->savePackage(NULL, NULL, TRUE);
+
+  // Clean up
+  file_unmanaged_delete($_SESSION['h5p_upload']);
 
   // Successfully loaded content json of file into editor
   $content_path = $core->h5pF->getUploadedH5pFolderPath() . DIRECTORY_SEPARATOR . 'content';
   $json = file_get_contents($content_path . DIRECTORY_SEPARATOR . 'content.json');
-  H5PCore::ajaxSuccess($json);
+  H5PCore::ajaxSuccess(json_decode($json));
 }
 
 /**
