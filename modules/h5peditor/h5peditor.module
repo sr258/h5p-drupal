@@ -443,7 +443,7 @@ function h5peditor_content_type_cache_callback() {
   ";
 
   $local_libraries = db_query("
-    SELECT hl4.library_id as id, hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version
+    SELECT hl4.library_id as id, hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version, hl4.has_icon
     FROM {h5p_libraries} hl4
     JOIN ({$max_minor_version}) hl3
     ON hl4.machine_name = hl3.machine_name
