@@ -79,8 +79,15 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements getH5PPath
    */
-  private function getH5pPath() {
-    return _h5p_get_h5p_path();
+  private function getH5pPath($external = FALSE) {
+    return ($external ? base_path() : '') . _h5p_get_h5p_path();
+  }
+
+  /**
+   * Implements getLibraryFileUrl
+   */
+  public function getLibraryFileUrl($libraryFolderName, $fileName) {
+    return $this->getH5pPath(TRUE) . '/libraries/' . $libraryFolderName . '/' . $fileName;
   }
 
   /**
@@ -285,6 +292,9 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
     if (!isset($libraryData['fullscreen'])) {
       $libraryData['fullscreen'] = 0;
+    }
+    if (!isset($libraryData['hasIcon'])) {
+      $libraryData['hasIcon'] = 0;
     }
     if ($new) {
       $libraryId = db_insert('h5p_libraries')
