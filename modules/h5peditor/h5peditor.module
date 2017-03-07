@@ -37,6 +37,15 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
+  $items['h5peditor/%/%/library-upload'] = array(
+    'title' => 'H5P Upload library',
+    'page callback' => 'h5peditor_library_upload_callback',
+    'page arguments' => array(1),
+    'access callback' => 'h5peditor_access',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK
+  );
+
   $items['h5peditor/%/%/libraries/%/%/%'] = array(
     'title' => 'H5peditor Library',
     'page callback' => 'h5peditor_library_callback',
@@ -300,6 +309,65 @@ function h5peditor_libraries_callback() {
 }
 
 /**
+ * Upload library from endpoint
+ */
+function h5peditor_library_upload_callback($token) {
+
+  // Only handle POST requests
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    drupal_not_found();
+    return;
+  }
+
+  // Verify token
+  if (!\H5PCore::validToken('editorajax', $token)) {
+    \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
+    return;
+  }
+
+  // New uploads need to be saved in temp to extract the relevant information.
+  $core = _h5p_get_instance('core');
+  $field_name = 'h5p';
+  $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p')
+                         . '/temp/' . uniqid('h5p-');
+  file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
+  $file = move_uploaded_file($_FILES[$field_name]['tmp_name'],
+    $temporary_file_path . '/' . $_FILES[$field_name]['name']);
+
+  if (!$file) {
+    H5PCore::ajaxError(t('Could not get posted H5P.'), 'NO_CONTENT_TYPE');
+    return;
+  }
+
+  // These has to be set instead of sending parameteres to the validation function.
+  $_SESSION['h5p_upload'] = drupal_realpath($temporary_file_path . '/'. $_FILES[$field_name]['name']);
+  $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+
+  $validator = _h5p_get_instance('validator');
+  if (!$validator->isValidPackage()) {
+    file_unmanaged_delete($_SESSION['h5p_upload']);
+
+    // Maintain session variables.
+    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+
+    H5PCore::ajaxError(t('The file you uploaded is not a valid HTML5 Package.'), 'VALIDATION_FAILED');
+    return;
+  }
+
+  // Install any required dependencies
+  $storage = _h5p_get_instance('storage');
+  $storage->savePackage(NULL, NULL, TRUE);
+
+  // Clean up
+  file_unmanaged_delete($_SESSION['h5p_upload']);
+
+  // Successfully loaded content json of file into editor
+  $content_path = $core->h5pF->getUploadedH5pFolderPath() . DIRECTORY_SEPARATOR . 'content';
+  $json = file_get_contents($content_path . DIRECTORY_SEPARATOR . 'content.json');
+  H5PCore::ajaxSuccess(json_decode($json));
+}
+
+/**
  * Install library from external file
  */
 function h5peditor_library_install_callback($token) {
@@ -445,7 +513,7 @@ function h5peditor_content_type_cache_callback() {
   ";
 
   $local_libraries = db_query("
-    SELECT hl4.library_id as id, hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version
+    SELECT hl4.library_id as id, hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version, hl4.has_icon
     FROM {h5p_libraries} hl4
     JOIN ({$max_minor_version}) hl3
     ON hl4.machine_name = hl3.machine_name
@@ -481,8 +549,34 @@ function h5peditor_content_type_cache_callback() {
 
   drupal_add_http_header('Status', 200);
   print json_encode(array(
-    'libraries' => $libraries
+    'libraries' => $libraries,
+    'recentlyUsed' => _h5peditor_get_recently_used(),
   ));
+}
+
+/**
+ * Create a list of the recently used libraries
+ *
+ * @return array machine names. The first element in the
+ *               array is the most recently used.
+ */
+function _h5peditor_get_recently_used () {
+  global $user;
+  $recently_used = array();
+
+  // Get recently used:
+  $result = db_query("
+    SELECT distinct library_name
+    FROM {h5p_events}
+    WHERE type='content' AND sub_type = 'create' AND user_id = :uid
+    ORDER BY created_at DESC
+  ", array(':uid' => $user->uid));
+
+  foreach ($result as $row) {
+    $recently_used[] = $row->library_name;
+  }
+
+  return $recently_used;
 }
 
 /**

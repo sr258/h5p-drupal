@@ -68,6 +68,14 @@ interface H5PFrameworkInterface {
   public function t($message, $replacements = array());
 
   /**
+   * Get URL to file in the specific library
+   * @param string $libraryFolderName
+   * @param string $fileName
+   * @return string URL to file
+   */
+  public function getLibraryFileUrl($libraryFolderName, $fileName);
+
+  /**
    * Get the Path to the last uploaded h5p
    *
    * @return string
@@ -2823,33 +2831,46 @@ class H5PCore {
    * library to send to the front-end
    */
   public function getCachedLibsMap($cached_library) {
-    return array(
-      'id'              => $cached_library->id,
+    // Add mandatory fields
+    $lib = array(
+      'id'              => intval($cached_library->id),
       'machineName'     => $cached_library->machine_name,
-      'majorVersion'    => $cached_library->major_version,
-      'minorVersion'    => $cached_library->minor_version,
-      'patchVersion'    => $cached_library->patch_version,
-      'h5pMajorVersion' => $cached_library->h5p_major_version,
-      'h5pMinorVersion' => $cached_library->h5p_minor_version,
+      'majorVersion'    => intval( $cached_library->major_version),
+      'minorVersion'    => intval($cached_library->minor_version),
+      'patchVersion'    => intval($cached_library->patch_version),
+      'h5pMajorVersion' => intval($cached_library->h5p_major_version),
+      'h5pMinorVersion' => intval($cached_library->h5p_minor_version),
       'title'           => $cached_library->title,
       'summary'         => $cached_library->summary,
       'description'     => $cached_library->description,
       'icon'            => $cached_library->icon,
-      'createdAt'       => $cached_library->created_at,
-      'updatedAt'       => $cached_library->updated_at,
-      'isRecommended'   => $cached_library->is_recommended,
-      'popularity'      => $cached_library->popularity,
+      'createdAt'       => intval($cached_library->created_at),
+      'updatedAt'       => intval($cached_library->updated_at),
+      'isRecommended'   => $cached_library->is_recommended != 0,
+      'popularity'      => intval($cached_library->popularity),
       'screenshots'     => json_decode($cached_library->screenshots),
       'license'         => $cached_library->license,
-      'example'         => $cached_library->example,
-      'tutorial'        => $cached_library->tutorial,
-      'keywords'        => json_decode($cached_library->keywords),
-      'categories'      => json_decode($cached_library->categories),
       'owner'           => $cached_library->owner,
       'installed'       => FALSE,
       'isUpToDate'      => FALSE,
       'restricted'      => isset($cached_library->restricted) ? $cached_library->restricted : FALSE
     );
+
+    // Add optional fields
+    if (!empty($cached_library->categories)) {
+      $lib['categories'] = json_decode($cached_library->categories);
+    }
+    if (!empty($cached_library->keywords)) {
+      $lib['keywords'] = json_decode($cached_library->keywords);
+    }
+    if (!empty($cached_library->tutorial)) {
+      $lib['tutorial'] = $cached_library->tutorial;
+    }
+    if (!empty($cached_library->example)) {
+      $lib['example'] = $cached_library->example;
+    }
+
+    return $lib;
   }
 
   /**
@@ -2868,18 +2889,33 @@ class H5PCore {
     // Add local libraries to supplement content type cache
     foreach ($local_libraries as $local_lib) {
       $is_local_only = TRUE;
-      foreach ($cached_libraries as &$cached_lib) {
 
+      // Check if icon is available locally:
+      if($local_lib->has_icon) {
+        // Create path to icon:
+        $library_folder = H5PCore::libraryToString(array(
+          'machineName' => $local_lib->machine_name,
+          'majorVersion' => $local_lib->major_version,
+          'minorVersion' => $local_lib->minor_version
+        ), TRUE);
+        $icon_path = $this->h5pF->getLibraryFileUrl($library_folder, 'icon.svg');
+      }
+
+      foreach ($cached_libraries as &$cached_lib) {
         // Determine if library is local
         $is_matching_library = $cached_lib['machineName'] === $local_lib->machine_name;
         if ($is_matching_library) {
           $is_local_only = FALSE;
 
+          // Set icon if it exists locally
+          if(isset($icon_path)) {
+            $cached_lib['icon'] = $icon_path;
+          }
+
           // Set local properties
           $cached_lib['installed']  = TRUE;
           $cached_lib['restricted'] = $can_create_restricted ? FALSE
             : $local_lib->restricted;
-          // TODO: set icon if it exists locally HFP-807
 
           // Determine if library is the same as ct cache
           $is_updated_library =
@@ -2895,7 +2931,7 @@ class H5PCore {
 
       // Add minimal data to display local only libraries
       if ($is_local_only) {
-        $cached_libraries[] = array(
+         $local_only_lib = array(
           'id'           => $local_lib->id,
           'machineName'  => $local_lib->machine_name,
           'majorVersion' => $local_lib->major_version,
@@ -2905,6 +2941,12 @@ class H5PCore {
           'isUpToDate'   => TRUE,
           'restricted'   => $can_create_restricted ? FALSE : $local_lib->restricted
         );
+
+        if (isset($icon_path)) {
+          $local_only_lib['icon'] = $icon_path;
+        }
+
+        $cached_libraries[] = $local_only_lib;
       }
     }
 
