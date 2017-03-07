@@ -544,8 +544,34 @@ function h5peditor_content_type_cache_callback() {
 
   drupal_add_http_header('Status', 200);
   print json_encode(array(
-    'libraries' => $libraries
+    'libraries' => $libraries,
+    'recentlyUsed' => _h5peditor_get_recently_used(),
   ));
+}
+
+/**
+ * Create a list of the recently used libraries
+ *
+ * @return array machine names. The first element in the
+ *               array is the most recently used.
+ */
+function _h5peditor_get_recently_used () {
+  global $user;
+  $recently_used = array();
+
+  // Get recently used:
+  $result = db_query("
+    SELECT distinct library_name
+    FROM {h5p_events}
+    WHERE type='content' AND sub_type = 'create' AND user_id = :uid
+    ORDER BY created_at DESC
+  ", array(':uid' => $user->uid));
+
+  foreach ($result as $row) {
+    $recently_used[] = $row->library_name;
+  }
+
+  return $recently_used;
 }
 
 /**
