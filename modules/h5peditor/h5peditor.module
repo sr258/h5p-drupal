@@ -362,7 +362,7 @@ function h5peditor_library_upload_callback($token) {
   // Successfully loaded content json of file into editor
   $content_path = $core->h5pF->getUploadedH5pFolderPath() . DIRECTORY_SEPARATOR . 'content';
   $json = file_get_contents($content_path . DIRECTORY_SEPARATOR . 'content.json');
-  H5PCore::ajaxSuccess($json);
+  H5PCore::ajaxSuccess(json_decode($json));
 }
 
 /**
