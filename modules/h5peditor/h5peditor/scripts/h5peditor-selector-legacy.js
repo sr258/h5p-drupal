@@ -8,16 +8,20 @@ var ns = H5PEditor;
  */
 ns.SelectorLegacy = function (data, library, defaultParams) {
   var self = this;
+  var LibrarySelector = ns.LibrarySelector;
+
+  // create root element
+  this.element = document.createElement('div');
 
   // Load libraries list
-  $.ajax({
+  ns.$.ajax({
     dataType: 'json',
     url: ns.getAjaxUrl('libraries')
   }).fail(function () {
-    self.$element = $('<div>Error, unable to load libraries.</div>');
+    self.element.innerHTML = 'Error, unable to load libraries.';
   }).done(function (data) {
     self.selector = new LibrarySelector(data, library, defaultParams);
-    self.selector.appendTo($container.html(''));
+    self.selector.appendTo(ns.$(self.element));
     if (library) {
       self.selector.$selector.change();
     }
@@ -31,7 +35,7 @@ ns.SelectorLegacy = function (data, library, defaultParams) {
  * @return {HTMLElement}
  */
 ns.SelectorLegacy.prototype.getElement = function(){
-
+  return this.element;
 };
 
 /**
@@ -41,5 +45,4 @@ ns.SelectorLegacy.prototype.getElement = function(){
  * @param {object} scope
  */
 ns.SelectorLegacy.prototype.onSelect = function(callback, scope) {
-
 };

@@ -52,7 +52,6 @@ ns.Editor = function (library, defaultParams, replace) {
     frameBorder: '0'
   }).replaceAll(replace).load(function () {
     var SelectorHub = this.contentWindow.H5PEditor.SelectorHub;
-    var LibrarySelector = this.contentWindow.H5PEditor.LibrarySelector;
     var SelectorLegacy = this.contentWindow.H5PEditor.SelectorLegacy;
 
     var $ = this.contentWindow.H5P.jQuery;
@@ -77,49 +76,48 @@ ns.Editor = function (library, defaultParams, replace) {
     }
     else {
       var legacySelector = new SelectorLegacy();
-
-
+      $(legacySelector.getElement()).appendTo($container.html(''));
     }
 
     // Start resizing the iframe
     /*if (iframe.contentWindow.MutationObserver !== undefined) {
-      // If supported look for changes to DOM elements. This saves resources.
-      var running;
-      var limitedResize = function (mutations) {
-        if (!running) {
-          running = setTimeout(function () {
-            resize();
-            running = null;
-          }, 40); // 25 fps cap
-        }
-      };
+     // If supported look for changes to DOM elements. This saves resources.
+     var running;
+     var limitedResize = function (mutations) {
+     if (!running) {
+     running = setTimeout(function () {
+     resize();
+     running = null;
+     }, 40); // 25 fps cap
+     }
+     };
 
-      new iframe.contentWindow.MutationObserver(limitedResize).observe(iframe.contentWindow.document.body, {
-        childList: true,
-        attributes: true,
-        characterData: true,
-        subtree: true,
-        attributeOldValue: false,
-        characterDataOldValue: false
-      });
-      H5P.$window.resize(limitedResize);
-    }
-    else {*/
-      // Use an interval for resizing the iframe
-      (function resizeInterval() {
-        resize();
-        setTimeout(resizeInterval, 40); // No more than 25 times per second
-      })();
+     new iframe.contentWindow.MutationObserver(limitedResize).observe(iframe.contentWindow.document.body, {
+     childList: true,
+     attributes: true,
+     characterData: true,
+     subtree: true,
+     attributeOldValue: false,
+     characterDataOldValue: false
+     });
+     H5P.$window.resize(limitedResize);
+     }
+     else {*/
+    // Use an interval for resizing the iframe
+    (function resizeInterval() {
+      resize();
+      setTimeout(resizeInterval, 40); // No more than 25 times per second
+    })();
     //}
   }).get(0);
   iframe.contentDocument.open();
   iframe.contentDocument.write(
     '<!doctype html><html>' +
     '<head>' +
-      ns.wrap('<link rel="stylesheet" href="', ns.assets.css, '">') +
-      ns.wrap('<script src="', ns.assets.js, '"></script>') +
+    ns.wrap('<link rel="stylesheet" href="', ns.assets.css, '">') +
+    ns.wrap('<script src="', ns.assets.js, '"></script>') +
     '</head><body>' +
-      '<div class="h5p-editor">' + ns.t('core', 'loading') + '</div>' +
+    '<div class="h5p-editor">' + ns.t('core', 'loading') + '</div>' +
     '</body></html>');
   iframe.contentDocument.close();
   iframe.contentDocument.documentElement.style.overflow = 'hidden';
@@ -131,7 +129,7 @@ ns.Editor = function (library, defaultParams, replace) {
    */
   var resize = function () {
     if (iframe.clientHeight === iframe.contentDocument.body.scrollHeight &&
-        iframe.contentDocument.body.scrollHeight === iframe.contentWindow.document.body.clientHeight) {
+      iframe.contentDocument.body.scrollHeight === iframe.contentWindow.document.body.clientHeight) {
       return; // Do not resize unless page and scrolling differs
     }
 
