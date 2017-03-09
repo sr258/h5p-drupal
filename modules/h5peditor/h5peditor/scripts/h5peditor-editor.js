@@ -73,6 +73,13 @@ ns.Editor = function (library, defaultParams, replace) {
         $element.appendTo($container);
         self.selectedContentTypeId = contentTypeId;
       });
+
+      // Add editor when using an uploaded H5P
+      selector.onUpload(function (content) {
+        var $element = self.handleLoadLibrary(content.libraryId, content.contentJson);
+        $element.appendTo($container);
+        self.selectedContentTypeId = content.libraryId;
+      });
     }
     else {
       $.ajax({
@@ -199,7 +206,7 @@ ns.Editor.prototype.handleLoadLibrary = function (id, library) {
  */
 ns.Editor.prototype.createAndLoadForm = function(semantics, library) {
   var form = new H5PEditor.Form();
-  form.processSemantics(semantics, (library === form.defaultLibrary || library === form.defaultLibraryParameterized ? form.defaultParams : {}));
+  form.processSemantics(semantics, library);
   return form;
 };
 
