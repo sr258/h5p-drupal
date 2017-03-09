@@ -52,7 +52,7 @@ ns.Editor = function (library, defaultParams, replace) {
     frameBorder: '0'
   }).replaceAll(replace).load(function () {
     var SelectorHub = this.contentWindow.H5PEditor.SelectorHub;
-    var SelectorLegacy = this.contentWindow.H5PEditor.SelectorLegacy;
+    var LibrarySelector = this.contentWindow.H5PEditor.LibrarySelector;
 
     var $ = this.contentWindow.H5P.jQuery;
     this.contentWindow.H5P.$body = $(this.contentDocument.body);
@@ -65,50 +65,62 @@ ns.Editor = function (library, defaultParams, replace) {
       var selector = new SelectorHub();
 
       // add hub to container
-      $(selector.getElement()).appendTo($container.html(''));
+      $(selector.getElement()).prependTo($container.html(''));
 
       // add editor to container on load
       selector.onSelect(function(contentTypeId) {
         var $element = self.handleLoadLibrary(contentTypeId, library);
-        $element .appendTo($container);
+        $element.appendTo($container);
         self.selectedContentTypeId = contentTypeId;
       });
     }
     else {
-      var legacySelector = new SelectorLegacy();
-      $(legacySelector.getElement()).appendTo($container.html(''));
+      $.ajax({
+        dataType: 'json',
+        url: ns.getAjaxUrl('libraries')
+      }).fail(function () {
+        $container.html('Error, unable to load libraries.');
+      }).done(function (data) {
+        self.selector = new LibrarySelector(data, library, defaultParams);
+        self.selector.appendTo($container.html(''));
+        if (library) {
+          self.selector.$selector.change();
+        }
+      });
     }
 
     // Start resizing the iframe
-    /*if (iframe.contentWindow.MutationObserver !== undefined) {
-     // If supported look for changes to DOM elements. This saves resources.
-     var running;
-     var limitedResize = function (mutations) {
-     if (!running) {
-     running = setTimeout(function () {
-     resize();
-     running = null;
-     }, 40); // 25 fps cap
-     }
-     };
+    if (iframe.contentWindow.MutationObserver !== undefined) {
+      // If supported look for changes to DOM elements. This saves resources.
+      var running;
+      var limitedResize = function (mutations) {
+        if (!running) {
+          running = setTimeout(function () {
+            resize();
+            running = null;
+          }, 40); // 25 fps cap
+        }
+      };
 
-     new iframe.contentWindow.MutationObserver(limitedResize).observe(iframe.contentWindow.document.body, {
-     childList: true,
-     attributes: true,
-     characterData: true,
-     subtree: true,
-     attributeOldValue: false,
-     characterDataOldValue: false
-     });
-     H5P.$window.resize(limitedResize);
-     }
-     else {*/
-    // Use an interval for resizing the iframe
-    (function resizeInterval() {
+      new iframe.contentWindow.MutationObserver(limitedResize).observe(iframe.contentWindow.document.body, {
+        childList: true,
+        attributes: true,
+        characterData: true,
+        subtree: true,
+        attributeOldValue: false,
+        characterDataOldValue: false
+      });
+
+      H5P.$window.resize(limitedResize);
       resize();
-      setTimeout(resizeInterval, 40); // No more than 25 times per second
-    })();
-    //}
+    }
+     else {
+      // Use an interval for resizing the iframe
+      (function resizeInterval() {
+        resize();
+        setTimeout(resizeInterval, 40); // No more than 25 times per second
+      })();
+    }
   }).get(0);
   iframe.contentDocument.open();
   iframe.contentDocument.write(
@@ -164,7 +176,12 @@ ns.Editor.prototype.handleLoadLibrary = function (id, library) {
   var $loading = ns.$('<div class="h5peditor-loading h5p-throbber">' + ns.t('core', 'loading') + '</div>');
 
   // load the library
-  ns.loadLibrary(id, function(semantics){
+  ns.loadLibrary(id, function(semantics) {
+    if (this.form !== undefined) {
+      // Remove old form.
+      this.form.remove();
+    }
+
     self.form = self.createAndLoadForm(semantics, library);
     $loading.replaceWith(self.form.$form);
   });
