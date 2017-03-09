@@ -358,13 +358,33 @@ function h5peditor_library_upload_callback($token) {
   $storage = _h5p_get_instance('storage');
   $storage->savePackage(NULL, NULL, TRUE);
 
-  // Clean up
-  file_unmanaged_delete($_SESSION['h5p_upload']);
+  // Since package has been validated, make content assets available to editor
+  $content_path = "{$core->h5pF->getUploadedH5pFolderPath()}/content";
+  $content = array_diff(scandir($content_path), array('.','..', 'content.json'));
+  foreach ($content as $file) {
+    $tmp_file_path = "{$content_path}/{$file}";
+    $editor_file_path = "{$core->fs->getEditorPath()}/{$file}";
+    if (is_dir($tmp_file_path)) {
+      H5PDefaultStorage::copyFileTree($tmp_file_path, $editor_file_path);
+    }
+    else {
+      copy($tmp_file_path, $editor_file_path);
+    }
+  }
 
   // Successfully loaded content json of file into editor
-  $content_path = $core->h5pF->getUploadedH5pFolderPath() . DIRECTORY_SEPARATOR . 'content';
-  $json = file_get_contents($content_path . DIRECTORY_SEPARATOR . 'content.json');
-  H5PCore::ajaxSuccess(json_decode($json));
+  $h5pJson = file_get_contents($path . DIRECTORY_SEPARATOR . 'h5p.json');
+  $contentJson = file_get_contents($path . DIRECTORY_SEPARATOR . 'content' . DIRECTORY_SEPARATOR . 'content.json');
+  // TODO: Validate content json
+
+  // Clean up
+  file_unmanaged_delete($_SESSION['h5p_upload']);
+  unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+
+  H5PCore::ajaxSuccess((object) array(
+    'h5p' => json_decode($h5pJson),
+    'content' => json_decode($contentJson)
+  ));
 }
 
 /**
