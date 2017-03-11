@@ -36,6 +36,7 @@ class H5peditor {
     'ckeditor/ckeditor.js',
   );
   private $h5p, $storage;
+  public $ajax;
 
   /**
    * Constructor for the core editor library.
@@ -46,6 +47,7 @@ class H5peditor {
   function __construct($h5p, $storage) {
     $this->h5p = $h5p;
     $this->storage = $storage;
+    $this->ajax = new H5PEditorAjax($h5p, $this);
   }
 
   /**
@@ -103,7 +105,7 @@ class H5peditor {
       }
     }
 
-    return json_encode($libraries);
+    return $libraries;
   }
 
   /**
@@ -348,7 +350,7 @@ class H5peditor {
         }
         else {
           // Local file
-          $libraryData->javascript[$url . $script->path . $script->version] = "\n" . $this->h5p->fs->getContent($fileDir . $script->path);
+          $libraryData->javascript[$url . $script->path . $script->version] = "\n" . $this->h5p->fs->getContent($script->path);
         }
       }
     }
@@ -363,7 +365,7 @@ class H5peditor {
         else {
           // Local file
           H5peditor::buildCssPath(NULL, $url . dirname($css->path) . '/');
-          $libraryData->css[$url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', $this->h5p->fs->getContent($fileDir . $css->path));
+          $libraryData->css[$url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', $this->h5p->fs->getContent($css->path));
         }
       }
     }
