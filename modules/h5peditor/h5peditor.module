@@ -28,10 +28,10 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['h5peditor/%/%/library-install'] = array(
+  $items['h5peditor/%/%/library-install/%'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
-    'page arguments' => array(1),
+    'page arguments' => array(1, 3),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK
@@ -315,9 +315,8 @@ function h5peditor_library_upload_callback($token) {
 /**
  * Install library from external file
  */
-function h5peditor_library_install_callback($token) {
+function h5peditor_library_install_callback($token, $machineName) {
   $editor = h5peditor_get_instance();
-  $machineName = filter_input(INPUT_GET, 'id');
   $editor->ajax->action(H5PEditorEndpoints::LIBRARY_INSTALL, $token, $machineName);
 }
 
