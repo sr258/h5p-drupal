@@ -159,14 +159,15 @@ class H5peditorDrupalStorage implements H5peditorStorage {
    * Saves a file temporarily with a given name
    *
    * @param $data
-   * @param $name
    * @param $move_file Only move the uploaded file
    *
    * @return bool|false|string Real absolute path of the temporary folder
    */
-  public static function saveFileTemporarily($data, $name, $move_file = FALSE) {
-    $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . uniqid('h5p-');
+  public static function saveFileTemporarily($data, $move_file = FALSE) {
+    $temp_id = uniqid('h5p-');
+    $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . $temp_id;
     file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
+    $name = $temp_id . '.h5p';
     $target = $temporary_file_path . DIRECTORY_SEPARATOR . $name;
     if ($move_file) {
       $file = move_uploaded_file($data, $target);
@@ -178,7 +179,10 @@ class H5peditorDrupalStorage implements H5peditorStorage {
       return FALSE;
     }
 
-    return drupal_realpath($temporary_file_path);
+    return (object) array(
+      'dir' => drupal_realpath($temporary_file_path),
+      'fileName' => $name
+    );
   }
 
   /**

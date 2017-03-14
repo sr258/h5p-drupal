@@ -317,7 +317,8 @@ function h5peditor_library_upload_callback($token) {
  */
 function h5peditor_library_install_callback($token) {
   $editor = h5peditor_get_instance();
-  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_INSTALL, $token);
+  $machineName = filter_input(INPUT_GET, 'id');
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_INSTALL, $token, $machineName);
 }
 
 /**
