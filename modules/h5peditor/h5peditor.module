@@ -31,7 +31,7 @@ function h5peditor_menu() {
   $items['h5peditor/%/%/library-install/%'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
-    'page arguments' => array(1, 3),
+    'page arguments' => array(1, 4),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK

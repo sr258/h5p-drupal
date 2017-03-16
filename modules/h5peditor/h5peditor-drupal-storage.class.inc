@@ -179,6 +179,10 @@ class H5peditorDrupalStorage implements H5peditorStorage {
       return FALSE;
     }
 
+    // Set session variables necessary for finding the files
+    $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+    $_SESSION['h5p_upload'] = drupal_realpath($target);
+
     return (object) array(
       'dir' => drupal_realpath($temporary_file_path),
       'fileName' => $name
@@ -219,5 +223,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
     else {
       unlink($filePath);
     }
+    // Maintain session variables
+    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
   }
 }
