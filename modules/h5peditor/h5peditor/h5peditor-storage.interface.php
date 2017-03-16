@@ -71,4 +71,11 @@ interface H5peditorStorage {
    * @param H5peditorFile
    */
   public static function markFileForCleanup($file);
+
+  /**
+   * Clean up temporary files
+   *
+   * @param string $filePath Path to file or directory
+   */
+  public static function removeTemporarilySavedFiles($filePath);
 }
