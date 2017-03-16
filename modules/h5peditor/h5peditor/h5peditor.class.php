@@ -321,8 +321,9 @@ class H5peditor {
    * @param int $majorVersion
    * @param int $minorVersion
    * @param string $prefix Optional part to add between URL and asset path
+   * @param string $fileDir Optional file dir to read files from
    */
-  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $prefix = '') {
+  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $prefix = '', $fileDir = '') {
     $libraryData = new stdClass();
 
     $libraries = $this->findEditorLibraries($machineName, $majorVersion, $minorVersion);
@@ -336,14 +337,14 @@ class H5peditor {
     // the editor works.
 
     // Get list of JS and CSS files that belongs to the dependencies
-    $files = $this->h5p->getDependenciesFiles($libraries);
+    $files = $this->h5p->getDependenciesFiles($libraries, $prefix);
     $this->storage->alterLibraryFiles($files, $libraries);
 
     // Restore asset aggregation setting
     $this->h5p->aggregateAssets = $aggregateAssets;
 
     // Create base URL
-    $url = $this->h5p->url . $prefix;
+    $url = $this->h5p->url;
 
     // Javascripts
     if (!empty($files['scripts'])) {
