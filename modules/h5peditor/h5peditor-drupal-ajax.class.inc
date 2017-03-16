@@ -82,10 +82,11 @@ class H5PEditorDrupalAjax implements H5PEditorAjaxInterface {
 
     // Get recently used:
     $result = db_query("
-      SELECT distinct library_name
+      SELECT library_name, max(created_at) AS max_created_at
       FROM {h5p_events}
       WHERE type='content' AND sub_type = 'create' AND user_id = :uid
-      ORDER BY created_at DESC
+      GROUP BY library_name
+      ORDER BY max_created_at DESC
     ", array(':uid' => $user->uid));
 
     foreach ($result as $row) {
