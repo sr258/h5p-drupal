@@ -314,9 +314,8 @@ class H5peditor {
    * @param int $majorVersion
    * @param int $minorVersion
    * @param string $prefix Optional part to add between URL and asset path
-   * @param string $fileDir Optional file dir to read files from
    */
-  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $prefix = '', $fileDir = '') {
+  public function getLibraryData($machineName, $majorVersion, $minorVersion, $languageCode, $prefix = '') {
     $libraryData = new stdClass();
 
     $libraries = $this->findEditorLibraries($machineName, $majorVersion, $minorVersion);
@@ -348,7 +347,7 @@ class H5peditor {
         }
         else {
           // Local file
-          $libraryData->javascript[$url . $script->path . $script->version] = "\n" . $this->h5p->fs->getContent($fileDir . $script->path);
+          $libraryData->javascript[$url . $script->path . $script->version] = "\n" . $this->h5p->fs->getContent($script->path);
         }
       }
     }
@@ -363,7 +362,7 @@ class H5peditor {
         else {
           // Local file
           H5peditor::buildCssPath(NULL, $url . dirname($css->path) . '/');
-          $libraryData->css[$url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', $this->h5p->fs->getContent($fileDir . $css->path));
+          $libraryData->css[$url . $css->path . $css->version] = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', 'H5peditor::buildCssPath', $this->h5p->fs->getContent($css->path));
         }
       }
     }
