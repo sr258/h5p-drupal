@@ -23,7 +23,7 @@ interface H5PFrameworkInterface {
    * @param $data
    * @return string The content (response body). NULL if something went wrong
    */
-  public function fetchExternalData($url, $data);
+  public function fetchExternalData($url, $data = NULL);
 
   /**
    * Set the tutorial URL for a library. All versions of the library is set
@@ -2889,6 +2889,7 @@ class H5PCore {
     // Add local libraries to supplement content type cache
     foreach ($local_libraries as $local_lib) {
       $is_local_only = TRUE;
+      $icon_path = NULL;
 
       // Check if icon is available locally:
       if($local_lib->has_icon) {
