@@ -309,7 +309,8 @@ function h5peditor_libraries_callback() {
  */
 function h5peditor_library_upload_callback($token) {
   $editor = h5peditor_get_instance();
-  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token);
+  $filePath = $_FILES['h5p']['tmp_name'];
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $filePath);
 }
 
 /**

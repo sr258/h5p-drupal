@@ -206,4 +206,18 @@ class H5peditorDrupalStorage implements H5peditorStorage {
     );
     file_save($file_managed);
   }
+
+  /**
+   * Clean up temporary files
+   *
+   * @param string $filePath Path to file or directory
+   */
+  public static function removeTemporarilySavedFiles($filePath) {
+    if (is_dir($filePath)) {
+      H5PCore::deleteFileTree($filePath);
+    }
+    else {
+      unlink($filePath);
+    }
+  }
 }
