@@ -28,10 +28,10 @@ function h5peditor_menu() {
     'type' => MENU_CALLBACK
   );
 
-  $items['h5peditor/%/%/library-install'] = array(
+  $items['h5peditor/%/%/library-install/%'] = array(
     'title' => 'H5P Install Library',
     'page callback' => 'h5peditor_library_install_callback',
-    'page arguments' => array(1),
+    'page arguments' => array(1, 4),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK
@@ -301,302 +301,32 @@ function _h5peditor_create_content($node) {
  */
 function h5peditor_libraries_callback() {
   $editor = h5peditor_get_instance();
-
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json');
-  print $editor->getLibraries();
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARIES);
 }
 
 /**
  * Upload library from endpoint
  */
 function h5peditor_library_upload_callback($token) {
-
-  // Only handle POST requests
-  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    drupal_not_found();
-    return;
-  }
-
-  // Verify token
-  if (!\H5PCore::validToken('editorajax', $token)) {
-    \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
-    return;
-  }
-
-  // New uploads need to be saved in temp to extract the relevant information.
-  $core = _h5p_get_instance('core');
-  $field_name = 'h5p';
-  $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p')
-                         . '/temp/' . uniqid('h5p-');
-  file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
-  $file = move_uploaded_file($_FILES[$field_name]['tmp_name'],
-    $temporary_file_path . '/' . $_FILES[$field_name]['name']);
-
-  if (!$file) {
-    H5PCore::ajaxError(t('Could not get posted H5P.'), 'NO_CONTENT_TYPE');
-    return;
-  }
-
-  // These has to be set instead of sending parameteres to the validation function.
-  $_SESSION['h5p_upload'] = drupal_realpath($temporary_file_path . '/'. $_FILES[$field_name]['name']);
-  $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
-
-  $validator = _h5p_get_instance('validator');
-  if (!$validator->isValidPackage()) {
-    file_unmanaged_delete($_SESSION['h5p_upload']);
-
-    // Maintain session variables.
-    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
-
-    H5PCore::ajaxError(t('The file you uploaded is not a valid HTML5 Package.'), 'VALIDATION_FAILED');
-    return;
-  }
-
-  // Install any required dependencies
-  $storage = _h5p_get_instance('storage');
-  $storage->savePackage(NULL, NULL, TRUE);
-
-  // Since package has been validated, make content assets available to editor
-  $content_path = "{$core->h5pF->getUploadedH5pFolderPath()}/content";
-  $content = array_diff(scandir($content_path), array('.','..', 'content.json'));
-  foreach ($content as $file) {
-    $tmp_file_path = "{$content_path}/{$file}";
-    $editor_file_path = "{$core->fs->getEditorPath()}/{$file}";
-    if (is_dir($tmp_file_path)) {
-      H5PDefaultStorage::copyFileTree($tmp_file_path, $editor_file_path);
-    }
-    else {
-      copy($tmp_file_path, $editor_file_path);
-    }
-  }
-
-  // Successfully loaded content json of file into editor
-  $h5pJson = file_get_contents($path . DIRECTORY_SEPARATOR . 'h5p.json');
-  $contentJson = file_get_contents($path . DIRECTORY_SEPARATOR . 'content' . DIRECTORY_SEPARATOR . 'content.json');
-  // TODO: Validate content json
-
-  // Clean up
-  file_unmanaged_delete($_SESSION['h5p_upload']);
-  unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
-
-  H5PCore::ajaxSuccess((object) array(
-    'h5p' => json_decode($h5pJson),
-    'content' => json_decode($contentJson)
-  ));
+  $editor = h5peditor_get_instance();
+  $filePath = $_FILES['h5p']['tmp_name'];
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $filePath);
 }
 
 /**
  * Install library from external file
  */
-function h5peditor_library_install_callback($token) {
-
-  // Only handle POST requests
-  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    drupal_not_found();
-    return;
-  }
-
-  // Verify token
-  if (!\H5PCore::validToken('editorajax', $token)) {
-    \H5PCore::ajaxError(t('Invalid security token.'), 'INVALID_TOKEN');
-    return;
-  }
-
-  // Determine which content type to install from post data
-  $name = filter_input(INPUT_GET, 'id');
-  if (!$name) {
-    H5PCore::ajaxError(t('No content type was specified.'), 'NO_CONTENT_TYPE');
-    return;
-  }
-
-  // Look up content type to ensure it's valid(and to check permissions)
-  $content_type = db_query(
-      "SELECT id, is_recommended
-         FROM {h5p_libraries_hub_cache}
-        WHERE machine_name = :name",
-      array(':name' => $name)
-  )->fetchObject();
-  if (!$content_type) {
-    H5PCore::ajaxError(t('The chosen content type is invalid.'), 'INVALID_CONTENT_TYPE');
-    return;
-  }
-
-  // Check if the user has access to install or update content types
-  $can_install_all = user_access('update h5p libraries');
-  $can_install_recommended = ($content_type->is_recommended && user_access('install recommended h5p libraries'));
-  if (!$can_install_all && !$can_install_recommended) {
-    H5PCore::ajaxError(t('No permission to install content type.'), 'INSTALL_DENIED');
-    return;
-  }
-
-  if (!$can_install_all && $can_install_recommended) {
-    // Override core permission check
-    $core = _h5p_get_instance('core');
-    $core->mayUpdateLibraries(TRUE);
-  }
-
-  $protocol = (extension_loaded('openssl') ? 'https' : 'http');
-  $endpoint = H5PCore::$hubEndpoints[H5PCore::CONTENT_TYPES];
-  $h5p_data = file_get_contents("{$protocol}://{$endpoint}{$name}");
-
-  if (!$h5p_data) {
-    H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
-    return;
-  }
-
-  $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . uniqid('h5p-');
-  file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
-  $file = file_unmanaged_save_data($h5p_data, $temporary_file_path . '/libraries.h5p');
-
-  if (!$file) {
-    H5PCore::ajaxError(t('Failed to download the requested H5P.'), 'DOWNLOAD_FAILED');
-    return;
-  }
-
-  // These has to be set instead of sending parameters to the validation function.
-  $_SESSION['h5p_upload']        = drupal_realpath($file);
-  $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
-
-  $validator = _h5p_get_instance('validator');
-  if (!$validator->isValidPackage(TRUE, FALSE)) {
-    file_unmanaged_delete($_SESSION['h5p_upload']);
-
-    // Maintain session variables.
-    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
-
-    $errors = drupal_get_messages('error');
-    if (empty($errors)) {
-      $errors = t('Validating h5p package failed.');
-    }
-    H5PCore::ajaxError($errors, 'VALIDATION_FAILED');
-    return;
-  }
-
-  // Save H5P
-  $storage = _h5p_get_instance('storage');
-  $storage->savePackage(NULL, NULL, TRUE);
-
-  // Successfully installed.
-  H5PCore::ajaxSuccess();
+function h5peditor_library_install_callback($token, $machineName) {
+  $editor = h5peditor_get_instance();
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_INSTALL, $token, $machineName);
 }
 
 /**
  * Callback that returns the content type cache
  */
 function h5peditor_content_type_cache_callback() {
-
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json');
-
-  $core = _h5p_get_instance('core');
-  if (!$core->h5pF->getOption('hub_is_enabled', TRUE)) {
-
-    drupal_add_http_header('Status', 403);
-    $core::ajaxError(
-      $core->h5pF->t('The hub is disabled. You can enable it in the H5P settings.'),
-      'HUB_DISABLED'
-    );
-    return;
-  }
-
-  // Update content type cache if enabled and too old
-  $ct_cache_last_update = $core->h5pF->getOption('content_type_cache_updated_at', 0);
-  $outdated_cache       = $ct_cache_last_update + (60 * 60 * 24 * 7); // 1 week
-  if (time() > $outdated_cache) {
-    $success = $core->updateContentTypeCache();
-    if (!$success) {
-      drupal_add_http_header('Status', 404);
-      $core::ajaxError(
-        $core->h5pF->t('Could not connect to the H5P Content Type Hub. Please try again later.'),
-        'NO_RESPONSE'
-      );
-      return;
-    }
-  }
-
-  $max_major_version = "
-    SELECT hl.machine_name, max(hl.major_version) AS major_version
-    FROM {h5p_libraries} hl
-    WHERE hl.runnable = 1
-    GROUP BY hl.machine_name
-    ";
-
-  $max_minor_version = "
-    SELECT hl2.machine_name, hl2.major_version, max(hl2.minor_version) AS minor_version
-    FROM ({$max_major_version}) hl1
-    JOIN {h5p_libraries} hl2
-    ON hl1.machine_name = hl2.machine_name
-    AND hl1.major_version = hl2.major_version
-    GROUP BY hl2.machine_name
-  ";
-
-  $local_libraries = db_query("
-    SELECT hl4.library_id as id, hl4.machine_name, hl4.major_version, hl4.minor_version, hl4.patch_version, hl4.has_icon
-    FROM {h5p_libraries} hl4
-    JOIN ({$max_minor_version}) hl3
-    ON hl4.machine_name = hl3.machine_name
-    AND hl4.major_version = hl3.major_version
-    AND hl4.minor_version = hl3.minor_version
-    GROUP BY hl4.machine_name
-  ")->fetchAll();
-
-  $cached_libraries = db_query("SELECT * FROM {h5p_libraries_hub_cache}")
-    ->fetchAll();
-
-  // Determine access
-  $can_install_all         = user_access('update h5p libraries');
-  $can_install_recommended = user_access('install recommended h5p libraries');
-
-
-  // Add content type cache
-  $libraries = array();
-  foreach ($cached_libraries as &$result) {
-    if ($can_install_all) {
-      $result->restricted = FALSE;
-    }
-    elseif ($result->is_recommended && $can_install_recommended) {
-      $result->restricted = FALSE;
-    }
-    else {
-      $result->restricted = TRUE;
-    }
-
-    $libraries[] = $core->getCachedLibsMap($result);
-  }
-  $core->mergeLocalLibsIntoCachedLibs($local_libraries, $libraries);
-
-  drupal_add_http_header('Status', 200);
-  print json_encode(array(
-    'libraries' => $libraries,
-    'recentlyUsed' => _h5peditor_get_recently_used(),
-  ));
-}
-
-/**
- * Create a list of the recently used libraries
- *
- * @return array machine names. The first element in the
- *               array is the most recently used.
- */
-function _h5peditor_get_recently_used () {
-  global $user;
-  $recently_used = array();
-
-  // Get recently used:
-  $result = db_query("
-    SELECT library_name, max(created_at) AS max_created_at
-    FROM {h5p_events}
-    WHERE type='content' AND sub_type = 'create' AND user_id = :uid
-    GROUP BY library_name
-    ORDER BY max_created_at DESC
-  ", array(':uid' => $user->uid));
-
-  foreach ($result as $row) {
-    $recently_used[] = $row->library_name;
-  }
-
-  return $recently_used;
+  $editor = h5peditor_get_instance();
+  $editor->ajax->action(H5PEditorEndpoints::CONTENT_TYPE_CACHE);
 }
 
 /**
@@ -607,11 +337,10 @@ function _h5peditor_get_recently_used () {
 function h5peditor_library_callback($machine_name, $major_version, $minor_version) {
   global $language;
 
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json');
-
   $editor = h5peditor_get_instance();
-  print $editor->getLibraryData($machine_name, $major_version, $minor_version, $language->language, _h5p_get_h5p_path());
+  $editor->ajax->action(H5PEditorEndpoints::SINGLE_LIBRARY, $machine_name,
+    $major_version, $minor_version, $language->language, _h5p_get_h5p_path()
+  );
 
   // Log library loaded
   new H5PEvent('library', NULL, NULL, NULL,
@@ -624,38 +353,8 @@ function h5peditor_library_callback($machine_name, $major_version, $minor_versio
  * Callback for file uploads.
  */
 function h5peditor_files_callback($token, $content_id) {
-  global $user;
-
-  if (!H5PCore::validToken('editorajax', $token)) {
-    return H5PCore::ajaxError(t('Invalid security token. Please reload the editor.'));
-  }
-
-  $file = new H5peditorFile(_h5p_get_instance('interface'));
-  if (!$file->isLoaded()) {
-    H5PCore::ajaxError(t('File not found on server. Check file upload settings.'));
-    return;
-  }
-
-  // Make sure file is valid
-  if ($file->validate()) {
-    $core = _h5p_get_instance('core');
-    // Save the valid file
-    $core->fs->saveFile($file, $content_id);
-
-    // Keep track of temporary files so they can be cleaned up later.
-    $file_managed = (object) array(
-      'uid' => $user->uid,
-      'filename' => $file->getName(),
-      'uri' => 'public://' . (empty($content_id) ?  'h5peditor/' : variable_get('h5p_default_path', 'h5p') . '/content/' . $content_id . '/') . $file->getType() . 's/' . $file->getName(),
-      'filemime' => $file->type,
-      'filesize' => $file->size,
-      'status' => 0,
-      'timestamp' => REQUEST_TIME,
-    );
-    file_save($file_managed);
-  }
-
-  $file->printResult();
+  $editor = h5peditor_get_instance();
+  $editor->ajax->action(H5PEditorEndpoints::FILES, $token, $content_id);
 }
 
 /**
@@ -673,7 +372,8 @@ function h5peditor_get_instance() {
     }
     $instance = new H5peditor(
       _h5p_get_instance('core'),
-      new H5peditorDrupalStorage()
+      new H5peditorDrupalStorage(),
+      new H5PEditorDrupalAjax()
     );
   }
 

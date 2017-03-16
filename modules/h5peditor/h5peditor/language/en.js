@@ -70,4 +70,4 @@ H5PEditor.language.hub = {
   installButtonLabel: 'Install',
   useButtonLabel: 'Use',
   getButtonLabel: 'Get'
-}
+};

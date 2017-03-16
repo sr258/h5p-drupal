@@ -154,4 +154,76 @@ class H5peditorDrupalStorage implements H5peditorStorage {
     drupal_alter('h5p_scripts', $files['scripts'], $library_list, $mode);
     drupal_alter('h5p_styles', $files['styles'], $library_list, $mode);
   }
+
+  /**
+   * Saves a file temporarily with a given name
+   *
+   * @param $data
+   * @param $move_file Only move the uploaded file
+   *
+   * @return bool|false|string Real absolute path of the temporary folder
+   */
+  public static function saveFileTemporarily($data, $move_file = FALSE) {
+    $temp_id = uniqid('h5p-');
+    $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . $temp_id;
+    file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
+    $name = $temp_id . '.h5p';
+    $target = $temporary_file_path . DIRECTORY_SEPARATOR . $name;
+    if ($move_file) {
+      $file = move_uploaded_file($data, $target);
+    }
+    else {
+      $file = file_unmanaged_save_data($data, $target);
+    }
+    if (!$file) {
+      return FALSE;
+    }
+
+    // Set session variables necessary for finding the files
+    $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+    $_SESSION['h5p_upload'] = drupal_realpath($target);
+
+    return (object) array(
+      'dir' => drupal_realpath($temporary_file_path),
+      'fileName' => $name
+    );
+  }
+
+  /**
+   * Marks a file for later cleanup, useful when files are not instantly cleaned
+   * up. E.g. for files that are uploaded through the editor.
+   *
+   * @param H5peditorFile $file
+   */
+  public static function markFileForCleanup($file) {
+    global $user;
+
+    // Keep track of temporary files so they can be cleaned up later.
+    $file_managed = (object) array(
+      'uid' => $user->uid,
+      'filename' => $file->getName(),
+      'uri' => 'public://' . (empty($content_id) ?  'h5peditor/' : variable_get('h5p_default_path', 'h5p') . '/content/' . $content_id . '/') . $file->getType() . 's/' . $file->getName(),
+      'filemime' => $file->type,
+      'filesize' => $file->size,
+      'status' => 0,
+      'timestamp' => REQUEST_TIME,
+    );
+    file_save($file_managed);
+  }
+
+  /**
+   * Clean up temporary files
+   *
+   * @param string $filePath Path to file or directory
+   */
+  public static function removeTemporarilySavedFiles($filePath) {
+    if (is_dir($filePath)) {
+      H5PCore::deleteFileTree($filePath);
+    }
+    else {
+      unlink($filePath);
+    }
+    // Maintain session variables
+    unset($_SESSION['h5p_upload'], $_SESSION['h5p_upload_folder']);
+  }
 }

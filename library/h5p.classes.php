@@ -1694,6 +1694,8 @@ abstract class H5PPermission {
   const DOWNLOAD_H5P = 0;
   const EMBED_H5P = 1;
   const CREATE_RESTRICTED = 2;
+  const UPDATE_LIBRARIES = 3;
+  const INSTALL_RECOMMENDED = 4;
 }
 
 abstract class H5PDisplayOptionBehaviour {
@@ -1704,6 +1706,9 @@ abstract class H5PDisplayOptionBehaviour {
   const CONTROLLED_BY_PERMISSIONS = 4;
 }
 
+abstract class H5PHubEndpoints {
+  const CONTENT_TYPES = 'api.h5p.org/v1/content-types/';
+}
 
 /**
  * Functions and storage shared by the other H5P classes
@@ -1732,12 +1737,6 @@ class H5PCore {
   public static $adminScripts = array(
     'js/jquery.js',
     'js/h5p-utils.js',
-  );
-
-  const CONTENT_TYPES = 0;
-
-  public static $hubEndpoints = array(
-    self::CONTENT_TYPES => 'api.h5p.org/v1/content-types/'
   );
 
   public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm mp4 ogg mp3 txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile';
@@ -2721,12 +2720,17 @@ class H5PCore {
    * @param mixed $data
    * @since 1.6.0
    */
-  public static function ajaxSuccess($data = NULL) {
+  public static function ajaxSuccess($data = NULL, $only_data = FALSE) {
     $response = array(
       'success' => TRUE
     );
     if ($data !== NULL) {
       $response['data'] = $data;
+
+      // Pass data flatly to support old methods
+      if ($only_data) {
+        $response = $data;
+      }
     }
     self::printJson($response);
   }
@@ -2735,10 +2739,13 @@ class H5PCore {
    * Makes it easier to print response when AJAX request fails.
    * Will exit after printing error.
    *
-   * @param string $message
+   * @param string $message A human readable error message
+   * @param string $error_code An machine readable error code that a client
+   * should be able to interpret
+   * @param null|int $status_code Http response code
    * @since 1.6.0
    */
-  public static function ajaxError($message = NULL, $error_code = NULL) {
+  public static function ajaxError($message = NULL, $error_code = NULL, $status_code = NULL) {
     $response = array(
       'success' => FALSE
     );
@@ -2750,7 +2757,7 @@ class H5PCore {
       $response['errorCode'] = $error_code;
     }
 
-    self::printJson($response);
+    self::printJson($response, $status_code);
   }
 
   /**
@@ -2758,8 +2765,13 @@ class H5PCore {
    * Makes it easier to respond using JSON.
    *
    * @param mixed $data
+   * @param null|int $status_code Http response code
    */
-  private static function printJson($data) {
+  private static function printJson($data, $status_code = NULL) {
+    if ($status_code !== NULL) {
+      http_response_code($status_code);
+    }
+
     header('Cache-Control: no-cache');
     header('Content-type: application/json; charset=utf-8');
     print json_encode($data);
@@ -2833,7 +2845,7 @@ class H5PCore {
     $postData['current_cache'] = $this->h5pF->getOption('content_type_cache_updated_at', 0);
 
     $protocol = (extension_loaded('openssl') ? 'https' : 'http');
-    $endpoint = H5PCore::$hubEndpoints[H5PCore::CONTENT_TYPES];
+    $endpoint = H5PHubEndpoints::CONTENT_TYPES;
     $data = $interface->fetchExternalData("{$protocol}://{$endpoint}", $postData);
 
     // No data received
@@ -2861,146 +2873,6 @@ class H5PCore {
     $interface->setInfoMessage($interface->t('Library cache was successfully updated!'));
     $interface->setOption('content_type_cache_updated_at', time());
     return $data;
-  }
-
-  /**
-   * Extract library properties from cached library so they are ready to be
-   * returned as JSON
-   *
-   * @param object $cached_library A single library from the content type cache
-   *
-   * @return array A map containing the necessary properties for a cached
-   * library to send to the front-end
-   */
-  public function getCachedLibsMap($cached_library) {
-    // Add mandatory fields
-    $lib = array(
-      'id'              => intval($cached_library->id),
-      'machineName'     => $cached_library->machine_name,
-      'majorVersion'    => intval( $cached_library->major_version),
-      'minorVersion'    => intval($cached_library->minor_version),
-      'patchVersion'    => intval($cached_library->patch_version),
-      'h5pMajorVersion' => intval($cached_library->h5p_major_version),
-      'h5pMinorVersion' => intval($cached_library->h5p_minor_version),
-      'title'           => $cached_library->title,
-      'summary'         => $cached_library->summary,
-      'description'     => $cached_library->description,
-      'icon'            => $cached_library->icon,
-      'createdAt'       => intval($cached_library->created_at),
-      'updatedAt'       => intval($cached_library->updated_at),
-      'isRecommended'   => $cached_library->is_recommended != 0,
-      'popularity'      => intval($cached_library->popularity),
-      'screenshots'     => json_decode($cached_library->screenshots),
-      'license'         => $cached_library->license,
-      'owner'           => $cached_library->owner,
-      'installed'       => FALSE,
-      'isUpToDate'      => FALSE,
-      'restricted'      => isset($cached_library->restricted) ? $cached_library->restricted : FALSE
-    );
-
-    // Add optional fields
-    if (!empty($cached_library->categories)) {
-      $lib['categories'] = json_decode($cached_library->categories);
-    }
-    if (!empty($cached_library->keywords)) {
-      $lib['keywords'] = json_decode($cached_library->keywords);
-    }
-    if (!empty($cached_library->tutorial)) {
-      $lib['tutorial'] = $cached_library->tutorial;
-    }
-    if (!empty($cached_library->example)) {
-      $lib['example'] = $cached_library->example;
-    }
-
-    return $lib;
-  }
-
-  /**
-   * Merge local libraries into cached libraries so that local libraries will
-   * get supplemented with the additional info from externally cached libraries.
-   *
-   * Also sets whether a given cached library is installed and up to date with
-   * the locally installed libraries
-   *
-   * @param array $local_libraries Locally installed libraries
-   * @param array $cached_libraries Cached libraries from the H5P hub
-   */
-  public function mergeLocalLibsIntoCachedLibs($local_libraries, &$cached_libraries) {
-    $can_create_restricted = $this->h5pF->hasPermission(H5PPermission::CREATE_RESTRICTED);
-
-    // Add local libraries to supplement content type cache
-    foreach ($local_libraries as $local_lib) {
-      $is_local_only = TRUE;
-      $icon_path = NULL;
-
-      // Check if icon is available locally:
-      if($local_lib->has_icon) {
-        // Create path to icon:
-        $library_folder = H5PCore::libraryToString(array(
-          'machineName' => $local_lib->machine_name,
-          'majorVersion' => $local_lib->major_version,
-          'minorVersion' => $local_lib->minor_version
-        ), TRUE);
-        $icon_path = $this->h5pF->getLibraryFileUrl($library_folder, 'icon.svg');
-      }
-
-      foreach ($cached_libraries as &$cached_lib) {
-        // Determine if library is local
-        $is_matching_library = $cached_lib['machineName'] === $local_lib->machine_name;
-        if ($is_matching_library) {
-          $is_local_only = FALSE;
-
-          // Set icon if it exists locally
-          if(isset($icon_path)) {
-            $cached_lib['icon'] = $icon_path;
-          }
-
-          // Set local properties
-          $cached_lib['installed']  = TRUE;
-          $cached_lib['restricted'] = $can_create_restricted ? FALSE
-            : $local_lib->restricted;
-
-          // Determine if library is the same as ct cache
-          $is_updated_library =
-            $cached_lib['majorVersion'] === $local_lib->major_version &&
-            $cached_lib['minorVersion'] === $local_lib->minor_version &&
-            $cached_lib['patchVersion'] === $local_lib->patch_version;
-
-          if ($is_updated_library) {
-            $cached_lib['isUpToDate'] = TRUE;
-          }
-        }
-      }
-
-      // Add minimal data to display local only libraries
-      if ($is_local_only) {
-         $local_only_lib = array(
-          'id'           => $local_lib->id,
-          'machineName'  => $local_lib->machine_name,
-          'majorVersion' => $local_lib->major_version,
-          'minorVersion' => $local_lib->minor_version,
-          'patchVersion' => $local_lib->patch_version,
-          'installed'    => TRUE,
-          'isUpToDate'   => TRUE,
-          'restricted'   => $can_create_restricted ? FALSE : $local_lib->restricted
-        );
-
-        if (isset($icon_path)) {
-          $local_only_lib['icon'] = $icon_path;
-        }
-
-        $cached_libraries[] = $local_only_lib;
-      }
-    }
-
-    // Restrict LRS dependent content
-    if (!$this->h5pF->getOption('enable_lrs_content_types')) {
-      foreach ($cached_libraries as &$lib) {
-        if ($lib['machineName'] === 'H5P.Questionnaire') {
-          $lib['restricted'] = TRUE;
-        }
-      }
-    }
   }
 
   /**

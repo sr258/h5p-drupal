@@ -285,7 +285,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
    * @return string
    */
   public function getContent($file_path) {
-    return file_get_contents($file_path);
+    return file_get_contents($this->path . $file_path);
   }
 
   /**
@@ -299,7 +299,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
     // Prepare directory
     if (empty($contentId)) {
       // Should be in editor tmp folder
-      $path = ($this->alteditorpath !== NULL ? $this->alteditorpath : $this->path . '/editor');
+      $path = $this->getEditorPath();
     }
     else {
       // Should be in content folder
@@ -319,7 +319,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
       copy($_FILES['file']['tmp_name'], $path);
     }
 
-    return $path;
+    return $file;
   }
 
   /**
@@ -333,7 +333,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
   public function cloneContentFile($file, $fromId, $toId) {
     // Determine source path
     if ($fromId === 'editor') {
-      $sourcepath = ($this->alteditorpath !== NULL ? $this->alteditorpath : "{$this->path}/editor");
+      $sourcepath = $this->getEditorPath();
     }
     else {
       $sourcepath = "{$this->path}/content/{$fromId}";
@@ -356,6 +356,45 @@ class H5PDefaultStorage implements \H5PFileStorage {
     }
 
     copy($sourcepath, $targetpath);
+  }
+
+  /**
+   * Copy a content from one directory to another. Defaults to cloning
+   * content from the current temporary upload folder to the editor path.
+   *
+   * @param string $source path to source directory
+   * @param string $target path of target directory. Defaults to editor path
+   *
+   * @return object Object containing h5p json and content json data
+   */
+  public function moveContentDirectory($source, $target = NULL) {
+    if ($source === NULL) {
+      return NULL;
+    }
+
+    if ($target === NULL) {
+      $target = $this->getEditorPath();
+    }
+
+    $contentSource = $source . DIRECTORY_SEPARATOR . 'content';
+    $contentFiles = array_diff(scandir($contentSource), array('.','..', 'content.json'));
+    foreach ($contentFiles as $file) {
+      if (is_dir("{$contentSource}/{$file}")) {
+        self::copyFileTree("{$contentSource}/{$file}", "{$target}/{$file}");
+      }
+      else {
+        copy("{$contentSource}/{$file}", "{$target}/{$file}");
+      }
+    }
+
+    // Successfully loaded content json of file into editor
+    $h5pJson = $this->getContent($source . DIRECTORY_SEPARATOR . 'h5p.json');
+    $contentJson = $this->getContent($contentSource . DIRECTORY_SEPARATOR . 'content.json');
+
+    return (object) array(
+      'h5pJson' => $h5pJson,
+      'contentJson' => $contentJson
+    );
   }
 
   /**
@@ -408,7 +447,7 @@ class H5PDefaultStorage implements \H5PFileStorage {
    *
    * @throws Exception Unable to copy the file
    */
-  public static function copyFileTree($source, $destination) {
+  private static function copyFileTree($source, $destination) {
     if (!self::dirReady($destination)) {
       throw new \Exception('unabletocopy');
     }
@@ -486,9 +525,9 @@ class H5PDefaultStorage implements \H5PFileStorage {
   /**
    * Easy helper function for retrieving the editor path
    *
-   * @return null|string Path to editor files
+   * @return string Path to editor files
    */
-  public function getEditorPath() {
-    return $this->alteditorpath;
+  private function getEditorPath() {
+    return ($this->alteditorpath !== NULL ? $this->alteditorpath : "{$this->path}/editor");
   }
 }

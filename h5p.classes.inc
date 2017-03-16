@@ -929,6 +929,12 @@ class H5PDrupal implements H5PFrameworkInterface {
 
       case H5PPermission::CREATE_RESTRICTED:
         return user_access('create restricted h5p content types');
+
+      case H5PPermission::UPDATE_LIBRARIES:
+        return user_access('update h5p libraries');
+
+      case H5PPermission::INSTALL_RECOMMENDED:
+        return user_access('install recommended h5p libraries');
     }
     return FALSE;
   }
