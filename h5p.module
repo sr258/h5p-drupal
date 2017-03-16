@@ -203,7 +203,7 @@ function h5p_node_info() {
     'h5p_content' => array(
       'name' => t('Interactive content'),
       'base' => 'h5p',
-      'description' => 'Upload HTML5 packages(.h5p) to create interactive content.',
+      'description' => t('Create interactive H5P content'),
     ),
   );
 }
