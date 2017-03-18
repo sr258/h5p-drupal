@@ -194,6 +194,7 @@ ns.LibrarySelector.prototype.loadSemantics = function (library, params) {
 
       that.form = new ns.Form();
       that.form.replace($loading);
+      that.form.currentLibrary = library;
       that.form.processSemantics(semantics, overrideParams);
     }
 
