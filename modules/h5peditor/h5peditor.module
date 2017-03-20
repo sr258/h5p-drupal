@@ -119,6 +119,10 @@ function h5peditor_form_h5p_content_node_form_alter(&$form, &$form_state) {
     '#weight' => $form['h5p']['#weight'] - 1,
   );
 
+  if (variable_get('h5p_hub_is_enabled', TRUE)) {
+    $form['h5p_type']['#type'] = 'hidden';
+  }
+
   $form['h5p_editor'] = array(
     '#type' => 'item',
     '#title' => t('Content type'),
