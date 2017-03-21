@@ -120,6 +120,7 @@ function h5peditor_form_h5p_content_node_form_alter(&$form, &$form_state) {
   );
 
   if (variable_get('h5p_hub_is_enabled', TRUE)) {
+    $form['h5p_type']['#default_value'] = 'create';
     $form['h5p_type']['#type'] = 'hidden';
   }
 
