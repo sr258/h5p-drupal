@@ -224,7 +224,7 @@ function h5peditor_h5p_content_node_form_after_build($form) {
  * @see http://drupal.org/node/1354
  */
 function h5peditor_h5p_content_node_form_validate($form, $form_state) {
-  if ($form_state['values']['h5p_type'] == 'upload') {
+  if (!variable_get('h5p_hub_is_enabled', TRUE) && $form_state['values']['h5p_type'] == 'upload') {
     h5p_form_validate($form, $form_state);
     return;
   }
@@ -255,7 +255,7 @@ function h5peditor_h5p_content_node_form_validate($form, $form_state) {
  * Node form submit handler.
  */
 function h5peditor_h5p_content_node_form_submit($form, &$form_state) {
-  if ($form_state['values']['h5p_type'] == 'upload') {
+  if (!variable_get('h5p_hub_is_enabled', TRUE) && $form_state['values']['h5p_type'] == 'upload') {
     return;
   }
 
