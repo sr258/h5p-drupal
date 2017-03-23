@@ -12,7 +12,11 @@ ns.SelectorHub = function (selectedLibrary, changeLibraryDialog) {
 
   // Initialize hub client
   this.client = new H5P.HubClient({
-    apiRootUrl: H5PEditor.ajaxPath
+    apiRootUrl: H5PEditor.ajaxPath,
+    apiVersion: {
+      major: H5PEditor.apiVersion.majorVersion,
+      minor: H5PEditor.apiVersion.minorVersion,
+    }
   }, H5PEditor.language.hub);
 
   if (selectedLibrary) {
