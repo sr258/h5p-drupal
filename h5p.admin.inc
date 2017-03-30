@@ -507,7 +507,7 @@ function h5p_library_upload_form($form_state) {
   $form['h5p'] = array(
     '#title' => t('H5P'),
     '#type' => 'file',
-    '#description' => t('Here you can upload new libraries or upload updates to existing libraries. Files uploaded here must be in the .h5p file format.')
+    '#description' => t('Making sure the content type cache is up to date will ensure that you can view, download and use the latest libraries. This is different from updating the libraries themselves.')
   );
 
   $form['submit'] = array(
