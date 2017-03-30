@@ -89,11 +89,24 @@ function h5p_uninstall() {
   variable_del('h5p_enable_lrs_content_types');
   variable_del('h5p_hub_is_enabled');
   variable_del('h5p_content_type_cache_updated_at');
+  variable_del('h5p_allow_communication_with_h5p_org');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same
   // variable_del('h5p_site_uuid');
-  // variable_del('h5p_allow_communication_with_h5p_org');
+}
+
+/**
+ * Implements hook_install()
+
+ * @link https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_install/7.x
+ */
+function h5p_install() {
+
+  // Notify of communication channels
+  drupal_set_message(
+    t('H5P fetches content types directly from the H5P Hub. In order to do this the H5P plugin will communicate with the Hub once a day to fetch information about new and updated content types. It will send in anonymous data to the Hub about H5P usage. Read more at <a href="https://h5p.org/h5p-plugin-communication">the plugin communication page at H5P.org</a>.')
+  );
 }
 
 /**
@@ -135,8 +148,6 @@ function h5p_enable() {
     views_invalidate_cache();
   }
 
-  _h5p_inform_h5p_org_communication();
-
   $core = _h5p_get_instance('core');
 
   // Check requirements
@@ -144,12 +155,6 @@ function h5p_enable() {
 
   // Update content type cache
   $core->updateContentTypeCache();
-}
-
-function _h5p_inform_h5p_org_communication() {
-  if (variable_get('h5p_allow_communication_with_h5p_org', TRUE)) {
-    drupal_set_message(t('By default, H5P is set up to automatically fetch information regarding Content Type updates from H5P.org. When doing so, H5P will also contribute anonymous usage data to aid the development of H5P. This behaviour can be altered through the <a href="@url">Settings</a> page.', array('@url' => url('admin/config/system/h5p'))));
-  }
 }
 
 /**
@@ -1297,8 +1302,6 @@ function h5p_update_7110() {
     ),
     'primary key' => array('type', 'library_name', 'library_version')
   ));
-
-  _h5p_inform_h5p_org_communication();
 }
 
 /**
@@ -1546,4 +1549,15 @@ function h5p_update_7115() {
         'default' => 0,
     ));
   }
+
+  // Display hub communication info
+  if (!variable_get('h5p_allow_communication_with_h5p_org', TRUE)) {
+    drupal_set_message(
+      t('H5P now fetches content types directly from the H5P Hub. In order to do this the H5P plugin will communicate with H5P.org once per day to fetch information about new and updated content types. It will send in anonymous data to the hub about H5P usage. If you do not want to use the new Hub client and get information about new content types automatically, you may disable the H5P Hub in the H5P settings.')
+    );
+  }
+
+  // Enable hub and delete old communication variabe
+  variable_set('h5p_hub_is_enabled', TRUE);
+  variable_del('h5p_allow_communication_with_h5p_org');
 }
