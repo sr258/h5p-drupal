@@ -200,6 +200,9 @@ function h5p_schema() {
       ),
     ),
     'primary key' => array('content_id', 'library_id', 'dependency_type'),
+    'indexes' => array(
+      'weight' => array('weight')
+    )
   );
 
   $schema['h5p_libraries'] = array(
@@ -306,6 +309,10 @@ function h5p_schema() {
       ),
     ),
     'primary key' => array('library_id'),
+    'indexes' => array(
+      'library' => array('machine_name', 'major_version', 'minor_version'),
+      'title' => array('title')
+    )
   );
 
   $schema['h5p_libraries_hub_cache'] = array(
@@ -442,6 +449,9 @@ function h5p_schema() {
       )
     ),
     'primary key' => array('id'),
+    'indexes' => array(
+      'machine_name' => array('machine_name')
+    )
   );
 
   $schema['h5p_libraries_libraries'] = array(
@@ -570,6 +580,11 @@ function h5p_schema() {
       )
     ),
     'primary key' => array('content_id'),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'library' => array('main_library_id'),
+      'slug' => array('slug'),
+    )
   );
 
   $schema['h5p_points'] = array(
@@ -730,7 +745,10 @@ function h5p_schema() {
         'not null' => TRUE
       )
     ),
-    'primary key' => array('id')
+    'primary key' => array('id'),
+    'indexes' => array(
+      'created_at' => array('created_at')
+    )
   );
 
   $schema['h5p_counters'] = array(
@@ -1394,9 +1412,36 @@ function h5p_update_7113() {
 }
 
 /**
- * Create content type cache from hub
+ * Add indexes to enhance database performance.
  */
 function h5p_update_7114() {
+  if (!db_index_exists('h5p_nodes_libraries', 'weight')) {
+    db_add_index('h5p_nodes_libraries', 'weight', array('weight'));
+  }
+  if (!db_index_exists('h5p_libraries', 'library')) {
+    db_add_index('h5p_libraries', 'library', array('machine_name', 'major_version', 'minor_version'));
+  }
+  if (!db_index_exists('h5p_libraries', 'title')) {
+    db_add_index('h5p_libraries', 'title', array('title'));
+  }
+  if (!db_index_exists('h5p_nodes', 'nid')) {
+    db_add_index('h5p_nodes', 'nid', array('nid'));
+  }
+  if (!db_index_exists('h5p_nodes', 'library')) {
+    db_add_index('h5p_nodes', 'library', array('main_library_id'));
+  }
+  if (!db_index_exists('h5p_nodes', 'slug')) {
+    db_add_index('h5p_nodes', 'slug', array('slug'));
+  }
+  if (!db_index_exists('h5p_events', 'created_at')) {
+    db_add_index('h5p_events', 'created_at', array('created_at'));
+  }
+}
+
+/**
+ * Create content type cache from hub
+ */
+function h5p_update_7115() {
 
   db_create_table('h5p_libraries_hub_cache', array(
     'description' => 'Stores information about what h5p uses what libraries.',
@@ -1538,7 +1583,7 @@ function h5p_update_7114() {
 /**
  * Add icon flag in libraries table
  */
-function h5p_update_7115() {
+function h5p_update_7116() {
   if (!db_field_exists('h5p_libraries', 'has_icon')) {
     db_add_field('h5p_libraries', 'has_icon', array(
         'description' => 'Whether or not this library contains an icon.svg',
