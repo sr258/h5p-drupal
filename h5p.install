@@ -1252,8 +1252,6 @@ function h5p_update_7113() {
 }
 
 /**
- * Implements hook_update_N().
- *
  * Add indexes to enhance database performance
  */
 function h5p_update_7114() {
