@@ -1257,11 +1257,25 @@ function h5p_update_7113() {
  * Add indexes to enhance database performance
  */
 function h5p_update_7114() {
-  db_add_index('h5p_nodes_libraries', 'weight', array('weight'));
-  db_add_index('h5p_libraries', 'library', array('machine_name', 'major_version', 'minor_version'));
-  db_add_index('h5p_libraries', 'title', array('title'));
-  db_add_index('h5p_nodes', 'nid', array('nid'));
-  db_add_index('h5p_nodes', 'library', array('main_library_id'));
-  db_add_index('h5p_nodes', 'slug', array('slug'));
-  db_add_index('h5p_events', 'created_at', array('created_at'));
+  if (!db_index_exists('h5p_nodes_libraries', 'weight')) {
+    db_add_index('h5p_nodes_libraries', 'weight', array('weight'));
+  }
+  if (!db_index_exists('h5p_libraries', 'library')) {
+    db_add_index('h5p_libraries', 'library', array('machine_name', 'major_version', 'minor_version'));
+  }
+  if (!db_index_exists('h5p_libraries', 'title')) {
+    db_add_index('h5p_libraries', 'title', array('title'));
+  }
+  if (!db_index_exists('h5p_nodes', 'nid')) {
+    db_add_index('h5p_nodes', 'nid', array('nid'));
+  }
+  if (!db_index_exists('h5p_nodes', 'library')) {
+    db_add_index('h5p_nodes', 'library', array('main_library_id'));
+  }
+  if (!db_index_exists('h5p_nodes', 'slug')) {
+    db_add_index('h5p_nodes', 'slug', array('slug'));
+  }
+  if (!db_index_exists('h5p_events', 'created_at')) {
+    db_add_index('h5p_events', 'created_at', array('created_at'));
+  }
 }
