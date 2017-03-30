@@ -147,7 +147,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#title' => t('Enable hub'),
     '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
-    '#description' => t('It is strongly discouraged to disable the hub. It will disable all communication with the H5P hub, which mean you will not be able to create, reuse and share content and content types through the H5P hub interface. You will also have to install libraries manually through uploading them.'),
+    '#description' => t('It is strongly discouraged to disable the hub. Enabling the hub will allow communication with the H5P hub, allowing you to create, reuse and share content and content types through the H5P Hub interface. Anonymous usage data will also be sent to the H5P Hub. Disabling this option will force you to install libraries manually through upload.'),
   );
 
   $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
