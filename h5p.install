@@ -185,6 +185,9 @@ function h5p_schema() {
       ),
     ),
     'primary key' => array('content_id', 'library_id', 'dependency_type'),
+    'indexes' => array(
+      'weight' => array('weight')
+    )
   );
 
   $schema['h5p_libraries'] = array(
@@ -283,6 +286,10 @@ function h5p_schema() {
       ),
     ),
     'primary key' => array('library_id'),
+    'indexes' => array(
+      'library' => array('machine_name', 'major_version', 'minor_version'),
+      'title' => array('title')
+    )
   );
 
   $schema['h5p_libraries_libraries'] = array(
@@ -411,6 +418,11 @@ function h5p_schema() {
       )
     ),
     'primary key' => array('content_id'),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'library' => array('main_library_id'),
+      'slug' => array('slug'),
+    )
   );
 
   $schema['h5p_points'] = array(
@@ -571,7 +583,10 @@ function h5p_schema() {
         'not null' => TRUE
       )
     ),
-    'primary key' => array('id')
+    'primary key' => array('id'),
+    'indexes' => array(
+      'created_at' => array('created_at')
+    )
   );
 
   $schema['h5p_counters'] = array(
@@ -1234,4 +1249,19 @@ function h5p_update_7113() {
   variable_set('h5p_icon', variable_get('h5p_icon_in_action_bar', TRUE));
   variable_del('h5p_icon_in_action_bar');
   drupal_set_message('<span style="font-weight: bold;">Upgrade your H5P content types!</span> Old content types will still work, but the authoring tool will look and feel much better if you <a href="https://h5p.org/update-all-content-types">upgrade the content types</a>.', 'warning');
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add indexes to enhance database performance
+ */
+function h5p_update_7114() {
+  db_add_index('h5p_nodes_libraries', 'weight', array('weight'));
+  db_add_index('h5p_libraries', 'library', array('machine_name', 'major_version', 'minor_version'));
+  db_add_index('h5p_libraries', 'title', array('title'));
+  db_add_index('h5p_nodes', 'nid', array('nid'));
+  db_add_index('h5p_nodes', 'library', array('main_library_id'));
+  db_add_index('h5p_nodes', 'slug', array('slug'));
+  db_add_index('h5p_events', 'created_at', array('created_at'));
 }

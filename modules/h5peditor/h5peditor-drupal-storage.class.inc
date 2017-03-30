@@ -76,7 +76,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
            WHERE machine_name = :name
            AND major_version = :major
            AND minor_version = :minor
-           AND semantics IS NOT NULL",
+           AND semantics IS NOT NULL", // TODO: Consider if semantics is really needed (DB performance-wise)
           array(
             ':name' => $library->name,
             ':major' => $library->majorVersion,
@@ -107,7 +107,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
        FROM {h5p_libraries}
        WHERE runnable = 1
        AND semantics IS NOT NULL
-       ORDER BY title");
+       ORDER BY title"); // TODO: Consider if semantics is really needed (DB performance-wise)
     foreach ($libraries_result as $library) {
       // Convert result object properties to camelCase.
       $library = H5PCore::snakeToCamel($library, true);
