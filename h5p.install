@@ -416,9 +416,9 @@ function h5p_schema() {
         'size' => 'medium'
       ),
       'license' => array(
-        'description' => 'License of the library',
-        'type' => 'varchar',
-        'length' => 511
+        'description' => 'Library license(s) json encoded',
+        'type' => 'text',
+        'size' => 'medium'
       ),
       'example' => array(
         'description' => 'URL to example content for this library.',
@@ -1546,9 +1546,9 @@ function h5p_update_7115() {
         'size' => 'medium'
       ),
       'license' => array(
-        'description' => 'License of the library',
-        'type' => 'varchar',
-        'length' => 511
+        'description' => 'Library license(s) json encoded',
+        'type' => 'text',
+        'size' => 'medium'
       ),
       'example' => array(
         'description' => 'URL to example content for this library.',
