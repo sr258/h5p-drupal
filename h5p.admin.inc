@@ -5,14 +5,6 @@
 function h5p_admin_settings($form, &$form_state) {
   // make sure core is loaded
   $core = _h5p_get_instance('core');
-
-  $form['h5p_allow_communication_with_h5p_org'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('I wish to aid in the development of H5P by contributing anonymous usage data'),
-    '#default_value' => variable_get('h5p_allow_communication_with_h5p_org', '1'),
-    '#description' => t('Disabling this option will prevent your site from fetching the newest H5P updates. Read more about <a href="@url">which data is collected</a> on h5p.org.', array('@url' => 'https://h5p.org/tracking-the-usage-of-h5p')),
-  );
-
   $path = drupal_get_path('module', 'h5p');
 
   // Get server setup error messages
@@ -155,7 +147,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#title' => t('Enable hub'),
     '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
-    '#description' => t('It is strongly discouraged to disable the hub. It will disable all communication with the H5P hub, which mean you will not be able to create, reuse and share content and content types through the H5P hub interface. You will also have to install libraries manually through uploading them.'),
+    '#description' => t('It is strongly discouraged to disable the hub. Enabling the hub will allow communication with the H5P hub, allowing you to create, reuse and share content and content types through the H5P Hub interface. Anonymous usage data will also be sent to the H5P Hub. Disabling this option will force you to install libraries manually through upload.'),
   );
 
   $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
@@ -214,10 +206,6 @@ function h5p_admin_settings_submit($form, &$form_state) {
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $form_state['values']['h5p_site_key'])) {
     // Invalid key, use the old one
     $form_state['values']['h5p_site_key'] = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
-  }
-
-  if($form_state['values']['h5p_allow_communication_with_h5p_org'] == 0) {
-    h5p_fetch_libraries_metadata(TRUE);
   }
 }
 
