@@ -1439,7 +1439,9 @@ function h5p_update_7114() {
 }
 
 /**
- * Create content type cache from hub
+ * Add content type cache table.
+ * Add icon flag to libraries table.
+ * Enable H5P Hub.
  */
 function h5p_update_7115() {
 
@@ -1578,12 +1580,7 @@ function h5p_update_7115() {
     ),
     'primary key' => array('id'),
   ));
-}
 
-/**
- * Add icon flag in libraries table
- */
-function h5p_update_7116() {
   if (!db_field_exists('h5p_libraries', 'has_icon')) {
     db_add_field('h5p_libraries', 'has_icon', array(
         'description' => 'Whether or not this library contains an icon.svg',
