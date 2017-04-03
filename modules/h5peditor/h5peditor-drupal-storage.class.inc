@@ -194,15 +194,21 @@ class H5peditorDrupalStorage implements H5peditorStorage {
    * up. E.g. for files that are uploaded through the editor.
    *
    * @param H5peditorFile $file
+   * @param $contentId
    */
-  public static function markFileForCleanup($file) {
+  public static function markFileForCleanup($file, $content_id = null) {
+    // H5P Core cleans up
+    if (empty($content_id)) {
+      return;
+    }
+
     global $user;
 
-    // Keep track of temporary files so they can be cleaned up later.
+    // Keep track of temporary files so they can be cleaned up later by Drupal
     $file_managed = (object) array(
       'uid' => $user->uid,
       'filename' => $file->getName(),
-      'uri' => 'public://' . (empty($content_id) ?  'h5peditor/' : variable_get('h5p_default_path', 'h5p') . '/content/' . $content_id . '/') . $file->getType() . 's/' . $file->getName(),
+      'uri' => 'public://h5peditor/' . $file->getType() . 's/' . $file->getName(),
       'filemime' => $file->type,
       'filesize' => $file->size,
       'status' => 0,
