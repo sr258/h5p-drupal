@@ -29,6 +29,9 @@ class H5PDrupal implements H5PFrameworkInterface {
       );
       $options['data'] = drupal_http_build_query($data);
     }
+    if ($stream) {
+      @set_time_limit(0);
+    }
 
     $response = drupal_http_request($url, $options);
 
