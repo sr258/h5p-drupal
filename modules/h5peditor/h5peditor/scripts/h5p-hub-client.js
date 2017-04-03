@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 33);
+/******/ 	return __webpack_require__(__webpack_require__.s = 32);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1066,7 +1066,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
  * @license   Licensed under MIT license
  *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
- * @version   4.1.0
+ * @version   3.3.1
  */
 
 (function (global, factory) {
@@ -1144,13 +1144,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
   // vertx
   function useVertxTimer() {
-    if (typeof vertxNext !== 'undefined') {
-      return function () {
-        vertxNext(flush);
-      };
-    }
-
-    return useSetTimeout();
+    return function () {
+      vertxNext(flush);
+    };
   }
 
   function useMutationObserver() {
@@ -1200,7 +1196,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   function attemptVertx() {
     try {
       var r = require;
-      var vertx = __webpack_require__(32);
+      var vertx = __webpack_require__(31);
       vertxNext = vertx.runOnLoop || vertx.runOnContext;
       return useVertxTimer();
     } catch (e) {
@@ -1377,7 +1373,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     } else {
       if (then$$ === GET_THEN_ERROR) {
         _reject(promise, GET_THEN_ERROR.error);
-        GET_THEN_ERROR.error = null;
       } else if (then$$ === undefined) {
         fulfill(promise, maybeThenable);
       } else if (isFunction(then$$)) {
@@ -1498,7 +1493,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       if (value === TRY_CATCH_ERROR) {
         failed = true;
         error = value.error;
-        value.error = null;
+        value = null;
       } else {
         succeeded = true;
       }
@@ -2214,6 +2209,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     local.Promise = Promise;
   }
 
+  polyfill();
   // Strange compat..
   Promise.polyfill = polyfill;
   Promise.Promise = Promise;
@@ -2221,7 +2217,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return Promise;
 });
 //# sourceMappingURL=es6-promise.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15), __webpack_require__(7), __webpack_require__(16)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(7), __webpack_require__(15)))
 
 /***/ }),
 /* 8 */
@@ -2238,19 +2234,19 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeSectionView = __webpack_require__(21);
+var _contentTypeSectionView = __webpack_require__(20);
 
 var _contentTypeSectionView2 = _interopRequireDefault(_contentTypeSectionView);
 
-var _searchService = __webpack_require__(25);
+var _searchService = __webpack_require__(23);
 
 var _searchService2 = _interopRequireDefault(_searchService);
 
-var _contentTypeList = __webpack_require__(20);
+var _contentTypeList = __webpack_require__(19);
 
 var _contentTypeList2 = _interopRequireDefault(_contentTypeList);
 
-var _contentTypeDetail = __webpack_require__(18);
+var _contentTypeDetail = __webpack_require__(17);
 
 var _contentTypeDetail2 = _interopRequireDefault(_contentTypeDetail);
 
@@ -2606,440 +2602,9 @@ exports.default = ContentTypeSection;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 exports.default = init;
 
-var _elements = __webpack_require__(0);
-
-var _functional = __webpack_require__(1);
-
-var _keyboard = __webpack_require__(4);
-
-var _keyboard2 = _interopRequireDefault(_keyboard);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * @constant
- */
-var ATTRIBUTE_SHOW = 'data-show';
-
-/**
- * @constant
- * @type Object.<string, number>
- */
-var KEY = {
-  TAB: 9,
-  ENTER: 13,
-  SHIFT: 16,
-  SPACE: 32,
-  ESC: 27,
-  LEFT_ARROW: 37,
-  RIGHT_ARROW: 39
-};
-
-/**
- * @constant
- * @type Object.<string, number>
- */
-var TAB_DIRECTION = {
-  FORWARD: 0,
-  BACKWARD: 1
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var show = function show(element) {
-  return element.classList.add('active');
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var hide = function hide(element) {
-  element.classList.remove('active');
-  element.removeAttribute('aria-live');
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var live = (0, _elements.setAttribute)('aria-live', 'polite');
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var enable = function enable(element) {
-  element.tabIndex = 0;
-  element.removeAttribute('aria-disabled');
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var disable = function disable(element) {
-  element.tabIndex = -1;
-  element.setAttribute('aria-disabled', 'true');
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var isDisabled = (0, _elements.hasAttribute)('aria-disabled');
-
-/**
- * @function
- * @param {HTMLElement} element
- * @param {boolean} force
- */
-var toggleDisabled = function toggleDisabled(element, force) {
-  return (force ? disable : enable)(element);
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- * @param {boolean} force
- */
-var toggleHidden = function toggleHidden(element, force) {
-  return (force ? hide : show)(element);
-};
-
-/**
- * @function
- * @param {HTMLElement} element
- * @param {number} imageIndex
- */
-var showImageLightbox = (0, _functional.curry)(function (element, imageIndex) {
-  return (0, _elements.setAttribute)('data-show', imageIndex, element);
-});
-
-/**
- * @function
- * @param {HTMLElement} element
- */
-var hideLightbox = function hideLightbox(element) {
-  element.removeAttribute(ATTRIBUTE_SHOW);
-  element.dispatchEvent(new Event('lightbox-hidden'));
-};
-
-/**
- * Focus first element with tabindex from arguments
- *
- * @function
- * @param {...HTMLElement} elements
- */
-var focus = function focus() {
-  for (var _len = arguments.length, elements = Array(_len), _key = 0; _key < _len; _key++) {
-    elements[_key] = arguments[_key];
-  }
-
-  for (var i = 0; i < elements.length; i++) {
-    if (elements[i].tabIndex !== -1) {
-      return elements[i].focus();
-    }
-  }
-};
-
-/**
- * Will toggle the siblings of the element visible or not.
- *
- * @function
- * @param {HTMLElement} element
- * @param {boolean} show
- */
-var toggleSiblings = function toggleSiblings(element, show) {
-  var siblings = element.parentNode.children;
-
-  for (var i = 0; i < siblings.length; i++) {
-    var sibling = siblings[i];
-
-    if (sibling !== element) {
-      if (show) {
-        // TODO This is dangerous, and will interfere with
-        // the aria-hidden state set by other compoents
-        sibling.removeAttribute('aria-hidden');
-      } else {
-        sibling.setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-};
-
-/**
- * @type string
- */
-var progressTemplateText = void 0;
-
-/**
- * Update the view
- *
- * @function
- * @param {HTMLElement} element
- * @param {ImageScrollerState} state
- * @param {boolean} setDialogFocus
- */
-var updateView = function updateView(element, state) {
-
-  var images = (0, _elements.querySelectorAll)('.imagelightbox-image', element);
-  var progress = element.querySelector('.imagelightbox-progress');
-  var prevButton = element.querySelector('.previous');
-  var nextButton = element.querySelector('.next');
-  var closeButton = element.querySelector('.close');
-
-  // Hide all images
-  images.forEach(function (image) {
-    return hide(image);
-  });
-  if (state.currentImage !== null) {
-    // Show selected image
-    var image = element.querySelector('.imagelightbox-image:nth-child(' + (state.currentImage + 1) + ')');
-
-    show(image);
-    live(image);
-  }
-
-  // Update progress text
-  if (!progressTemplateText) {
-    // Keep template for future updates
-    progressTemplateText = progress.innerText;
-  }
-  progress.innerText = progressTemplateText.replace(':num', state.currentImage + 1).replace(':total', images.length);
-
-  // Determine if buttons should be shown or hidden
-  toggleHidden(prevButton, !images.length);
-  toggleHidden(nextButton, !images.length);
-
-  // Determine if buttons should be enabled or disabled
-  toggleDisabled(prevButton, state.currentImage === 0);
-  toggleDisabled(nextButton, state.currentImage === images.length - 1);
-
-  // Determine if lightbox should be shown or hidden
-  var isAlreadyShowing = element.classList.contains('active');
-  toggleHidden(element, state.currentImage === null);
-  toggleSiblings(element, state.currentImage === null);
-
-  // Set focus to close button if not already showing
-  if (!isAlreadyShowing) {
-    setTimeout(function () {
-      closeButton.focus();
-    }, 20);
-  }
-};
-
-/**
- * Handles button clicked
- *
- * @function
- * @param {HTMLElement} element
- * @param {HTMLElement} button
- * @param {number} imageIndex
- */
-var onNavigationButtonClick = function onNavigationButtonClick(element, button, imageIndex) {
-  if (!isDisabled(button)) {
-    showImageLightbox(element, imageIndex);
-  }
-};
-
-/**
- * Generic function for handling keydowns
- *
- * @function
- * @param {HTMLElement} element
- * @param {number[]}  keycodes
- * @param {function} handler
- */
-var onKeyDown = function onKeyDown(element, keycodes, handler) {
-  element.addEventListener('keydown', function (event) {
-    if (keycodes.indexOf(event.which) !== -1) {
-      handler();
-      event.preventDefault();
-    }
-  });
-};
-
-/**
- * @function
- */
-var onButtonPress = function onButtonPress(button, handler) {
-  button.addEventListener('click', handler);
-  onKeyDown(button, [KEY.ENTER, KEY.SPACE], handler);
-};
-
-/**
- * Keep track of which keys are currently pressed.
- *
- * @type Object.<number, boolean>
- */
-var keysDown = {};
-
-/**
- * Binds key listeners that traps focus when the lightbox is open.
- *
- * @function
- */
-var onButtonTab = function onButtonTab(button, direction, handler) {
-  button.addEventListener('keydown', function (event) {
-    // Keep track of which keys are currently pressed
-    keysDown[event.which] = true;
-
-    if (event.which === KEY.TAB) {
-      // Tab key press
-
-      if (keysDown[KEY.SHIFT]) {
-        if (direction === TAB_DIRECTION.BACKWARD) {
-          // Shift is down, tab backward
-          handler();
-          event.preventDefault();
-        }
-      } else {
-        if (direction === TAB_DIRECTION.FORWARD) {
-          // Tab forward
-          handler();
-          event.preventDefault();
-        }
-      }
-    }
-  });
-  button.addEventListener('keyup', function (event) {
-    delete keysDown[event.which];
-  });
-};
-
-/**
- * Callback for when the dom is updated
- *
- * @function
- * @param {HTMLElement} element
- * @param {ImageLightboxState} state
- * @param {Keyboard} keyboard
- * @param {MutationRecord} record
- */
-var handleDomUpdate = (0, _functional.curry)(function (element, state, keyboard, record) {
-  if (record.type === 'attributes' && record.attributeName === ATTRIBUTE_SHOW) {
-
-    var showImage = parseInt(record.target.getAttribute(ATTRIBUTE_SHOW));
-
-    // update the view
-    updateView(element, _extends(state, {
-      currentImage: isNaN(showImage) ? null : showImage
-    }));
-  }
-});
-
-/**
- * Initializes a panel
- *
- * @function
- * @param {HTMLElement} element
- * @return {HTMLElement}
- */
-function init(element) {
-  // get button html elements
-  var nextButton = element.querySelector('.next');
-  var prevButton = element.querySelector('.previous');
-  var closeButton = element.querySelector('.close');
-  var keyboard = new _keyboard2.default();
-
-  /**
-   * @typedef {object} ImageLightboxState
-   * @property {number} currentImage Index of image to display
-   */
-  var state = {
-    currentImage: false
-  };
-
-  // initialize buttons
-  onButtonPress(nextButton, function () {
-    return onNavigationButtonClick(element, nextButton, state.currentImage + 1);
-  });
-  onButtonTab(nextButton, TAB_DIRECTION.BACKWARD, function () {
-    return focus(closeButton, prevButton);
-  });
-  onButtonTab(nextButton, TAB_DIRECTION.FORWARD, function () {
-    return focus(prevButton, closeButton);
-  });
-
-  onButtonPress(prevButton, function () {
-    return onNavigationButtonClick(element, prevButton, state.currentImage - 1);
-  });
-  onButtonTab(prevButton, TAB_DIRECTION.BACKWARD, function () {
-    return focus(nextButton, closeButton);
-  });
-  onButtonTab(prevButton, TAB_DIRECTION.FORWARD, function () {
-    return focus(closeButton, nextButton);
-  });
-
-  onButtonPress(closeButton, function () {
-    return hideLightbox(element);
-  });
-  onButtonTab(closeButton, TAB_DIRECTION.BACKWARD, function () {
-    return focus(prevButton, nextButton);
-  });
-  onButtonTab(closeButton, TAB_DIRECTION.FORWARD, function () {
-    return focus(nextButton, prevButton);
-  });
-
-  // When clicking on the background, let's close it
-  element.addEventListener('click', function (event) {
-    if (event.target === element) {
-      hideLightbox(element);
-    }
-  });
-
-  // Initialize keyboard navigation
-  element.addEventListener('keyup', function (event) {
-    if (event.which === KEY.ESC) {
-      event.preventDefault();
-      hideLightbox(element);
-    } else if (event.which === KEY.LEFT_ARROW) {
-      if (state.currentImage !== 0) {
-        showImageLightbox(element, state.currentImage - 1);
-      }
-    } else if (event.which === KEY.RIGHT_ARROW) {
-      var images = (0, _elements.querySelectorAll)('.imagelightbox-image', element);
-      if (state.currentImage !== images.length - 1) {
-        showImageLightbox(element, state.currentImage + 1);
-      }
-    }
-  });
-
-  // listen for updates to data-size
-  var observer = new MutationObserver((0, _functional.forEach)(handleDomUpdate(element, state, keyboard)));
-
-  observer.observe(element, {
-    subtree: false,
-    childList: false,
-    attributes: true,
-    attributeOldValue: true,
-    attributeFilter: [ATTRIBUTE_SHOW]
-  });
-
-  return element;
-}
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = init;
-
-var _collapsible = __webpack_require__(11);
+var _collapsible = __webpack_require__(10);
 
 var _keyboard = __webpack_require__(4);
 
@@ -3074,7 +2639,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3144,13 +2709,13 @@ var initCollapsible = exports.initCollapsible = function initCollapsible(element
 };
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMjI1Ij4NCiAgPGRlZnM+DQogICAgPHN0eWxlPg0KICAgICAgLmNscy0xIHsNCiAgICAgIGZpbGw6IG5vbmU7DQogICAgICB9DQoNCiAgICAgIC5jbHMtMiB7DQogICAgICBmaWxsOiAjYzZjNmM3Ow0KICAgICAgfQ0KDQogICAgICAuY2xzLTMsIC5jbHMtNCB7DQogICAgICBmaWxsOiAjZmZmOw0KICAgICAgfQ0KDQogICAgICAuY2xzLTMgew0KICAgICAgb3BhY2l0eTogMC43Ow0KICAgICAgfQ0KICAgIDwvc3R5bGU+DQogIDwvZGVmcz4NCiAgPHRpdGxlPmNvbnRlbnQgdHlwZSBwbGFjZWhvbGRlcl8yPC90aXRsZT4NCiAgPGcgaWQ9IkxheWVyXzIiIGRhdGEtbmFtZT0iTGF5ZXIgMiI+DQogICAgPGcgaWQ9ImNvbnRlbnRfdHlwZV9wbGFjZWhvbGRlci0xX2NvcHkiIGRhdGEtbmFtZT0iY29udGVudCB0eXBlIHBsYWNlaG9sZGVyLTEgY29weSI+DQogICAgICA8cmVjdCBjbGFzcz0iY2xzLTEiIHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1Ii8+DQogICAgICA8cmVjdCBjbGFzcz0iY2xzLTIiIHg9IjExMi41MSIgeT0iNDMuNDEiIHdpZHRoPSIxNzYuOTYiIGhlaWdodD0iMTM1LjQ1IiByeD0iMTAiIHJ5PSIxMCIvPg0KICAgICAgPGNpcmNsZSBjbGFzcz0iY2xzLTMiIGN4PSIxMzYuNjYiIGN5PSI2MS45OCIgcj0iNC44MSIvPg0KICAgICAgPGNpcmNsZSBjbGFzcz0iY2xzLTMiIGN4PSIxNTEuNDkiIGN5PSI2MS45OCIgcj0iNC44MSIvPg0KICAgICAgPGNpcmNsZSBjbGFzcz0iY2xzLTMiIGN4PSIxNjYuMSIgY3k9IjYxLjk4IiByPSI0LjgxIi8+DQogICAgICA8ZyBpZD0iX0dyb3VwXyIgZGF0YS1uYW1lPSImbHQ7R3JvdXAmZ3Q7Ij4NCiAgICAgICAgPGcgaWQ9Il9Hcm91cF8yIiBkYXRhLW5hbWU9IiZsdDtHcm91cCZndDsiPg0KICAgICAgICAgIDxwYXRoIGlkPSJfQ29tcG91bmRfUGF0aF8iIGRhdGEtbmFtZT0iJmx0O0NvbXBvdW5kIFBhdGgmZ3Q7IiBjbGFzcz0iY2xzLTQiIGQ9Ik0yNjMuMjgsOTUuMjFDMjYwLDkyLjA3LDI1NSw5MS41LDI0OC40Myw5MS41SDIyN3Y4SDE5OS41bC0yLjE3LDEwLjI0YTI1Ljg0LDI1Ljg0LDAsMCwxLDExLjQ4LTEuNjMsMTkuOTMsMTkuOTMsMCwwLDEsMTQuMzksNS41NywxOC4yNiwxOC4yNiwwLDAsMSw1LjUyLDEzLjYsMjMuMTEsMjMuMTEsMCwwLDEtMi44NCwxMS4wNSwxOC42NSwxOC42NSwwLDAsMS04LjA2LDcuNzksOSw5LDAsMCwxLTQuMTIsMS4zN0gyMzZ2LTIxaDEwLjQyYzcuMzYsMCwxMi44My0xLjYxLDE2LjQyLTVzNS4zOC03LjQ4LDUuMzgtMTMuNDRDMjY4LjIyLDEwMi4yOSwyNjYuNTcsOTguMzUsMjYzLjI4LDk1LjIxWm0tMTUsMTdjLTEuNDIsMS4yMi0zLjksMS4yNS03LjQxLDEuMjVIMjM2di0xNGg1LjYyYTkuNTcsOS41NywwLDAsMSw3LDIuOTMsNy4wNSw3LjA1LDAsMCwxLDEuODUsNC45MkE2LjMzLDYuMzMsMCwwLDEsMjQ4LjMxLDExMi4yNVoiLz4NCiAgICAgICAgICA8cGF0aCBpZD0iX1BhdGhfIiBkYXRhLW5hbWU9IiZsdDtQYXRoJmd0OyIgY2xhc3M9ImNscy00IiBkPSJNMjAyLjksMTE5LjExYTguMTIsOC4xMiwwLDAsMC03LjI4LDQuNTJsLTE2LTEuMjIsNy4yMi0zMC45MkgxNzR2MjJIMTUzdi0yMkgxMzZ2NTZoMTd2LTIxaDIxdjIxaDIwLjMxYy0yLjcyLDAtNS0xLjUzLTctM2ExOS4xOSwxOS4xOSwwLDAsMS00LjczLTQuODMsMjMuNTgsMjMuNTgsMCwwLDEtMy02LjZsMTYtMi4yNmE4LjExLDguMTEsMCwxLDAsNy4yNi0xMS43MloiLz4NCiAgICAgICAgPC9nPg0KICAgICAgPC9nPg0KICAgICAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIxNzcuNjYiIHk9IjU3LjY2IiB3aWR0aD0iOTIuMjgiIGhlaWdodD0iOS4zOCIgcng9IjMuNSIgcnk9IjMuNSIvPg0KICAgIDwvZz4NCiAgPC9nPg0KPC9zdmc+DQo="
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3164,7 +2729,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hubView = __webpack_require__(23);
+var _hubView = __webpack_require__(22);
 
 var _hubView2 = _interopRequireDefault(_hubView);
 
@@ -3172,11 +2737,11 @@ var _contentTypeSection = __webpack_require__(8);
 
 var _contentTypeSection2 = _interopRequireDefault(_contentTypeSection);
 
-var _uploadSection = __webpack_require__(26);
+var _uploadSection = __webpack_require__(24);
 
 var _uploadSection2 = _interopRequireDefault(_uploadSection);
 
-var _hubServices = __webpack_require__(22);
+var _hubServices = __webpack_require__(21);
 
 var _hubServices2 = _interopRequireDefault(_hubServices);
 
@@ -3317,7 +2882,9 @@ var Hub = function () {
     value: function showModal(_ref) {
       var element = _ref.element;
 
-      this.view.appendChild(element);
+      // Prepend to catch and trap focus
+      var parent = this.view.getElement();
+      parent.insertBefore(element, parent.firstChild);
       element.classList.remove('hidden');
     }
 
@@ -3424,13 +2991,13 @@ var Hub = function () {
 exports.default = Hub;
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3617,7 +3184,7 @@ process.umask = function () {
 };
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3647,7 +3214,7 @@ try {
 module.exports = g;
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3667,25 +3234,25 @@ var _functional = __webpack_require__(1);
 
 var _eventful = __webpack_require__(2);
 
-var _panel = __webpack_require__(10);
+var _panel = __webpack_require__(9);
 
 var _panel2 = _interopRequireDefault(_panel);
 
-var _modal = __webpack_require__(29);
+var _modal = __webpack_require__(28);
 
 var _modal2 = _interopRequireDefault(_modal);
 
-var _imageScroller = __webpack_require__(28);
+var _imageScroller = __webpack_require__(27);
 
 var _imageScroller2 = _interopRequireDefault(_imageScroller);
 
-var _imageLightbox = __webpack_require__(9);
+var _imageLightbox = __webpack_require__(26);
 
 var _imageLightbox2 = _interopRequireDefault(_imageLightbox);
 
 var _events = __webpack_require__(5);
 
-var _contentTypePlaceholder = __webpack_require__(12);
+var _contentTypePlaceholder = __webpack_require__(11);
 
 var _contentTypePlaceholder2 = _interopRequireDefault(_contentTypePlaceholder);
 
@@ -3697,7 +3264,7 @@ var _messageView = __webpack_require__(6);
 
 var _messageView2 = _interopRequireDefault(_messageView);
 
-var _imageLightbox3 = __webpack_require__(24);
+var _imageLightbox3 = __webpack_require__(43);
 
 var _imageLightbox4 = _interopRequireDefault(_imageLightbox3);
 
@@ -4156,6 +3723,8 @@ var ContentTypeDetailView = function () {
   }, {
     key: "createLicenseDialog",
     value: function createLicenseDialog(licenseDetails) {
+      var _this5 = this;
+
       var titleId = 'license-dialog-title';
       var modal = document.createElement('div');
       modal.innerHTML = "\n      <div class=\"modal fade show\" role=\"dialog\">\n        <div class=\"modal-dialog license-dialog\" tabindex=\"-1\" role=\"document\" aria-labelledby=\"" + titleId + "\">\n          <div class=\"modal-content\">\n            <div class=\"modal-header\">\n              <button type=\"button\" class=\"close icon-close\" data-dismiss=\"modal\" aria-label=\"" + _dictionary2.default.get('close') + "\"></button>\n              <h5 class=\"modal-title\" id=\"" + titleId + "\">" + _dictionary2.default.get('licenseModalTitle') + "</h5>\n              <h5 class=\"modal-subtitle\">" + _dictionary2.default.get('licenseModalSubtitle') + "</h5>\n            </div>\n            <div class=\"modal-body loading\">\n              <dl class=\"panel panel-simple\"></dl>\n            </div>\n          </div>\n        </div>\n      </div>";
@@ -4184,7 +3753,7 @@ var ContentTypeDetailView = function () {
 
       licenseDetails.then(function (details) {
         title.innerHTML = details.id;
-        description.innerHTML = details.description;
+        description.innerHTML = details.description.replace(':year', new Date().getFullYear()).replace(':owner', _this5.owner);
       }).catch(function (error) {
         modalBody.innerHTML = _dictionary2.default.get('licenseFetchDetailsFailed');
       }).then(function () {
@@ -4330,10 +3899,10 @@ var ContentTypeDetailView = function () {
   }, {
     key: "focus",
     value: function focus() {
-      var _this5 = this;
+      var _this6 = this;
 
       setTimeout(function () {
-        return _this5.title.focus();
+        return _this6.title.focus();
       }, 200);
     }
 
@@ -4367,7 +3936,7 @@ var ContentTypeDetailView = function () {
 exports.default = ContentTypeDetailView;
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4381,7 +3950,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeDetailView = __webpack_require__(17);
+var _contentTypeDetailView = __webpack_require__(16);
 
 var _contentTypeDetailView2 = _interopRequireDefault(_contentTypeDetailView);
 
@@ -4617,7 +4186,7 @@ var ContentTypeDetail = function () {
 exports.default = ContentTypeDetail;
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4639,7 +4208,7 @@ var _eventful = __webpack_require__(2);
 
 var _events = __webpack_require__(5);
 
-var _contentTypePlaceholder = __webpack_require__(12);
+var _contentTypePlaceholder = __webpack_require__(11);
 
 var _contentTypePlaceholder2 = _interopRequireDefault(_contentTypePlaceholder);
 
@@ -4842,7 +4411,7 @@ var ContentTypeListView = function () {
 exports.default = ContentTypeListView;
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4856,7 +4425,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _contentTypeListView = __webpack_require__(19);
+var _contentTypeListView = __webpack_require__(18);
 
 var _contentTypeListView2 = _interopRequireDefault(_contentTypeListView);
 
@@ -4977,7 +4546,7 @@ var ContentTypeList = function () {
 exports.default = ContentTypeList;
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4999,7 +4568,7 @@ var _elements = __webpack_require__(0);
 
 var _events = __webpack_require__(5);
 
-var _navbar = __webpack_require__(30);
+var _navbar = __webpack_require__(29);
 
 var _navbar2 = _interopRequireDefault(_navbar);
 
@@ -5328,7 +4897,7 @@ var ContentBrowserView = function () {
 exports.default = ContentBrowserView;
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5340,7 +4909,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-__webpack_require__(27);
+__webpack_require__(25);
 
 var _browserStorage = __webpack_require__(44);
 
@@ -5581,7 +5150,7 @@ exports.default = HubServices;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5595,11 +5164,11 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _panel = __webpack_require__(10);
+var _panel = __webpack_require__(9);
 
 var _panel2 = _interopRequireDefault(_panel);
 
-var _tabPanel = __webpack_require__(31);
+var _tabPanel = __webpack_require__(30);
 
 var _tabPanel2 = _interopRequireDefault(_tabPanel);
 
@@ -5872,157 +5441,7 @@ var HubView = function () {
 exports.default = HubView;
 
 /***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _eventful = __webpack_require__(2);
-
-var _elements = __webpack_require__(0);
-
-var _imageLightbox = __webpack_require__(9);
-
-var _imageLightbox2 = _interopRequireDefault(_imageLightbox);
-
-var _dictionary = __webpack_require__(3);
-
-var _dictionary2 = _interopRequireDefault(_dictionary);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @constant {string}
- */
-var IMAGELIGHTBOX = 'imagelightbox';
-
-/**
- * @class
- * @mixes Eventful
- */
-
-var ImageLightBox = function () {
-  function ImageLightBox() {
-    var _this = this;
-
-    _classCallCheck(this, ImageLightBox);
-
-    // add event system
-    _extends(this, (0, _eventful.Eventful)());
-
-    this.rootElement = this.createView();
-    this.imageLightboxList = this.rootElement.querySelector('.' + IMAGELIGHTBOX + '-list');
-
-    (0, _imageLightbox2.default)(this.rootElement);
-
-    this.rootElement.addEventListener('lightbox-hidden', function () {
-      _this.trigger('lightbox-hidden');
-    });
-  }
-
-  /**
-   * Create the DOM structure
-   *
-   * @function
-   * @returns {HTMLElement}
-   */
-
-
-  _createClass(ImageLightBox, [{
-    key: 'createView',
-    value: function createView() {
-      var rootElement = (0, _elements.createElement)({
-        tag: 'div',
-        id: IMAGELIGHTBOX + '-detail',
-        classes: [IMAGELIGHTBOX],
-        attributes: {
-          role: 'dialog',
-          'aria-label': _dictionary2.default.get('imageLightboxTitle')
-        }
-      });
-
-      rootElement.innerHTML = '\n      <div class="' + IMAGELIGHTBOX + '-inner">\n        <div class="' + IMAGELIGHTBOX + '-button close" role="button" tabindex="0" aria-label="' + _dictionary2.default.get('close') + '"></div>\n        <ol class="' + IMAGELIGHTBOX + '-list"></ol>\n        <div class="' + IMAGELIGHTBOX + '-progress">' + _dictionary2.default.get('imageLightBoxProgress') + '</div>\n        <div class="' + IMAGELIGHTBOX + '-button next" role="button" aria-disabled="true" aria-label="' + _dictionary2.default.get('nextImage') + '"></div>\n        <div class="' + IMAGELIGHTBOX + '-button previous" role="button" aria-disabled="true" aria-label="' + _dictionary2.default.get('previousImage') + '"></div>\n      </div>';
-
-      return rootElement;
-    }
-
-    /**
-     * Add an image
-     *
-     * @function
-     * @param {string} url
-     * @param {string} alt
-     */
-
-  }, {
-    key: 'addImage',
-    value: function addImage(_ref) {
-      var url = _ref.url,
-          alt = _ref.alt;
-
-      var item = (0, _elements.createElement)({
-        tag: 'li',
-        classes: [IMAGELIGHTBOX + '-image']
-      });
-      item.innerHTML = '<img class="img-responsive" src="' + url + '" alt="' + alt + '">';
-      this.imageLightboxList.appendChild(item);
-    }
-
-    /**
-     * Show the lightbox
-     *
-     * @function
-     * @param {number} index - the image to show first
-     */
-
-  }, {
-    key: 'show',
-    value: function show(index) {
-      this.rootElement.setAttribute('data-show', index);
-    }
-
-    /**
-     * Remove all images
-     * @function
-     */
-
-  }, {
-    key: 'reset',
-    value: function reset() {
-      this.imageLightboxList.innerHTML = '';
-    }
-
-    /**
-     * Return the DOM element
-     *
-     * @returns {HTMLElement}
-     */
-
-  }, {
-    key: 'getElement',
-    value: function getElement() {
-      return this.rootElement;
-    }
-  }]);
-
-  return ImageLightBox;
-}();
-
-exports.default = ImageLightBox;
-
-/***/ }),
-/* 25 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6438,7 +5857,7 @@ var sortContentTypesByMachineName = function sortContentTypesByMachineName(conte
 };
 
 /***/ }),
-/* 26 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6717,7 +6136,7 @@ var UploadSection = function () {
 exports.default = UploadSection;
 
 /***/ }),
-/* 27 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7186,7 +6605,438 @@ exports.default = UploadSection;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
 /***/ }),
-/* 28 */
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.default = init;
+
+var _elements = __webpack_require__(0);
+
+var _functional = __webpack_require__(1);
+
+var _keyboard = __webpack_require__(4);
+
+var _keyboard2 = _interopRequireDefault(_keyboard);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * @constant
+ */
+var ATTRIBUTE_SHOW = 'data-show';
+
+/**
+ * @constant
+ * @type Object.<string, number>
+ */
+var KEY = {
+  TAB: 9,
+  ENTER: 13,
+  SHIFT: 16,
+  SPACE: 32,
+  ESC: 27,
+  LEFT_ARROW: 37,
+  RIGHT_ARROW: 39
+};
+
+/**
+ * @constant
+ * @type Object.<string, number>
+ */
+var TAB_DIRECTION = {
+  FORWARD: 0,
+  BACKWARD: 1
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var show = function show(element) {
+  return element.classList.add('active');
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var hide = function hide(element) {
+  element.classList.remove('active');
+  element.removeAttribute('aria-live');
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var live = (0, _elements.setAttribute)('aria-live', 'polite');
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var enable = function enable(element) {
+  element.tabIndex = 0;
+  element.removeAttribute('aria-disabled');
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var disable = function disable(element) {
+  element.tabIndex = -1;
+  element.setAttribute('aria-disabled', 'true');
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var isDisabled = (0, _elements.hasAttribute)('aria-disabled');
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ * @param {boolean} force
+ */
+var toggleDisabled = function toggleDisabled(element, force) {
+  return (force ? disable : enable)(element);
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ * @param {boolean} force
+ */
+var toggleHidden = function toggleHidden(element, force) {
+  return (force ? hide : show)(element);
+};
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ * @param {number} imageIndex
+ */
+var showImageLightbox = (0, _functional.curry)(function (element, imageIndex) {
+  return (0, _elements.setAttribute)('data-show', imageIndex, element);
+});
+
+/**
+ * @function
+ * @param {HTMLElement} element
+ */
+var hideLightbox = function hideLightbox(element) {
+  element.removeAttribute(ATTRIBUTE_SHOW);
+  element.dispatchEvent(new Event('lightbox-hidden'));
+};
+
+/**
+ * Focus first element with tabindex from arguments
+ *
+ * @function
+ * @param {...HTMLElement} elements
+ */
+var focus = function focus() {
+  for (var _len = arguments.length, elements = Array(_len), _key = 0; _key < _len; _key++) {
+    elements[_key] = arguments[_key];
+  }
+
+  for (var i = 0; i < elements.length; i++) {
+    if (elements[i].tabIndex !== -1) {
+      return elements[i].focus();
+    }
+  }
+};
+
+/**
+ * Will toggle the siblings of the element visible or not.
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @param {boolean} show
+ */
+var toggleSiblings = function toggleSiblings(element, show) {
+  var siblings = element.parentNode.children;
+
+  for (var i = 0; i < siblings.length; i++) {
+    var sibling = siblings[i];
+
+    if (sibling !== element) {
+      if (show) {
+        // TODO This is dangerous, and will interfere with
+        // the aria-hidden state set by other compoents
+        sibling.removeAttribute('aria-hidden');
+      } else {
+        sibling.setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+};
+
+/**
+ * @type string
+ */
+var progressTemplateText = void 0;
+
+/**
+ * Update the view
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @param {ImageScrollerState} state
+ * @param {boolean} setDialogFocus
+ */
+var updateView = function updateView(element, state) {
+
+  var images = (0, _elements.querySelectorAll)('.imagelightbox-image', element);
+  var progress = element.querySelector('.imagelightbox-progress');
+  var prevButton = element.querySelector('.previous');
+  var nextButton = element.querySelector('.next');
+  var closeButton = element.querySelector('.close');
+
+  // Hide all images
+  images.forEach(function (image) {
+    return hide(image);
+  });
+  if (state.currentImage !== null) {
+    // Show selected image
+    var image = element.querySelector('.imagelightbox-image:nth-child(' + (state.currentImage + 1) + ')');
+
+    show(image);
+    live(image);
+  }
+
+  // Update progress text
+  if (!progressTemplateText) {
+    // Keep template for future updates
+    progressTemplateText = progress.innerText;
+  }
+  progress.innerText = progressTemplateText.replace(':num', state.currentImage + 1).replace(':total', images.length);
+
+  // Determine if buttons should be shown or hidden
+  toggleHidden(prevButton, !images.length);
+  toggleHidden(nextButton, !images.length);
+
+  // Determine if buttons should be enabled or disabled
+  toggleDisabled(prevButton, state.currentImage === 0);
+  toggleDisabled(nextButton, state.currentImage === images.length - 1);
+
+  // Determine if lightbox should be shown or hidden
+  var isAlreadyShowing = element.classList.contains('active');
+  toggleHidden(element, state.currentImage === null);
+  toggleSiblings(element, state.currentImage === null);
+
+  // Set focus to close button if not already showing
+  if (!isAlreadyShowing) {
+    setTimeout(function () {
+      closeButton.focus();
+    }, 20);
+  }
+};
+
+/**
+ * Handles button clicked
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @param {HTMLElement} button
+ * @param {number} imageIndex
+ */
+var onNavigationButtonClick = function onNavigationButtonClick(element, button, imageIndex) {
+  if (!isDisabled(button)) {
+    showImageLightbox(element, imageIndex);
+  }
+};
+
+/**
+ * Generic function for handling keydowns
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @param {number[]}  keycodes
+ * @param {function} handler
+ */
+var onKeyDown = function onKeyDown(element, keycodes, handler) {
+  element.addEventListener('keydown', function (event) {
+    if (keycodes.indexOf(event.which) !== -1) {
+      handler();
+      event.preventDefault();
+    }
+  });
+};
+
+/**
+ * @function
+ */
+var onButtonPress = function onButtonPress(button, handler) {
+  button.addEventListener('click', handler);
+  onKeyDown(button, [KEY.ENTER, KEY.SPACE], handler);
+};
+
+/**
+ * Keep track of which keys are currently pressed.
+ *
+ * @type Object.<number, boolean>
+ */
+var keysDown = {};
+
+/**
+ * Binds key listeners that traps focus when the lightbox is open.
+ *
+ * @function
+ */
+var onButtonTab = function onButtonTab(button, direction, handler) {
+  button.addEventListener('keydown', function (event) {
+    // Keep track of which keys are currently pressed
+    keysDown[event.which] = true;
+
+    if (event.which === KEY.TAB) {
+      // Tab key press
+
+      if (keysDown[KEY.SHIFT]) {
+        if (direction === TAB_DIRECTION.BACKWARD) {
+          // Shift is down, tab backward
+          handler();
+          event.preventDefault();
+        }
+      } else {
+        if (direction === TAB_DIRECTION.FORWARD) {
+          // Tab forward
+          handler();
+          event.preventDefault();
+        }
+      }
+    }
+  });
+  button.addEventListener('keyup', function (event) {
+    delete keysDown[event.which];
+  });
+};
+
+/**
+ * Callback for when the dom is updated
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @param {ImageLightboxState} state
+ * @param {Keyboard} keyboard
+ * @param {MutationRecord} record
+ */
+var handleDomUpdate = (0, _functional.curry)(function (element, state, keyboard, record) {
+  if (record.type === 'attributes' && record.attributeName === ATTRIBUTE_SHOW) {
+
+    var showImage = parseInt(record.target.getAttribute(ATTRIBUTE_SHOW));
+
+    // update the view
+    updateView(element, _extends(state, {
+      currentImage: isNaN(showImage) ? null : showImage
+    }));
+  }
+});
+
+/**
+ * Initializes a panel
+ *
+ * @function
+ * @param {HTMLElement} element
+ * @return {HTMLElement}
+ */
+function init(element) {
+  // get button html elements
+  var nextButton = element.querySelector('.next');
+  var prevButton = element.querySelector('.previous');
+  var closeButton = element.querySelector('.close');
+  var keyboard = new _keyboard2.default();
+
+  /**
+   * @typedef {object} ImageLightboxState
+   * @property {number} currentImage Index of image to display
+   */
+  var state = {
+    currentImage: false
+  };
+
+  // initialize buttons
+  onButtonPress(nextButton, function () {
+    return onNavigationButtonClick(element, nextButton, state.currentImage + 1);
+  });
+  onButtonTab(nextButton, TAB_DIRECTION.BACKWARD, function () {
+    return focus(closeButton, prevButton);
+  });
+  onButtonTab(nextButton, TAB_DIRECTION.FORWARD, function () {
+    return focus(prevButton, closeButton);
+  });
+
+  onButtonPress(prevButton, function () {
+    return onNavigationButtonClick(element, prevButton, state.currentImage - 1);
+  });
+  onButtonTab(prevButton, TAB_DIRECTION.BACKWARD, function () {
+    return focus(nextButton, closeButton);
+  });
+  onButtonTab(prevButton, TAB_DIRECTION.FORWARD, function () {
+    return focus(closeButton, nextButton);
+  });
+
+  onButtonPress(closeButton, function () {
+    return hideLightbox(element);
+  });
+  onButtonTab(closeButton, TAB_DIRECTION.BACKWARD, function () {
+    return focus(prevButton, nextButton);
+  });
+  onButtonTab(closeButton, TAB_DIRECTION.FORWARD, function () {
+    return focus(nextButton, prevButton);
+  });
+
+  // When clicking on the background, let's close it
+  element.addEventListener('click', function (event) {
+    if (event.target === element) {
+      hideLightbox(element);
+    }
+  });
+
+  // Initialize keyboard navigation
+  element.addEventListener('keyup', function (event) {
+    if (event.which === KEY.ESC) {
+      event.preventDefault();
+      hideLightbox(element);
+    } else if (event.which === KEY.LEFT_ARROW) {
+      if (state.currentImage !== 0) {
+        showImageLightbox(element, state.currentImage - 1);
+      }
+    } else if (event.which === KEY.RIGHT_ARROW) {
+      var images = (0, _elements.querySelectorAll)('.imagelightbox-image', element);
+      if (state.currentImage !== images.length - 1) {
+        showImageLightbox(element, state.currentImage + 1);
+      }
+    }
+  });
+
+  // listen for updates to data-size
+  var observer = new MutationObserver((0, _functional.forEach)(handleDomUpdate(element, state, keyboard)));
+
+  observer.observe(element, {
+    subtree: false,
+    childList: false,
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: [ATTRIBUTE_SHOW]
+  });
+
+  return element;
+}
+
+/***/ }),
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7369,7 +7219,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7445,7 +7295,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7460,7 +7310,7 @@ var _elements = __webpack_require__(0);
 
 var _functional = __webpack_require__(1);
 
-var _collapsible = __webpack_require__(11);
+var _collapsible = __webpack_require__(10);
 
 var _keyboard = __webpack_require__(4);
 
@@ -7538,7 +7388,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7640,25 +7490,26 @@ function init(element) {
 }
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(14);
+__webpack_require__(13);
 
 // Load library
 H5P = H5P || {};
-H5P.HubClient = __webpack_require__(13).default;
+H5P.HubClient = __webpack_require__(12).default;
 
 /***/ }),
+/* 33 */,
 /* 34 */,
 /* 35 */,
 /* 36 */,
@@ -7668,7 +7519,156 @@ H5P.HubClient = __webpack_require__(13).default;
 /* 40 */,
 /* 41 */,
 /* 42 */,
-/* 43 */,
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _eventful = __webpack_require__(2);
+
+var _elements = __webpack_require__(0);
+
+var _imageLightbox = __webpack_require__(26);
+
+var _imageLightbox2 = _interopRequireDefault(_imageLightbox);
+
+var _dictionary = __webpack_require__(3);
+
+var _dictionary2 = _interopRequireDefault(_dictionary);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @constant {string}
+ */
+var IMAGELIGHTBOX = 'imagelightbox';
+
+/**
+ * @class
+ * @mixes Eventful
+ */
+
+var ImageLightBox = function () {
+  function ImageLightBox() {
+    var _this = this;
+
+    _classCallCheck(this, ImageLightBox);
+
+    // add event system
+    _extends(this, (0, _eventful.Eventful)());
+
+    this.rootElement = this.createView();
+    this.imageLightboxList = this.rootElement.querySelector('.' + IMAGELIGHTBOX + '-list');
+
+    (0, _imageLightbox2.default)(this.rootElement);
+
+    this.rootElement.addEventListener('lightbox-hidden', function () {
+      _this.trigger('lightbox-hidden');
+    });
+  }
+
+  /**
+   * Create the DOM structure
+   *
+   * @function
+   * @returns {HTMLElement}
+   */
+
+
+  _createClass(ImageLightBox, [{
+    key: 'createView',
+    value: function createView() {
+      var rootElement = (0, _elements.createElement)({
+        tag: 'div',
+        id: IMAGELIGHTBOX + '-detail',
+        classes: [IMAGELIGHTBOX],
+        attributes: {
+          role: 'dialog',
+          'aria-label': _dictionary2.default.get('imageLightboxTitle')
+        }
+      });
+
+      rootElement.innerHTML = '\n      <div class="' + IMAGELIGHTBOX + '-inner">\n        <div class="' + IMAGELIGHTBOX + '-button close" role="button" tabindex="0" aria-label="' + _dictionary2.default.get('close') + '"></div>\n        <ol class="' + IMAGELIGHTBOX + '-list"></ol>\n        <div class="' + IMAGELIGHTBOX + '-progress">' + _dictionary2.default.get('imageLightBoxProgress') + '</div>\n        <div class="' + IMAGELIGHTBOX + '-button next" role="button" aria-disabled="true" aria-label="' + _dictionary2.default.get('nextImage') + '"></div>\n        <div class="' + IMAGELIGHTBOX + '-button previous" role="button" aria-disabled="true" aria-label="' + _dictionary2.default.get('previousImage') + '"></div>\n      </div>';
+
+      return rootElement;
+    }
+
+    /**
+     * Add an image
+     *
+     * @function
+     * @param {string} url
+     * @param {string} alt
+     */
+
+  }, {
+    key: 'addImage',
+    value: function addImage(_ref) {
+      var url = _ref.url,
+          alt = _ref.alt;
+
+      var item = (0, _elements.createElement)({
+        tag: 'li',
+        classes: [IMAGELIGHTBOX + '-image']
+      });
+      item.innerHTML = '<img class="img-responsive" src="' + url + '" alt="' + alt + '">';
+      this.imageLightboxList.appendChild(item);
+    }
+
+    /**
+     * Show the lightbox
+     *
+     * @function
+     * @param {number} index - the image to show first
+     */
+
+  }, {
+    key: 'show',
+    value: function show(index) {
+      this.rootElement.setAttribute('data-show', index);
+    }
+
+    /**
+     * Remove all images
+     * @function
+     */
+
+  }, {
+    key: 'reset',
+    value: function reset() {
+      this.imageLightboxList.innerHTML = '';
+    }
+
+    /**
+     * Return the DOM element
+     *
+     * @returns {HTMLElement}
+     */
+
+  }, {
+    key: 'getElement',
+    value: function getElement() {
+      return this.rootElement;
+    }
+  }]);
+
+  return ImageLightBox;
+}();
+
+exports.default = ImageLightBox;
+
+/***/ }),
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
