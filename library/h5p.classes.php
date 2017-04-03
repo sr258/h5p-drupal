@@ -19,11 +19,13 @@ interface H5PFrameworkInterface {
   /**
    * Fetches a file from a remote server using HTTP GET
    *
-   * @param $url
-   * @param $data
+   * @param $url Where you want to get or send data.
+   * @param $data Data to post to the URL.
+   * @param $blocking Set to 'FALSE' to instantly time out (fire and forget).
+   * @param $stream Where to save the file directly on the filesystem.
    * @return string The content (response body). NULL if something went wrong
    */
-  public function fetchExternalData($url, $data = NULL);
+  public function fetchExternalData($url, $data = NULL, $blocking = TRUE, $stream = NULL);
 
   /**
    * Set the tutorial URL for a library. All versions of the library is set
@@ -2505,12 +2507,6 @@ class H5PCore {
           $this->h5pF->setLibraryTutorialUrl($library->machineNamee, $library->tutorialUrl);
         }
       }
-    }
-
-    // Handle latest version of H5P
-    if (!empty($result->packageReleased)) {
-      $this->h5pF->setOption('update_available', $result->packageReleased->releasedAt);
-      $this->h5pF->setOption('update_available_path', $result->packageReleased->path);
     }
 
     return $result;
