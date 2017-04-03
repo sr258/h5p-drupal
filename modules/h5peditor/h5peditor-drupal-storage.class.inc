@@ -198,7 +198,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
    */
   public static function markFileForCleanup($file, $content_id = null) {
     // H5P Core cleans up
-    if (empty($content_id)) {
+    if ($content_id) {
       return;
     }
 
