@@ -20,7 +20,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements fetchExternalData
    */
-  public function fetchExternalData($url, $data = NULL) {
+  public function fetchExternalData($url, $data = NULL, $blocking = TRUE, $stream = NULL) {
     $options = array();
     if (!empty($data)) {
       $options['method'] = 'POST';
@@ -31,6 +31,13 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
 
     $response = drupal_http_request($url, $options);
+
+    if ($stream && empty($response->error)) {
+      // Create file from data
+      H5peditorDrupalStorage::saveFileTemporarily($response->data);
+      return TRUE;
+    }
+
     return isset($response->error) ? NULL : $response->data;
   }
 
@@ -101,7 +108,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements getUploadedH5PPath
    */
   public function getUploadedH5pPath() {
-    return $_SESSION['h5p_upload'];
+    return empty($_SESSION['h5p_upload']) ? NULL : $_SESSION['h5p_upload'];
   }
 
   /**
