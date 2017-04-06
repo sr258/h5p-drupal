@@ -40,7 +40,7 @@ function h5peditor_menu() {
   $items['h5peditor/%/%/library-upload'] = array(
     'title' => 'H5P Upload library',
     'page callback' => 'h5peditor_library_upload_callback',
-    'page arguments' => array(1),
+    'page arguments' => array(1, 2),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK
@@ -313,10 +313,10 @@ function h5peditor_libraries_callback() {
 /**
  * Upload library from endpoint
  */
-function h5peditor_library_upload_callback($token) {
+function h5peditor_library_upload_callback($token, $contentId) {
   $editor = h5peditor_get_instance();
   $filePath = $_FILES['h5p']['tmp_name'];
-  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $filePath);
+  $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $filePath, $contentId);
 }
 
 /**
