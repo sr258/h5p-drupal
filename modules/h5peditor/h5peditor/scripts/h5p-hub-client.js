@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 33);
+/******/ 	return __webpack_require__(__webpack_require__.s = 34);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -876,6 +876,8 @@ var Keyboard = function () {
             this.selectedIndex = nextIndex(this.selectedIndex, lastIndex);
             event.preventDefault();
             break;
+          default:
+            return;
         }
 
         // move tabindex to currently selected
@@ -987,113 +989,6 @@ var relayClickEventAs = exports.relayClickEventAs = (0, _functional.curry)(funct
 
 /***/ }),
 /* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _eventful = __webpack_require__(2);
-
-var _events = __webpack_require__(5);
-
-var _dictionary = __webpack_require__(3);
-
-var _dictionary2 = _interopRequireDefault(_dictionary);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @class MessageView
- * @mixes Eventful
- */
-var MessageView = function () {
-  /**
-   * @constructor
-   * @param {Object} state
-   * @param {string} state.type 'info', 'warning' or 'error'
-   * @param {string} state.title
-   * @param {string} [state.content]
-   * @param {string} [state.name]
-   * @param {string} [state.action]
-   * @param {string} [state.dismissable]
-   */
-  function MessageView(state) {
-    _classCallCheck(this, MessageView);
-
-    // add event system
-    _extends(this, (0, _eventful.Eventful)());
-
-    state.name = state.name || '';
-
-    // create elements
-    this.rootElement = this.createElement(state);
-  }
-
-  _createClass(MessageView, [{
-    key: 'createElement',
-    value: function createElement(message) {
-      // Create wrapper:
-      var messageWrapper = document.createElement('div');
-      messageWrapper.className = 'message ' + message.name + ' ' + message.type + (message.dismissible ? ' dismissible' : '');
-      messageWrapper.setAttribute('role', 'alert');
-
-      // Add close button if dismisable
-      if (message.dismissible) {
-        var closeButton = document.createElement('button');
-        closeButton.className = 'message-close';
-        closeButton.setAttribute('tabIndex', 0);
-        closeButton.setAttribute('aria-label', _dictionary2.default.get('closeButtonLabel'));
-        messageWrapper.appendChild(closeButton);
-        (0, _events.relayClickEventAs)('close', this, closeButton);
-      }
-
-      var messageContent = document.createElement('div');
-      messageContent.className = 'message-content';
-      messageContent.innerHTML = '<h2>' + message.title + '</h2>' + (message.content ? '<p>' + message.content + '</p>' : '');
-      messageWrapper.appendChild(messageContent);
-
-      if (message.action !== undefined) {
-        var messageButton = document.createElement('button');
-        messageButton.className = 'button';
-        messageButton.innerHTML = message.action;
-        messageWrapper.appendChild(messageButton);
-
-        (0, _events.relayClickEventAs)('action-clicked', this, messageButton);
-      }
-
-      return messageWrapper;
-    }
-
-    /**
-     * Returns the root element of the content browser
-     *
-     * @return {HTMLElement}
-     */
-
-  }, {
-    key: 'getElement',
-    value: function getElement() {
-      return this.rootElement;
-    }
-  }]);
-
-  return MessageView;
-}();
-
-exports.default = MessageView;
-
-/***/ }),
-/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1236,7 +1131,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   function attemptVertx() {
     try {
       var r = require;
-      var vertx = __webpack_require__(32);
+      var vertx = __webpack_require__(33);
       vertxNext = vertx.runOnLoop || vertx.runOnContext;
       return useVertxTimer();
     } catch (e) {
@@ -2257,7 +2152,114 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return Promise;
 });
 //# sourceMappingURL=es6-promise.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16), __webpack_require__(7), __webpack_require__(17)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16), __webpack_require__(6), __webpack_require__(17)))
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _eventful = __webpack_require__(2);
+
+var _events = __webpack_require__(5);
+
+var _dictionary = __webpack_require__(3);
+
+var _dictionary2 = _interopRequireDefault(_dictionary);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @class MessageView
+ * @mixes Eventful
+ */
+var MessageView = function () {
+  /**
+   * @constructor
+   * @param {Object} state
+   * @param {string} state.type 'info', 'warning' or 'error'
+   * @param {string} state.title
+   * @param {string} [state.content]
+   * @param {string} [state.name]
+   * @param {string} [state.action]
+   * @param {string} [state.dismissable]
+   */
+  function MessageView(state) {
+    _classCallCheck(this, MessageView);
+
+    // add event system
+    _extends(this, (0, _eventful.Eventful)());
+
+    state.name = state.name || '';
+
+    // create elements
+    this.rootElement = this.createElement(state);
+  }
+
+  _createClass(MessageView, [{
+    key: 'createElement',
+    value: function createElement(message) {
+      // Create wrapper:
+      var messageWrapper = document.createElement('div');
+      messageWrapper.className = 'message ' + message.name + ' ' + message.type + (message.dismissible ? ' dismissible' : '');
+      messageWrapper.setAttribute('role', 'alert');
+
+      // Add close button if dismisable
+      if (message.dismissible) {
+        var closeButton = document.createElement('button');
+        closeButton.className = 'message-close';
+        closeButton.setAttribute('tabIndex', 0);
+        closeButton.setAttribute('aria-label', _dictionary2.default.get('closeButtonLabel'));
+        messageWrapper.appendChild(closeButton);
+        (0, _events.relayClickEventAs)('close', this, closeButton);
+      }
+
+      var messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
+      messageContent.innerHTML = '<h2 class="message-header">' + message.title + '</h2>' + (message.content ? '<p class="message-body">' + message.content + '</p>' : '');
+      messageWrapper.appendChild(messageContent);
+
+      if (message.action !== undefined) {
+        var messageButton = document.createElement('button');
+        messageButton.className = 'button';
+        messageButton.innerHTML = message.action;
+        messageWrapper.appendChild(messageButton);
+
+        (0, _events.relayClickEventAs)('action-clicked', this, messageButton);
+      }
+
+      return messageWrapper;
+    }
+
+    /**
+     * Returns the root element of the content browser
+     *
+     * @return {HTMLElement}
+     */
+
+  }, {
+    key: 'getElement',
+    value: function getElement() {
+      return this.rootElement;
+    }
+  }]);
+
+  return MessageView;
+}();
+
+exports.default = MessageView;
 
 /***/ }),
 /* 8 */
@@ -2305,12 +2307,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var HubServices = function () {
   /**
    * @param {string} apiRootUrl
+   * @param {number} contentId
    */
   function HubServices(_ref) {
-    var apiRootUrl = _ref.apiRootUrl;
+    var apiRootUrl = _ref.apiRootUrl,
+        contentId = _ref.contentId;
 
     _classCallCheck(this, HubServices);
 
+    this.contentId = contentId || 0;
     this.apiRootUrl = apiRootUrl;
     this.licenseCache = {};
   }
@@ -2416,6 +2421,8 @@ var HubServices = function () {
   }, {
     key: 'uploadContent',
     value: function uploadContent(formData) {
+      formData.append('contentId', this.contentId);
+
       return fetch(this.apiRootUrl + 'library-upload', {
         method: 'POST',
         credentials: 'include',
@@ -2487,7 +2494,7 @@ var HubServices = function () {
 }();
 
 exports.default = HubServices;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ }),
 /* 9 */
@@ -2526,7 +2533,7 @@ var _dictionary = __webpack_require__(3);
 
 var _dictionary2 = _interopRequireDefault(_dictionary);
 
-var _messageView = __webpack_require__(6);
+var _messageView = __webpack_require__(7);
 
 var _messageView2 = _interopRequireDefault(_messageView);
 
@@ -2682,8 +2689,9 @@ var ContentTypeSection = function () {
     value: function search(_ref) {
       var _this2 = this;
 
-      var query = _ref.query,
-          keyCode = _ref.keyCode;
+      var query = _ref.query;
+
+      this.contentTypeList.resetList();
 
       // Always browse ALL when searching
       this.view.selectMenuItem(ContentTypeSection.Tabs.ALL);
@@ -3965,11 +3973,11 @@ var _panel = __webpack_require__(11);
 
 var _panel2 = _interopRequireDefault(_panel);
 
-var _modal = __webpack_require__(29);
+var _modal = __webpack_require__(30);
 
 var _modal2 = _interopRequireDefault(_modal);
 
-var _imageScroller = __webpack_require__(28);
+var _imageScroller = __webpack_require__(29);
 
 var _imageScroller2 = _interopRequireDefault(_imageScroller);
 
@@ -3987,7 +3995,7 @@ var _dictionary = __webpack_require__(3);
 
 var _dictionary2 = _interopRequireDefault(_dictionary);
 
-var _messageView = __webpack_require__(6);
+var _messageView = __webpack_require__(7);
 
 var _messageView2 = _interopRequireDefault(_messageView);
 
@@ -4215,52 +4223,43 @@ var ContentTypeDetailView = function () {
     }
 
     /**
-     * Removes all images from the carousel
-     */
-
-  }, {
-    key: "removeAllImagesInCarousel",
-    value: function removeAllImagesInCarousel() {
-      (0, _elements.querySelectorAll)('li', this.carouselList).forEach((0, _elements.removeChild)(this.carouselList));
-      this.imageLightbox.reset();
-    }
-
-    /**
-     * Add image to the carousel
+     * Set screenshots
      *
-     * @param {object} image
+     * @param {{url: string, alt:string}[]} screenshots
      */
 
   }, {
-    key: "addImageToCarousel",
-    value: function addImageToCarousel(image, index) {
-      var self = this;
+    key: "setScreenshots",
+    value: function setScreenshots(screenshots) {
+      var _this2 = this;
 
-      // add lightbox
-      this.imageLightbox.addImage(image);
+      screenshots.forEach(function (image, index) {
+        // add lightbox
+        _this2.imageLightbox.addImage(image);
 
-      // add thumbnail
-      var thumbnail = document.createElement('li');
-      thumbnail.className = 'slide';
-      thumbnail.innerHTML = "<img src=\"" + image.url + "\" alt=\"" + image.alt + "\" data-index=\"" + index + "\" class=\"img-responsive\" aria-controls=\"" + IMAGELIGHTBOX + "-detail\" />";
+        // add thumbnail
+        var thumbnail = document.createElement('li');
+        thumbnail.className = 'slide';
+        thumbnail.innerHTML = "<img src=\"" + image.url + "\" alt=\"" + image.alt + "\" data-index=\"" + index + "\" class=\"img-responsive\" aria-controls=\"" + IMAGELIGHTBOX + "-detail\" />";
 
-      var img = thumbnail.querySelector('img');
-      img.addEventListener('click', function () {
-        self.imageLightbox.show(index);
-        self.trigger('modal', { element: self.imageLightbox.getElement() });
-        self.focusedImage = img;
+        var img = thumbnail.querySelector('img');
+        img.addEventListener('click', function () {
+          _this2.imageLightbox.show(index);
+          _this2.trigger('modal', { element: _this2.imageLightbox.getElement() });
+          _this2.focusedImage = img;
+        });
+
+        img.addEventListener('keydown', function (event) {
+          if (event.which === 32 || event.which === 13) {
+            _this2.imageLightbox.show(index);
+            _this2.trigger('modal', { element: _this2.imageLightbox.getElement() });
+            _this2.focusedImage = img;
+            event.preventDefault();
+          }
+        });
+
+        _this2.carouselList.appendChild(thumbnail);
       });
-
-      img.addEventListener('keydown', function (event) {
-        if (event.which === 32 || event.which === 13) {
-          self.imageLightbox.show(index);
-          self.trigger('modal', { element: self.imageLightbox.getElement() });
-          self.focusedImage = img;
-          event.preventDefault();
-        }
-      });
-
-      this.carouselList.appendChild(thumbnail);
     }
 
     /**
@@ -4288,6 +4287,10 @@ var ContentTypeDetailView = function () {
 
       this.removeInstallMessage();
       this.resetLicenses();
+
+      // Remove images:
+      (0, _elements.querySelectorAll)('li', this.carouselList).forEach((0, _elements.removeChild)(this.carouselList));
+      this.imageLightbox.reset();
     }
 
     /**
@@ -4358,14 +4361,14 @@ var ContentTypeDetailView = function () {
   }, {
     key: "setDescription",
     value: function setDescription() {
-      var _this2 = this;
+      var _this3 = this;
 
       var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 
       if (text && text.length > MAX_TEXT_SIZE_DESCRIPTION) {
         this.description.innerHTML = this.ellipsis(MAX_TEXT_SIZE_DESCRIPTION, text, true) + "<button type=\"button\" class=\"read-more link\">" + _dictionary2.default.get('readMore') + "</button>";
         this.description.querySelector('.read-more, .read-less').addEventListener('click', function () {
-          return _this2.toggleDescriptionExpanded(text);
+          return _this3.toggleDescriptionExpanded(text);
         });
         this.descriptionExpanded = false;
       } else {
@@ -4382,7 +4385,7 @@ var ContentTypeDetailView = function () {
   }, {
     key: "toggleDescriptionExpanded",
     value: function toggleDescriptionExpanded(text) {
-      var _this3 = this;
+      var _this4 = this;
 
       // flip boolean
       this.descriptionExpanded = !this.descriptionExpanded;
@@ -4398,7 +4401,7 @@ var ContentTypeDetailView = function () {
       }
 
       this.description.querySelector('.read-more, .read-less').addEventListener('click', function () {
-        return _this3.toggleDescriptionExpanded(text);
+        return _this4.toggleDescriptionExpanded(text);
       });
     }
 
@@ -4486,7 +4489,7 @@ var ContentTypeDetailView = function () {
   }, {
     key: "createLicenseDialog",
     value: function createLicenseDialog(licenseDetails) {
-      var _this4 = this;
+      var _this5 = this;
 
       var titleId = 'license-dialog-title';
       var modal = document.createElement('div');
@@ -4516,7 +4519,7 @@ var ContentTypeDetailView = function () {
 
       licenseDetails.then(function (details) {
         title.innerHTML = details.id;
-        description.innerHTML = details.description.replace(':year', new Date().getFullYear()).replace(':owner', _this4.owner);
+        description.innerHTML = details.description.replace(':year', new Date().getFullYear()).replace(':owner', _this5.owner);
       }).catch(function (error) {
         modalBody.innerHTML = _dictionary2.default.get('licenseFetchDetailsFailed');
       }).then(function () {
@@ -4524,7 +4527,7 @@ var ContentTypeDetailView = function () {
       });
 
       (0, _modal2.default)(modal, function () {
-        return _this4.trigger('hide-license-dialog');
+        return _this5.trigger('hide-license-dialog');
       });
       (0, _panel2.default)(panel);
 
@@ -4674,10 +4677,10 @@ var ContentTypeDetailView = function () {
   }, {
     key: "focus",
     value: function focus() {
-      var _this5 = this;
+      var _this6 = this;
 
       setTimeout(function () {
-        return _this5.title.focus();
+        return _this6.title.focus();
       }, 200);
     }
 
@@ -4734,6 +4737,8 @@ var _eventful = __webpack_require__(2);
 var _dictionary = __webpack_require__(3);
 
 var _dictionary2 = _interopRequireDefault(_dictionary);
+
+var _media = __webpack_require__(28);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4916,7 +4921,10 @@ var ContentTypeDetail = function () {
   }, {
     key: 'update',
     value: function update(contentType) {
+      var _this3 = this;
+
       this.view.reset();
+
       this.view.setId(contentType.machineName);
       this.view.setTitle(contentType.title || contentType.machineName);
       this.view.setDescription(contentType.description);
@@ -4938,9 +4946,11 @@ var ContentTypeDetail = function () {
       }
 
       // update carousel
-      this.view.removeAllImagesInCarousel();
       if (contentType.screenshots) {
-        contentType.screenshots.forEach(this.view.addImageToCarousel, this.view);
+        // Fetch screenshots if they exist
+        (0, _media.preloadImages)(contentType.screenshots).then(function (screenshots) {
+          return _this3.view.setScreenshots(screenshots);
+        });
       }
     }
 
@@ -5078,6 +5088,16 @@ var ContentTypeListView = function () {
     }
 
     /**
+     * Scrolls the root element to the top
+     */
+
+  }, {
+    key: "scrollToTop",
+    value: function scrollToTop() {
+      this.rootElement.scrollTop = 0;
+    }
+
+    /**
      * Removes all rows from root element
      */
 
@@ -5101,8 +5121,27 @@ var ContentTypeListView = function () {
   }, {
     key: "addRow",
     value: function addRow(contentType) {
+      var _this2 = this;
+
       var row = this.createContentTypeRow(contentType, this);
-      (0, _events.relayClickEventAs)('row-selected', this, row);
+
+      row.addEventListener('click', function (event) {
+        _this2.trigger('row-selected', {
+          element: row,
+          id: row.getAttribute('data-id')
+        }, false);
+
+        // don't bubble
+        event.stopPropagation();
+
+        // Set tab index of on row
+        var rows = row.parentNode.childNodes;
+        (0, _elements.nodeListToArray)(rows).forEach(function (singleRow) {
+          singleRow.removeAttribute('tabindex');
+        });
+        row.setAttribute('tabindex', '0');
+      });
+
       this.rootElement.appendChild(row);
       this.keyboard.addElement(row);
     }
@@ -5262,10 +5301,25 @@ var ContentTypeList = function () {
     value: function show() {
       this.view.showToKeyboard();
     }
+
+    /**
+     * Focuses on the previously selected element
+     */
+
   }, {
     key: 'focus',
     value: function focus() {
       this.view.focus();
+    }
+
+    /**
+     * Resets the content type list
+     */
+
+  }, {
+    key: 'resetList',
+    value: function resetList() {
+      this.view.scrollToTop();
     }
 
     /**
@@ -5337,7 +5391,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _messageView = __webpack_require__(6);
+var _messageView = __webpack_require__(7);
 
 var _messageView2 = _interopRequireDefault(_messageView);
 
@@ -5345,7 +5399,7 @@ var _elements = __webpack_require__(0);
 
 var _events = __webpack_require__(5);
 
-var _navbar = __webpack_require__(30);
+var _navbar = __webpack_require__(31);
 
 var _navbar2 = _interopRequireDefault(_navbar);
 
@@ -5703,7 +5757,7 @@ var _panel = __webpack_require__(11);
 
 var _panel2 = _interopRequireDefault(_panel);
 
-var _tabPanel = __webpack_require__(31);
+var _tabPanel = __webpack_require__(32);
 
 var _tabPanel2 = _interopRequireDefault(_tabPanel);
 
@@ -5714,6 +5768,10 @@ var _elements = __webpack_require__(0);
 var _eventful = __webpack_require__(2);
 
 var _events = __webpack_require__(5);
+
+var _dictionary = __webpack_require__(3);
+
+var _dictionary2 = _interopRequireDefault(_dictionary);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5766,6 +5824,7 @@ var HubView = function () {
 
     // initiates panel
     (0, _panel2.default)(this.panel);
+    this.setTitle(_dictionary2.default.get("PanelDefaultLabel"));
 
     // relay events
     (0, _events.relayClickEventAs)('panel-change', this, this.toggler);
@@ -6562,7 +6621,7 @@ var _dictionary2 = _interopRequireDefault(_dictionary);
 
 var _eventful = __webpack_require__(2);
 
-var _messageView = __webpack_require__(6);
+var _messageView = __webpack_require__(7);
 
 var _messageView2 = _interopRequireDefault(_messageView);
 
@@ -6589,13 +6648,8 @@ var UploadSection = function () {
     var uploadForm = this.renderUploadForm();
     this.initUploadForm(uploadForm);
 
-    // Create a wrapper to hold user messages
-    this.messageWrapper = document.createElement('div');
-    this.messageWrapper.className = 'message-wrapper';
-
     // Create the container and attach children
     var element = document.createElement('div');
-    element.appendChild(this.messageWrapper);
     element.appendChild(uploadForm);
     this.rootElement = element;
   }
@@ -6612,7 +6666,7 @@ var UploadSection = function () {
     value: function renderUploadForm() {
       // Create the html
       var uploadForm = document.createElement('div');
-      uploadForm.innerHTML = '\n      <div class="upload-wrapper">\n        <div class="upload-throbber hidden" aria-label="' + _dictionary2.default.get('uploadingThrobber') + '" tabindex="-1"></div>\n        <h1 class="upload-instruction-header">' + _dictionary2.default.get('uploadInstructionsTitle') + '</h1>\n        <div class="upload-form">\n          <input class="upload-path" placeholder="' + _dictionary2.default.get("uploadPlaceholder") + '" tabindex="-1" readonly/>\n          <button type="button" class="button use-button">Use</button>\n          <div class="input-wrapper">\n            <input type="file" accept=".h5p" aria-hidden="true"/>\n            <button type="button" class="button upload-button" tabindex="0">' + _dictionary2.default.get('uploadFileButtonLabel') + '</button>\n          </div>\n        </div>\n        <p class="upload-instruction-description">' + _dictionary2.default.get('uploadInstructionsContent') + '</p>\n      </div>\n    ';
+      uploadForm.innerHTML = '\n      <div class="upload-wrapper">\n        <div class="message-wrapper"></div>\n        <div class="upload-throbber hidden" aria-label="' + _dictionary2.default.get('uploadingThrobber') + '" tabindex="-1"></div>\n        <h1 class="upload-instruction-header">' + _dictionary2.default.get('uploadInstructionsTitle') + '</h1>\n        <div class="upload-form">\n          <input class="upload-path" placeholder="' + _dictionary2.default.get("uploadPlaceholder") + '" tabindex="-1" readonly/>\n          <button type="button" class="button use-button">Use</button>\n          <div class="input-wrapper">\n            <input type="file" accept=".h5p" aria-hidden="true"/>\n            <button type="button" class="button upload-button" tabindex="0">' + _dictionary2.default.get('uploadFileButtonLabel') + '</button>\n          </div>\n        </div>\n        <p class="upload-instruction-description">' + _dictionary2.default.get('uploadInstructionsContent') + '</p>\n      </div>\n    ';
       return uploadForm;
     }
 
@@ -6631,6 +6685,7 @@ var UploadSection = function () {
       this.uploadPath = uploadForm.querySelector('.upload-path');
       this.useButton = uploadForm.querySelector('.use-button');
       this.uploadThrobber = uploadForm.querySelector('.upload-throbber');
+      this.messageWrapper = uploadForm.querySelector('.message-wrapper');
 
       this.initUploadInput();
       this.initUseButton();
@@ -7395,10 +7450,69 @@ exports.default = UploadSection;
   };
   self.fetch.polyfill = true;
 })(typeof self !== 'undefined' ? self : undefined);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ }),
 /* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(Promise) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.preloadImage = preloadImage;
+exports.preloadImages = preloadImages;
+/**
+ * Check whether an image exists at a specified URL
+ *
+ * @param  {object} image
+ * @return {Promise<HTMLImageElement>}
+ */
+function preloadImage(image) {
+  return new Promise(function (resolve, reject) {
+    var imageData = new Image();
+    imageData.src = image.url;
+
+    imageData.onload = function () {
+      return resolve(image);
+    };
+    imageData.onerror = function () {
+      return reject(image);
+    };
+
+    if (imageData.complete) {
+      resolve(image);
+    }
+  });
+}
+
+/**
+ * Preload images
+ *
+ * @param {object[]} images
+ * @return {Promise<HTMLImageElement[]>}
+ */
+function preloadImages(images) {
+  var IMAGE_LOAD_FAIL = null;
+
+  var promises = images.map(preloadImage).map(function (image) {
+    return image.catch(function (err) {
+      return IMAGE_LOAD_FAIL;
+    });
+  });
+
+  return Promise.all(promises).then(function (images) {
+    return images.filter(function (image) {
+      return image !== IMAGE_LOAD_FAIL;
+    });
+  });
+}
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ }),
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7462,8 +7576,17 @@ var enable = (0, _elements.removeAttribute)('disabled');
  * @param {HTMLElement} element
  * @param {boolean} enabled
  */
-var toggleEnabled = function toggleEnabled(element, enabled) {
-  return (enabled ? enable : disable)(element);
+var toggleEnabled = function toggleEnabled(element, force, nextElement) {
+  if (force) {
+    if (isDisabled(element)) {
+      enable(element);
+    }
+  } else {
+    if (!isDisabled(element)) {
+      disable(element);
+      nextElement.focus();
+    }
+  }
 };
 
 /**
@@ -7496,8 +7619,8 @@ var updateView = function updateView(element, state) {
   [prevButton, nextButton].forEach((0, _elements.toggleVisibility)(state.displayCount < totalCount));
 
   // toggle button enable, disabled
-  toggleEnabled(nextButton, state.position > state.displayCount - totalCount);
-  toggleEnabled(prevButton, state.position < 0);
+  toggleEnabled(nextButton, state.position > state.displayCount - totalCount, prevButton);
+  toggleEnabled(prevButton, state.position < 0, nextButton);
 
   if (element.dataset.preventResizeLoop === 'true') {
     element.ignoreResize = true;
@@ -7585,7 +7708,7 @@ var handleFocus = (0, _functional.curry)(function (element, state, event) {
     state.position = focusedIndex * -1;
     updateView(element, state);
   } else if (moveRight) {
-    state.position = state.position - 1;
+    state.position = state.position - (focusedIndex - lastVisibleElementIndex);
     updateView(element, state);
   }
 
@@ -7704,7 +7827,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7782,7 +7905,7 @@ function init(element, closeHandler) {
 }
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7883,7 +8006,7 @@ function init(element) {
 }
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7985,13 +8108,13 @@ function init(element) {
 }
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

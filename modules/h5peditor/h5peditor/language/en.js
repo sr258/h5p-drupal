@@ -35,6 +35,7 @@ H5PEditor.language.core = {
   close: 'Close',
   tutorial: 'Tutorial',
   example: 'Example',
+  PanelDefaultLabel: 'Select content type',
   editMode: 'Editing mode',
   listLabel: 'List',
   uploadError: 'File Upload Error',
@@ -77,10 +78,10 @@ H5PEditor.language.core = {
   uploadFileButtonChangeLabel: 'Change file',
   uploadingThrobber: 'Now uploading...',
   h5pFileWrongExtensionTitle: 'The selected file could not be uploaded',
-  h5pFileWrongExtensionContent: 'Only files with the .h5p extension is allowed.',
+  h5pFileWrongExtensionContent: 'Only files with the .h5p extension are allowed.',
   h5pFileValidationFailedTitle: 'Could not validate H5P file',
   h5pFileValidationFailedContent: 'Make sure the uploaded H5P contains valid H5P content. H5P' +
-  ' files with only libraries should be uploaded through the H5P Libraries page.',
+  ' files containing only libraries should be uploaded through the H5P Libraries page.',
   h5pFileUploadServerErrorTitle: 'The H5P file could not be uploaded',
   h5pFileUploadServerErrorContent: 'An unexpected error occured. Check your server error log for' +
   ' more details.',
