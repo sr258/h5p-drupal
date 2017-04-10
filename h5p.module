@@ -140,7 +140,7 @@ function remove_old_log_events() {
 function h5p_fetch_libraries_metadata($fetchingDisabled = FALSE) {
   // If fetching of libraries from h5p.org is enabled and
   // It has not been run the last 24 hours, let's do it
-  if ($fetchingDisabled || (variable_get('h5p_hub_is_enabled', TRUE) &&
+  if ($fetchingDisabled || ((variable_get('h5p_hub_is_enabled', TRUE) || variable_get('h5p_send_usage_statistics', TRUE)) &&
      (intval(variable_get('h5p_fetched_library_metadata_on', 0)) < (time() - 86400)))) {
     // Fetch the library-metadata:
     $core = _h5p_get_instance('core');

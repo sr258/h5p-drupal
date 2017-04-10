@@ -90,6 +90,7 @@ function h5p_uninstall() {
   variable_del('h5p_hub_is_enabled');
   variable_del('h5p_content_type_cache_updated_at');
   variable_del('h5p_allow_communication_with_h5p_org');
+  variable_del('h5p_send_usage_statistics');
 
   // Intentionally not deleting variable h5p_site_uuid. If h5p module is uninstalled/installed,
   // the uuid should be the same

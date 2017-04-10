@@ -144,10 +144,10 @@ function h5p_admin_settings($form, &$form_state) {
 
   $form['h5p_hub_is_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable hub'),
+    '#title' => t('Use H5P Hub'),
     '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
-    '#description' => t('It is strongly discouraged to disable the hub. Enabling the hub will allow communication with the H5P hub, allowing you to create, reuse and share content and content types through the H5P Hub interface. Anonymous usage data will also be sent to the H5P Hub. Disabling this option will force you to install libraries manually through upload.'),
+    '#description' => t("It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. Disabling this option you will have to install and update content types through file uploads."),
   );
 
   $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
@@ -161,6 +161,13 @@ function h5p_admin_settings($form, &$form_state) {
     ),
     '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-key" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
     '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
+  );
+
+  $form['h5p_send_usage_statistics'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically contribute usage statistics'),
+    '#default_value' => variable_get('h5p_send_usage_statistics', TRUE),
+    '#description' => t('Usage statistics numbers will automatically be reported to help the developers better understand how H5P is used and to determine potential areas of improvement.'),
   );
 
   // Set h5p settings class on form container
