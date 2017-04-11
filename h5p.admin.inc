@@ -287,14 +287,28 @@ function h5p_library_list() {
   // Create the container which all admin content
   // will appends it's data to. This id is used by h5pintegration
   // to find where to put the admin content.
+
+  // Prepare output
+  $html = '';
+
+  // Content type cache update form
+  $hubOn = variable_get('h5p_hub_is_enabled', TRUE);
+  if ($hubOn) {
+    $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
+    $html .= '<h3 class="h5p-admin-header">' . t('Content type cache') . '</h3>' .
+             drupal_render($ct_cache_update_form);
+  }
+
+  // Add libraries form
   $upload_form = drupal_get_form('h5p_library_upload_form');
-  $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
-  return '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
-         drupal_render($upload_form) .
-         '<h3 class="h5p-admin-header">' . t('Content type cache') . '</h3>' .
-         drupal_render($ct_cache_update_form) .
-         '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
-         '<div id="h5p-admin-container"></div>';
+  $html .= '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
+           drupal_render($upload_form);
+
+  // Installed libraries list
+  $html .= '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
+           '<div id="h5p-admin-container"></div>';
+
+  return $html;
 }
 
 /**
