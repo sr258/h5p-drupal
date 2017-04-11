@@ -150,18 +150,19 @@ function h5p_admin_settings($form, &$form_state) {
     '#description' => t("It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. Disabling this option you will have to install and update content types through file uploads."),
   );
 
-  $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
-  $form['h5p_site_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Site Key'),
-    '#default_value' => '',
-    '#attributes' => array(
-      'data-value' => $site_key,
-      'placeholder' => ($site_key ? '********-****-****-****-************' : t('Empty'))
-    ),
-    '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-key" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
-    '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
-  );
+  // TODO: Be able to change site key
+//  $site_key = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
+//  $form['h5p_site_key'] = array(
+//    '#type' => 'textfield',
+//    '#title' => t('Site Key'),
+//    '#default_value' => '',
+//    '#attributes' => array(
+//      'data-value' => $site_key,
+//      'placeholder' => ($site_key ? '********-****-****-****-************' : t('Empty'))
+//    ),
+//    '#field_suffix' => '<button type="button" class="h5p-reveal-value" data-control="edit-h5p-site-key" data-hide="' . t('Hide') . '">' . t('Reveal') . '</button>',
+//    '#description' => t("The site key is a secret that uniquely identifies this site with the Hub."),
+//  );
 
   $form['h5p_send_usage_statistics'] = array(
     '#type' => 'checkbox',
@@ -210,10 +211,11 @@ function h5p_admin_settings_submit($form, &$form_state) {
   // Ensure that the h5p white list is always stored in lower case.
   $form_state['values']['h5p_whitelist'] = mb_strtolower($form_state['values']['h5p_whitelist']);
 
-  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $form_state['values']['h5p_site_key'])) {
-    // Invalid key, use the old one
-    $form_state['values']['h5p_site_key'] = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
-  }
+  // TODO: Be able to change site key
+//  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $form_state['values']['h5p_site_key'])) {
+//    // Invalid key, use the old one
+//    $form_state['values']['h5p_site_key'] = variable_get('h5p_site_key', variable_get('h5p_site_uuid', ''));
+//  }
 }
 
 /**
