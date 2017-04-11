@@ -105,7 +105,7 @@ function h5peditor_form_h5p_content_node_form_alter(&$form, &$form_state) {
   $library = isset($node->main_library) ? H5PCore::libraryToString($node->main_library) : (isset($node->h5p_library) ? $node->h5p_library : 0);
 
   if (variable_get('h5p_first_runnable_saved', 0) === 0 && !variable_get('h5p_hub_is_enabled', TRUE)) {
-    drupal_set_message(t('It looks like there are no content types installed. You can get the ones you want by using the small "Download" button in the lower left corner on any example from the <a href=http://h5p.org/update-all-content-types" target="_blank">Examples and Downloads</a> page and then you upload the file here.'));
+    drupal_set_message(t('It looks like there are no content types installed. You can get the ones you want by using the small "Download" button in the lower left corner on any example from the <a href="https://h5p.org/content-types-and-applications" target="_blank">Examples and Downloads</a> page and then you upload the file here.'));
   }
 
   $form['h5p_type'] = array(
