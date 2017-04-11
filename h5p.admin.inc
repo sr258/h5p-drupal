@@ -147,7 +147,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#title' => t('Use H5P Hub'),
     '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
-    '#description' => t("It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. Disabling this option you will have to install and update content types through file uploads."),
+    '#description' => t("It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. If this option is disabled you'll have to install and update content types through file upload forms."),
   );
 
   // TODO: Be able to change site key
