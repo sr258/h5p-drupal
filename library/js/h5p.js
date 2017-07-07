@@ -133,9 +133,26 @@ H5P.init = function (target) {
 
     // Check if we should add and display a fullscreen button for this H5P.
     if (contentData.fullScreen == 1 && H5P.fullscreenSupported) {
-      H5P.jQuery('<div class="h5p-content-controls"><div role="button" tabindex="0" class="h5p-enable-fullscreen" title="' + H5P.t('fullscreen') + '"></div></div>').prependTo($container).children().click(function () {
-        H5P.fullScreen($container, instance);
-      });
+      H5P.jQuery(
+        '<div class="h5p-content-controls">' +
+          '<div role="button" ' +
+                'tabindex="0" ' +
+                'class="h5p-enable-fullscreen" ' +
+                'title="' + H5P.t('fullscreen') + '">' +
+          '</div>' +
+        '</div>')
+        .prependTo($container)
+          .children()
+          .click(function () {
+            H5P.fullScreen($container, instance);
+          })
+        .keydown(function (e) {
+          if (e.which === 32 || e.which === 13) {
+            H5P.fullScreen($container, instance);
+            return false;
+          }
+        })
+      ;
     }
 
     /**
@@ -1000,24 +1017,13 @@ H5P.findCopyrights = function (info, parameters, contentId) {
       continue; // Do not check
     }
 
-    /*
-     * TODO: Make parameters clean again
-     * Some content types adds jQuery or other objects to parameters
-     * in order to determine override settings for sub-content-types.
-     * For instance Question Set tells Multiple Choice that it should
-     * attach Multi Choice's confirmation dialog to a Question Set
-     * jQuery element, so that the confirmation dialog will not be restricted
-     * to the space confined by Multi Choice.
-     * Ideally this should not be added to parameters, we must make a better
-     * solution. We should likely be adding these to sub-content through
-     * functions/setters instead of passing them down as params.
-     *
-     * This solution is implemented as a hack that will ignore all parameters
-     * inside a "overrideSettings" field, this should suffice for now since
-     * all overridden objects are added to this field, however this is not very
-     * robust solution and will very likely lead to problems in the future.
+    /**
+     * @deprecated This hack should be removed after 2017-11-01
+     * The code that was using this was removed by HFP-574
      */
     if (field === 'overrideSettings') {
+      console.warn("The semantics field 'overrideSettings' is DEPRECATED and should not be used.");
+      console.warn(parameters);
       continue;
     }
 
@@ -1264,13 +1270,8 @@ H5P.MediaCopyright = function (copyright, labels, order, extraFields) {
 
     // Check for version info
     var versionInfo;
-    if (copyrightLicense.versions) {
-      if (copyrightLicense.versions.default && (!version || !copyrightLicense.versions[version])) {
-        version = copyrightLicense.versions.default;
-      }
-      if (version && copyrightLicense.versions[version]) {
-        versionInfo = copyrightLicense.versions[version];
-      }
+    if (version && copyrightLicense.versions[version]) {
+      versionInfo = copyrightLicense.versions[version];
     }
 
     if (versionInfo) {
@@ -2028,7 +2029,6 @@ H5P.createTitle = function (rawTitle, maxLength) {
   $(document).ready(function () {
 
     var ccVersions = {
-      'default': '4.0',
       '4.0': H5P.t('licenseCC40'),
       '3.0': H5P.t('licenseCC30'),
       '2.5': H5P.t('licenseCC25'),
@@ -2082,7 +2082,6 @@ H5P.createTitle = function (rawTitle, maxLength) {
           'v1': '1.0'
         },
         versions: {
-          'default': 'v3',
           'v3': H5P.t('licenseV3'),
           'v2': H5P.t('licenseV2'),
           'v1': H5P.t('licenseV1')
