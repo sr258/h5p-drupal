@@ -1746,7 +1746,7 @@ class H5PCore {
     'js/h5p-utils.js',
   );
 
-  public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm mp4 ogg mp3 wav txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile';
+  public static $defaultContentWhitelist = 'json png jpg jpeg gif bmp tif tiff svg eot ttf woff woff2 otf webm mp4 ogg mp3 wav txt pdf rtf doc docx xls xlsx ppt pptx odt ods odp xml csv diff patch swf md textile vtt webvtt';
   public static $defaultLibraryWhitelistExtras = 'js css';
 
   public $librariesJsonData, $contentJsonData, $mainJsonData, $h5pF, $fs, $h5pD, $disableFileCheck;
@@ -3398,6 +3398,11 @@ class H5PContentValidator {
     $matches = array();
     if (preg_match($this->h5pC->relativePathRegExp, $file->path, $matches)) {
       $file->path = $matches[5];
+    }
+
+    // Remove temporary files suffix
+    if (substr($file->path, -4, 4) === '#tmp') {
+      $file->path = substr($file->path, 0, strlen($file->path) - 4);
     }
 
     // Make sure path and mime does not have any special chars
