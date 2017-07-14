@@ -1724,7 +1724,7 @@ class H5PCore {
 
   public static $coreApi = array(
     'majorVersion' => 1,
-    'minorVersion' => 13
+    'minorVersion' => 14
   );
   public static $styles = array(
     'styles/h5p.css',
@@ -3398,6 +3398,11 @@ class H5PContentValidator {
     $matches = array();
     if (preg_match($this->h5pC->relativePathRegExp, $file->path, $matches)) {
       $file->path = $matches[5];
+    }
+
+    // Remove temporary files suffix
+    if (substr($file->path, -4, 4) === '#tmp') {
+      $file->path = substr($file->path, 0, strlen($file->path) - 4);
     }
 
     // Make sure path and mime does not have any special chars
