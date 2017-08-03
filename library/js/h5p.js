@@ -1271,13 +1271,8 @@ H5P.MediaCopyright = function (copyright, labels, order, extraFields) {
 
     // Check for version info
     var versionInfo;
-    if (copyrightLicense.versions) {
-      if (copyrightLicense.versions.default && (!version || !copyrightLicense.versions[version])) {
-        version = copyrightLicense.versions.default;
-      }
-      if (version && copyrightLicense.versions[version]) {
-        versionInfo = copyrightLicense.versions[version];
-      }
+    if (version && copyrightLicense.versions[version]) {
+      versionInfo = copyrightLicense.versions[version];
     }
 
     if (versionInfo) {
@@ -2035,7 +2030,6 @@ H5P.createTitle = function (rawTitle, maxLength) {
   $(document).ready(function () {
 
     var ccVersions = {
-      'default': '4.0',
       '4.0': H5P.t('licenseCC40'),
       '3.0': H5P.t('licenseCC30'),
       '2.5': H5P.t('licenseCC25'),
@@ -2089,7 +2083,6 @@ H5P.createTitle = function (rawTitle, maxLength) {
           'v1': '1.0'
         },
         versions: {
-          'default': 'v3',
           'v3': H5P.t('licenseV3'),
           'v2': H5P.t('licenseV2'),
           'v1': H5P.t('licenseV1')
