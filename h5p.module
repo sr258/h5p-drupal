@@ -1408,14 +1408,6 @@ function h5p_content_user_data($content_id, $data_id, $sub_content_id) {
 function h5p_embed($node) {
   global $language;
 
-  $callback = filter_input(INPUT_GET, 'callback');
-  if ($callback !== NULL) {
-
-    // Old embed code only returns resizer url
-    print $callback . '(\'' . h5p_get_resize_url() . '\');';
-    return;
-  }
-
   $module_path = base_path() . drupal_get_path('module', 'h5p');
   $node = node_load($node);
   if (!$node || !node_access('view', $node) || !isset($node->json_content)) {
