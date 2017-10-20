@@ -772,6 +772,11 @@ function h5p_set_finished() {
       ->condition('content_id', $_POST['contentId'])
       ->condition('uid', $user->uid)
       ->execute();
+
+    if (function_exists('rules_invoke_event')) {
+      rules_invoke_event('h5p_solved', $_POST['contentId'], $_POST['score'], $_POST['maxScore']);
+    }
+
     return H5PCore::ajaxSuccess();
   }
 
